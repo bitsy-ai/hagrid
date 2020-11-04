@@ -3,16 +3,17 @@ let
   src = fetchFromGitHub {
       owner = "mozilla";
       repo = "nixpkgs-mozilla";
-      # commit from: 2019-05-15
-      rev = "c482bfd3dab1bde9590b03e712d73ced15385be4";
-      sha256 = "18sxl0fxhbdnrfmkbmgxwsn12qy8dbv6ccb3imyyqbjqb76j8dpi";
+      # commit from: 2019-07-15
+      rev = "8c007b60731c07dd7a052cce508de3bb1ae849b4";
+      sha256 = "sha256-RsNPnEKd7BcogwkqhaV5kI/HuNC4flH/OQCC/4W5y/8=";
    };
+  rustOverlay = import "${src.out}/rust-overlay.nix" pkgs pkgs;
+  rustChannel = (rustOverlay.rustChannelOf { rustToolchain = ./rust-toolchain; });
 in
-with import "${src.out}/rust-overlay.nix" pkgs pkgs;
 stdenv.mkDerivation {
   name = "rust-env";
   buildInputs = [
-    (rustChannelOf { rustToolchain = ./rust-toolchain; }).rust
+    rustChannel.rust
     # latest.rustChannels.nightly.rust
     # latest.rustChannels.stable.rust
 
