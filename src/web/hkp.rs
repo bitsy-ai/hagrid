@@ -340,7 +340,7 @@ mod tests {
         let mut armored = Vec::new();
         {
             use sequoia_openpgp::armor::{Writer, Kind};
-            let mut w = Writer::new(&mut armored, Kind::PublicKey, &[])
+            let mut w = Writer::new(&mut armored, Kind::PublicKey)
                 .unwrap();
             tpk.serialize(&mut w).unwrap();
             w.finalize().unwrap();
@@ -413,14 +413,14 @@ mod tests {
         let mut armored_both = Vec::new();
         {
             use sequoia_openpgp::armor::{Writer, Kind};
-            let mut w = Writer::new(&mut armored_both, Kind::PublicKey, &[]).unwrap();
+            let mut w = Writer::new(&mut armored_both, Kind::PublicKey).unwrap();
             tpk_0.serialize(&mut w).unwrap();
             tpk_1.serialize(&mut w).unwrap();
             w.finalize().unwrap();
         }
         {
             use sequoia_openpgp::armor::{Writer, Kind};
-            let mut w = Writer::new(&mut armored_first, Kind::PublicKey, &[]).unwrap();
+            let mut w = Writer::new(&mut armored_first, Kind::PublicKey).unwrap();
             tpk_0.serialize(&mut w).unwrap();
             w.finalize().unwrap();
         }
