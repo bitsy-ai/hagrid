@@ -434,26 +434,26 @@ msgstr "Anahtarsız adres: {address}"
 msgid "A request has already been sent for this address recently."
 msgstr "Bu adres için bir istek kısa bir süre önce zaten gönderilmişti."
 
-#: src/web/vks.rs:112
+#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr "Anahtar verisi çözümlemesi başarısız oldu."
 
-#: src/web/vks.rs:121
+#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr "Eyvah! Lütfen gizli anahtarınızı yüklemeyin!"
 
-#: src/web/vks.rs:134
+#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr "Anahtar yüklenmedi."
 
-#: src/web/vks.rs:178
+#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr "Yüklenen anahtar işlenirken bir hata oluştu."
 
-#: src/web/vks.rs:248
+#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr "Yükleme oturumunun süresi doldu. Lütfen tekrar deneyin."
 
-#: src/web/vks.rs:285
+#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "Geçersiz doğrulama bağlantısı."

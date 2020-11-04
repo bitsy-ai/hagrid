@@ -143,7 +143,7 @@ impl MyResponse {
             })
     }
 
-    pub fn ise(e: failure::Error) -> Self {
+    pub fn ise(e: anyhow::Error) -> Self {
         eprintln!("Internal error: {:?}", e);
         let ctx = templates::FiveHundred {
             internal_error: e.to_string(),
@@ -154,7 +154,7 @@ impl MyResponse {
         MyResponse::ServerError(Template::render("500", ctx))
     }
 
-    pub fn bad_request(template: &'static str, e: failure::Error) -> Self {
+    pub fn bad_request(template: &'static str, e: anyhow::Error) -> Self {
         let ctx = templates::Error { error: format!("{}", e) };
         let context_json = serde_json::to_value(ctx).unwrap();
         MyResponse::BadRequest(HagridTemplate(template, context_json))
@@ -361,10 +361,10 @@ fn errors(
     template: String,
 ) -> Result<Custom<Template>> {
     if !template.chars().all(|x| x == '-' || char::is_ascii_alphabetic(&x)) {
-        return Err(failure::err_msg("bad request"));
+        return Err(anyhow!("bad request"));
     }
     let status_code = Status::from_code(code)
-        .ok_or(failure::err_msg("bad request"))?;
+        .ok_or(anyhow!("bad request"))?;
     let response_body = Template::render(
         format!("errors/{}-{}", code, template),
         templates::HagridLayout::new(templates::Bare{dummy: ()}, i18n, origin)

@@ -1,10 +1,10 @@
-use failure::Fallible as Result;
+use openpgp::Result;
 use std::convert::TryFrom;
 
 use openpgp::{
     Cert,
-    cert::components::ComponentBundle,
-    RevocationStatus,
+    cert::amalgamation::ComponentAmalgamation,
+    types::RevocationStatus,
     armor::{Writer, Kind},
     packet::UserID,
     serialize::Serialize as OpenPgpSerialize,
@@ -13,9 +13,7 @@ use openpgp::{
 
 use Email;
 
-lazy_static! {
-    pub static ref POLICY: StandardPolicy = StandardPolicy::new();
-}
+pub const POLICY: StandardPolicy = StandardPolicy::new();
 
 pub fn is_status_revoked(status: RevocationStatus) -> bool {
     match status {
@@ -28,7 +26,7 @@ pub fn is_status_revoked(status: RevocationStatus) -> bool {
 pub fn tpk_to_string(tpk: &Cert) -> Result<Vec<u8>> {
     let mut buf = Vec::new();
     {
-        let mut armor_writer = Writer::new(&mut buf, Kind::PublicKey, &[][..])?;
+        let mut armor_writer = Writer::new(&mut buf, Kind::PublicKey)?;
         tpk.serialize(&mut armor_writer)?;
         armor_writer.finalize()?;
     }
@@ -42,7 +40,7 @@ pub fn tpk_clean(tpk: &Cert) -> Result<Cert> {
 
     // The primary key and related signatures.
     let pk_bundle = tpk.primary_key().bundle();
-    acc.push(pk_bundle.key().clone().mark_role_primary().into());
+    acc.push(pk_bundle.key().clone().into());
     for s in pk_bundle.self_signatures() { acc.push(s.clone().into()) }
     for s in pk_bundle.self_revocations()  { acc.push(s.clone().into()) }
     for s in pk_bundle.other_revocations() { acc.push(s.clone().into()) }
@@ -56,20 +54,20 @@ pub fn tpk_clean(tpk: &Cert) -> Result<Cert> {
     }
 
     // Updates for UserIDs fulfilling `filter`.
-    for uidb in tpk.userids().bundles() {
+    for uidb in tpk.userids() {
         acc.push(uidb.userid().clone().into());
         for s in uidb.self_signatures()   { acc.push(s.clone().into()) }
         for s in uidb.self_revocations()  { acc.push(s.clone().into()) }
         for s in uidb.other_revocations() { acc.push(s.clone().into()) }
     }
 
-    Cert::from_packet_pile(acc.into())
+    Cert::from_packets(acc.into_iter())
 }
 
 /// Filters the Cert, keeping only UserIDs that aren't revoked, and whose emails match the given list
 pub fn tpk_filter_alive_emails(tpk: &Cert, emails: &[Email]) -> Result<Cert> {
     tpk_filter_userids(tpk, |uid| {
-        if is_status_revoked(uid.revoked(&*POLICY, None)) {
+        if is_status_revoked(uid.revocation_status(&POLICY, None)) {
             false
         } else if let Ok(email) = Email::try_from(uid.userid()) {
             emails.contains(&email)
@@ -82,7 +80,7 @@ pub fn tpk_filter_alive_emails(tpk: &Cert, emails: &[Email]) -> Result<Cert> {
 /// Filters the Cert, keeping only those UserIDs that fulfill the
 /// predicate `filter`.
 pub fn tpk_filter_userids<F>(tpk: &Cert, filter: F) -> Result<Cert>
-    where F: Fn(&ComponentBundle<UserID>) -> bool
+    where F: Fn(&ComponentAmalgamation<UserID>) -> bool
 {
     // Iterate over the Cert, pushing packets we want to merge
     // into the accumulator.
@@ -90,7 +88,7 @@ pub fn tpk_filter_userids<F>(tpk: &Cert, filter: F) -> Result<Cert>
 
     // The primary key and related signatures.
     let pk_bundle = tpk.primary_key().bundle();
-    acc.push(pk_bundle.key().clone().mark_role_primary().into());
+    acc.push(pk_bundle.key().clone().into());
     for s in pk_bundle.self_signatures() { acc.push(s.clone().into()) }
     for s in pk_bundle.certifications()    { acc.push(s.clone().into()) }
     for s in pk_bundle.self_revocations()  { acc.push(s.clone().into()) }
@@ -106,9 +104,9 @@ pub fn tpk_filter_userids<F>(tpk: &Cert, filter: F) -> Result<Cert>
     }
 
     // Updates for UserIDs fulfilling `filter`.
-    for uidb in tpk.userids().bundles() {
+    for uidb in tpk.userids() {
         // Only include userids matching filter
-        if filter(uidb) {
+        if filter(&uidb) {
             acc.push(uidb.userid().clone().into());
             for s in uidb.self_signatures()   { acc.push(s.clone().into()) }
             for s in uidb.certifications()    { acc.push(s.clone().into()) }
@@ -117,5 +115,5 @@ pub fn tpk_filter_userids<F>(tpk: &Cert, filter: F) -> Result<Cert>
         }
     }
 
-    Cert::from_packet_pile(acc.into())
+    Cert::from_packets(acc.into_iter())
 }

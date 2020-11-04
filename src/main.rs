@@ -1,7 +1,9 @@
 #![feature(proc_macro_hygiene, plugin, decl_macro)]
 #![recursion_limit = "1024"]
 
-use failure::Fallible as Result;
+#[macro_use]
+extern crate anyhow;
+use anyhow::Result as Result;
 
 #[macro_use]
 extern crate serde_derive;
@@ -34,11 +36,11 @@ mod template_helpers;
 
 fn main() {
     if let Err(e) = web::serve() {
-        let mut cause = e.as_fail();
-        eprint!("{}", cause);
-        while let Some(c) = cause.cause() {
+        eprint!("{}", e);
+        let mut cause = e.source();
+        while let Some(c) = cause {
             eprint!(":\n  {}", c);
-            cause = c;
+            cause = c.source();
         }
         eprintln!();
 

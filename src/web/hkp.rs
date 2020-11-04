@@ -254,7 +254,7 @@ pub fn pks_internal_index(
 
 fn key_to_hkp_index(db: rocket::State<KeyDatabase>, query: Query)
                         -> MyResponse {
-    use sequoia_openpgp::RevocationStatus;
+    use sequoia_openpgp::types::RevocationStatus;
     use sequoia_openpgp::policy::StandardPolicy;
 
     let tpk = match db.lookup(&query) {
@@ -269,7 +269,7 @@ fn key_to_hkp_index(db: rocket::State<KeyDatabase>, query: Query)
 
     let ctime = format!("{}", p.creation_time().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs());
     let is_rev =
-        if tpk.revoked(policy, None) != RevocationStatus::NotAsFarAsWeKnow {
+        if tpk.revocation_status(policy, None) != RevocationStatus::NotAsFarAsWeKnow {
             "r"
         } else {
             ""
@@ -288,16 +288,17 @@ fn key_to_hkp_index(db: rocket::State<KeyDatabase>, query: Query)
             is_rev
     ));
 
-    for uid in tpk.userids().bundles() {
+    for uid in tpk.userids() {
         let uidstr = uid.userid().to_string();
         let u = Uri::percent_encode(&uidstr);
         let ctime = uid
             .binding_signature(policy, None)
+            .ok()
             .and_then(|x| x.signature_creation_time())
             .and_then(|time| time.duration_since(SystemTime::UNIX_EPOCH).ok())
             .map(|x| format!("{}", x.as_secs()))
             .unwrap_or_default();
-        let is_rev = if uid.revoked(policy, None)
+        let is_rev = if uid.revocation_status(policy, None)
             != RevocationStatus::NotAsFarAsWeKnow
             {
                 "r"

@@ -435,26 +435,26 @@ msgstr "Brak klucza dla adresu: {address}"
 msgid "A request has already been sent for this address recently."
 msgstr "Zapytanie o ten adres zostało niedawno wysłane."
 
-#: src/web/vks.rs:112
+#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr "Przetwarzanie danych klucza się nie powiodło."
 
-#: src/web/vks.rs:121
+#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr "Ups, nie wysyłaj kluczy prywatnych!"
 
-#: src/web/vks.rs:134
+#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr "Klucz nie został wysłany."
 
-#: src/web/vks.rs:178
+#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr "Błąd przetwarzania wysłanego klucza."
 
-#: src/web/vks.rs:248
+#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr "Sesja wysyłania wygasła. Spróbuj ponownie."
 
-#: src/web/vks.rs:285
+#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "Nieprawidłowy link weryfikacyjny."

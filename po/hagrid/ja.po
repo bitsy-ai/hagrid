@@ -435,26 +435,26 @@ msgstr "このアドレスに対する鍵がありません: {address}"
 msgid "A request has already been sent for this address recently."
 msgstr "最近、このアドレスへリクエストがすでに送信されています。"
 
-#: src/web/vks.rs:112
+#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr "鍵データのパーズが失敗しました。"
 
-#: src/web/vks.rs:121
+#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr "あらら、秘密鍵をアップロードしないでください!"
 
-#: src/web/vks.rs:134
+#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr "鍵はアップロードされませんでした。"
 
-#: src/web/vks.rs:178
+#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr "アップロードされた鍵の処理に失敗しました。"
 
-#: src/web/vks.rs:248
+#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr "アップロードのセッションが時間切れです。もう一度試してください。"
 
-#: src/web/vks.rs:285
+#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "無効な検証のリンクです。"

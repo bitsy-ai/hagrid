@@ -308,7 +308,6 @@ impl Filesystem {
     ) -> Result<()> {
         use walkdir::WalkDir;
         use std::fs;
-        use failure::format_err;
 
         for entry in WalkDir::new(checks_dir) {
             let entry = entry?;
@@ -460,7 +459,7 @@ impl Database for Filesystem {
              if !link_fpr_target.ends_with(&path_published) {
                 info!("Fingerprint points to different key for {} (expected {:?} to be suffix of {:?})",
                     fpr, &path_published, &link_fpr_target);
-                Err(failure::err_msg(format!("Fingerprint collision for key {}", fpr)))?;
+                Err(anyhow!(format!("Fingerprint collision for key {}", fpr)))?;
              }
         }
 
@@ -468,7 +467,7 @@ impl Database for Filesystem {
             if !link_keyid_target.ends_with(&path_published) {
                 info!("KeyID points to different key for {} (expected {:?} to be suffix of {:?})",
                     fpr, &path_published, &link_keyid_target);
-                Err(failure::err_msg(format!("KeyID collision for key {}", fpr)))?;
+                Err(anyhow!(format!("KeyID collision for key {}", fpr)))?;
             }
         }
 
@@ -606,8 +605,6 @@ impl Database for Filesystem {
     /// Note that this operation may take a long time, and is
     /// generally only useful for testing.
     fn check_consistency(&self) -> Result<()> {
-        use failure::format_err;
-
         // A cache of all Certs, for quick lookups.
         let mut tpks = HashMap::new();
 
@@ -646,9 +643,10 @@ impl Database for Filesystem {
         // check that all subkeys are linked
         self.perform_checks(&self.keys_dir_published, &mut tpks,
             |_, tpk, primary_fp| {
+                let policy = &POLICY;
                 let fingerprints = tpk
                     .keys()
-                    .with_policy(&*POLICY, None)
+                    .with_policy(policy, None)
                     .for_certification()
                     .for_signing()
                     .map(|amalgamation| amalgamation.key().fingerprint())

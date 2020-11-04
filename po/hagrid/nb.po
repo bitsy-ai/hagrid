@@ -439,26 +439,26 @@ msgstr "Ingen nøkler for adressen {address}"
 msgid "A request has already been sent for this address recently."
 msgstr "En forespørsel har allerede blitt sendt for denne adressen nylig."
 
-#: src/web/vks.rs:112
+#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr "Kunne ikke analysere innholdet i nøkkelen."
 
-#: src/web/vks.rs:121
+#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr "Hopp sann! Vennligst ikke last opp hemmelige nøkler!"
 
-#: src/web/vks.rs:134
+#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr "Ingen nøkkel er lastet opp."
 
-#: src/web/vks.rs:178
+#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr "Kunne ikke behandle den opplastede nøkkelen."
 
-#: src/web/vks.rs:248
+#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr "Opplastingsøkten er utgått. Vennligst prøv på nytt."
 
-#: src/web/vks.rs:285
+#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "Bekreftelseslenken er ugyldig."

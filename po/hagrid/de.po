@@ -436,26 +436,26 @@ msgstr "Kein Schlüssel gefunden für {address}"
 msgid "A request has already been sent for this address recently."
 msgstr "Eine E-Mail für diesen Schlüssel wurde erst kürzlich versandt."
 
-#: src/web/vks.rs:112
+#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr "Fehler bei Verarbeitung des Schlüssel-Materials."
 
-#: src/web/vks.rs:121
+#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr "Ups, bitte keine geheimen Schlüssel hochladen!"
 
-#: src/web/vks.rs:134
+#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr "Es wurde kein Schlüssel hochgeladen."
 
-#: src/web/vks.rs:178
+#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr "Fehler bei Verarbeitung des hochgeladenen Schlüssels."
 
-#: src/web/vks.rs:248
+#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr "Zeitlimit beim Hochladen abgelaufen. Bitte versuch es erneut."
 
-#: src/web/vks.rs:285
+#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "Ungültiger Bestätigungs-Link."

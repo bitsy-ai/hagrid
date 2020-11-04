@@ -9,15 +9,13 @@ use openpgp::serialize::SerializeInto;
 
 use chrono::prelude::Utc;
 
-extern crate failure;
-use failure::Error;
-use failure::Fallible as Result;
+#[macro_use]
+extern crate anyhow;
+use anyhow::Result;
 extern crate fs2;
 extern crate idna;
 #[macro_use]
 extern crate log;
-#[macro_use]
-extern crate lazy_static;
 extern crate pathdiff;
 extern crate rand;
 extern crate serde;
@@ -67,7 +65,7 @@ pub enum Query {
 }
 
 impl FromStr for Query {
-    type Err = failure::Error;
+    type Err = anyhow::Error;
 
     fn from_str(term: &str) -> Result<Self> {
         use self::Query::*;
@@ -75,8 +73,7 @@ impl FromStr for Query {
         let looks_like_short_key_id = !term.contains('@') &&
             (term.starts_with("0x") && term.len() < 16 || term.len() == 8);
         if looks_like_short_key_id {
-            return Err(failure::err_msg(
-                    "Search by Short Key ID is not supported, sorry!"));
+            return Err(anyhow!("Search by Short Key ID is not supported, sorry!"));
         }
         if let Ok(fp) = Fingerprint::from_str(term) {
             Ok(ByFingerprint(fp))
@@ -85,7 +82,7 @@ impl FromStr for Query {
         } else if let Ok(email) = Email::from_str(term) {
             Ok(ByEmail(email))
         } else {
-            Err(failure::err_msg("Invalid search query!"))
+            Err(anyhow!("Invalid search query!"))
         }
     }
 }
@@ -217,14 +214,14 @@ pub trait Database: Sync + Send {
             (new_tpk, false)
         };
 
-        let is_revoked = is_status_revoked(full_tpk_new.revoked(&*POLICY, None));
+        let is_revoked = is_status_revoked(full_tpk_new.revocation_status(&POLICY, None));
 
         let is_ok = is_revoked ||
             full_tpk_new.keys().subkeys().next().is_some() ||
             full_tpk_new.userids().next().is_some();
         if !is_ok {
             self.write_to_quarantine(&fpr_primary, &tpk_to_string(&full_tpk_new)?)?;
-            return Err(failure::err_msg("Not a well-formed key!"));
+            return Err(anyhow!("Not a well-formed key!"));
         }
 
         let published_tpk_old = self
@@ -240,7 +237,6 @@ pub trait Database: Sync + Send {
 
         let mut email_status: Vec<_> = full_tpk_new
             .userids()
-            .bundles()
             .map(|binding| {
                 if let Ok(email) = Email::try_from(binding.userid()) {
                     Some((binding, email))
@@ -251,7 +247,7 @@ pub trait Database: Sync + Send {
             .flatten()
             .filter(|(binding, email)| known_uids.contains(binding.userid()) || published_emails.contains(email))
             .flat_map(|(binding, email)| {
-                if is_status_revoked(binding.revoked(&*POLICY, None)) {
+                if is_status_revoked(binding.revocation_status(&POLICY, None)) {
                     Some((email, EmailAddressStatus::Revoked))
                 } else if !is_revoked && published_emails.contains(&email) {
                     Some((email, EmailAddressStatus::Published))
@@ -281,8 +277,7 @@ pub trait Database: Sync + Send {
             .filter(|email| {
                 let has_unrevoked_userid = published_tpk_new
                     .userids()
-                    .bundles()
-                    .filter(|binding| !is_status_revoked(binding.revoked(&*POLICY, None)))
+                    .filter(|binding| !is_status_revoked(binding.revocation_status(&POLICY, None)))
                     .map(|binding| binding.userid())
                     .map(|uid| Email::try_from(uid).ok())
                     .flatten()
@@ -358,10 +353,10 @@ pub trait Database: Sync + Send {
 
     fn get_tpk_status(&self, fpr_primary: &Fingerprint, known_addresses: &[Email]) -> Result<TpkStatus> {
         let tpk_full = self.by_fpr_full(&fpr_primary)
-            .ok_or_else(|| failure::err_msg("Key not in database!"))
+            .ok_or_else(|| anyhow!("Key not in database!"))
             .and_then(|bytes| Cert::from_bytes(bytes.as_bytes()))?;
 
-        let is_revoked = is_status_revoked(tpk_full.revoked(&*POLICY, None));
+        let is_revoked = is_status_revoked(tpk_full.revocation_status(&POLICY, None));
 
         let unparsed_uids = tpk_full
             .userids()
@@ -379,13 +374,12 @@ pub trait Database: Sync + Send {
 
         let mut email_status: Vec<_> = tpk_full
             .userids()
-            .bundles()
             .flat_map(|binding| {
                 let uid = binding.userid();
                 if let Ok(email) = Email::try_from(uid) {
                     if !known_addresses.contains(&email) {
                         None
-                    } else if is_status_revoked(binding.revoked(&*POLICY, None)) {
+                    } else if is_status_revoked(binding.revocation_status(&POLICY, None)) {
                         Some((email, EmailAddressStatus::Revoked))
                     } else if published_uids.contains(uid) {
                         Some((email, EmailAddressStatus::Published))
@@ -424,7 +418,7 @@ pub trait Database: Sync + Send {
         self.nolock_unlink_email_if_other(fpr_primary, email_new)?;
 
         let full_tpk = self.by_fpr_full(&fpr_primary)
-            .ok_or_else(|| failure::err_msg("Key not in database!"))
+            .ok_or_else(|| anyhow!("Key not in database!"))
             .and_then(|bytes| Cert::from_bytes(bytes.as_bytes()))?;
 
         let published_uids_old: Vec<UserID> = self
@@ -455,7 +449,7 @@ pub trait Database: Sync + Send {
             .map(|binding| Email::try_from(binding.userid()))
             .flatten()
             .any(|email| email == *email_new) {
-                return Err(failure::err_msg("Requested UserID not found!"));
+                return Err(anyhow!("Requested UserID not found!"));
         }
 
         let published_tpk_clean = tpk_clean(&published_tpk_new)?;
@@ -519,7 +513,7 @@ pub trait Database: Sync + Send {
         email_remove: impl Fn(&UserID) -> bool,
     ) -> Result<()> {
         let published_tpk_old = self.by_fpr(&fpr_primary)
-            .ok_or_else(|| failure::err_msg("Key not in database!"))
+            .ok_or_else(|| anyhow!("Key not in database!"))
             .and_then(|bytes| Cert::from_bytes(bytes.as_bytes()))?;
 
         let published_emails_old: Vec<Email> = published_tpk_old
@@ -584,7 +578,7 @@ pub trait Database: Sync + Send {
     ) -> Result<RegenerateResult> {
         let tpk = self.by_primary_fpr(&fpr_primary)
             .and_then(|bytes| Cert::from_bytes(bytes.as_bytes()).ok())
-            .ok_or_else(|| failure::err_msg("Key not in database!"))?;
+            .ok_or_else(|| anyhow!("Key not in database!"))?;
 
         let published_emails: Vec<Email> = tpk
             .userids()
@@ -665,16 +659,15 @@ fn tpk_get_emails(cert: &Cert) -> Vec<Email> {
 
 pub fn tpk_get_linkable_fprs(tpk: &Cert) -> Vec<Fingerprint> {
     let ref signing_capable = KeyFlags::empty()
-        .set_signing(true)
-        .set_certification(true);
+        .set_signing()
+        .set_certification();
     let ref fpr_primary = Fingerprint::try_from(tpk.fingerprint()).unwrap();
     tpk
             .keys()
-            .bundles()
             .into_iter()
             .flat_map(|bundle| {
                 Fingerprint::try_from(bundle.key().fingerprint())
-                    .map(|fpr| (fpr, bundle.binding_signature(&*POLICY, None).and_then(|sig| sig.key_flags())))
+                    .map(|fpr| (fpr, bundle.binding_signature(&POLICY, None).ok().and_then(|sig| sig.key_flags())))
             })
             .filter(|(fpr, flags)| {
                 fpr == fpr_primary ||

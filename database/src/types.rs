@@ -5,7 +5,8 @@ use std::str::FromStr;
 
 use openpgp::packet::UserID;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use {Error, Result};
+use anyhow::Error;
+use {Result};
 
 /// Holds a normalized email address.
 ///
@@ -37,8 +38,7 @@ impl TryFrom<&UserID> for Email {
 
             // Normalize Unicode in domains.
             let domain = idna::domain_to_ascii(domain)
-                .map_err(|e| failure::format_err!(
-                    "punycode conversion failed: {:?}", e))?;
+                .map_err(|e| anyhow!("punycode conversion failed: {:?}", e))?;
 
             // Join.
             let address = format!("{}@{}", localpart, domain);
@@ -53,8 +53,7 @@ impl TryFrom<&UserID> for Email {
 
             Ok(Email(address))
         } else {
-            Err(failure::err_msg(
-                format!("malformed email address: '{:?}'", uid.value())))
+            Err(anyhow!("malformed email address: '{:?}'", uid.value()))
         }
     }
 }
@@ -83,7 +82,8 @@ impl TryFrom<sequoia_openpgp::Fingerprint> for Fingerprint {
         match fpr {
             sequoia_openpgp::Fingerprint::V4(a) => Ok(Fingerprint(a)),
             sequoia_openpgp::Fingerprint::Invalid(_) =>
-                Err(failure::err_msg("invalid fingerprint")),
+                Err(anyhow!("invalid fingerprint")),
+            _ => Err(anyhow!("unknown fingerprint type")),
         }
     }
 }
@@ -124,7 +124,8 @@ impl FromStr for Fingerprint {
         match sequoia_openpgp::Fingerprint::from_hex(s)? {
             sequoia_openpgp::Fingerprint::V4(a) => Ok(Fingerprint(a)),
             sequoia_openpgp::Fingerprint::Invalid(_) =>
-                Err(failure::format_err!("'{}' is not a valid fingerprint", s))
+                Err(anyhow!("'{}' is not a valid fingerprint", s)),
+            _ => Err(anyhow!("unknown fingerprint type")),
         }
     }
 }
@@ -139,8 +140,9 @@ impl TryFrom<sequoia_openpgp::Fingerprint> for KeyID {
         match fpr {
             sequoia_openpgp::Fingerprint::V4(a) => Ok(Fingerprint(a).into()),
             sequoia_openpgp::Fingerprint::Invalid(_) => {
-                Err(failure::err_msg("invalid fingerprint"))
-            }
+                Err(anyhow!("invalid fingerprint"))
+            },
+            _ => Err(anyhow!("unknown fingerprint type")),
         }
     }
 }
@@ -177,7 +179,8 @@ impl FromStr for KeyID {
         match sequoia_openpgp::KeyID::from_hex(s)? {
             sequoia_openpgp::KeyID::V4(a) => Ok(KeyID(a)),
             sequoia_openpgp::KeyID::Invalid(_) =>
-                Err(failure::format_err!("'{}' is not a valid long key ID", s))
+                Err(anyhow!("'{}' is not a valid long key ID", s)),
+            _ => Err(anyhow!("unknown keyid type")),
         }
     }
 }

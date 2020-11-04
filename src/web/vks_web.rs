@@ -1,5 +1,4 @@
-use failure;
-use failure::Fallible as Result;
+use crate::Result;
 
 use multipart::server::save::Entries;
 use multipart::server::save::SaveResult::*;
@@ -105,7 +104,7 @@ impl MyResponse {
             UploadResponse::OkMulti { key_fprs } =>
                 MyResponse::plain(format!("Uploaded {} keys. For verification, please upload keys individually.\n", key_fprs.len())),
             UploadResponse::Error(error) => MyResponse::bad_request(
-                "400-plain", failure::err_msg(error)),
+                "400-plain", anyhow!(error)),
         }
     }
 
@@ -116,7 +115,7 @@ impl MyResponse {
             UploadResponse::OkMulti { key_fprs } =>
                 Self::upload_ok_multi(key_fprs),
             UploadResponse::Error(error) => MyResponse::bad_request(
-                "upload/upload", failure::err_msg(error)),
+                "upload/upload", anyhow!(error)),
         }
     }
 
@@ -217,7 +216,7 @@ pub fn process_post_form_data(
     let (_, boundary) = cont_type
         .params()
         .find(|&(k, _)| k == "boundary")
-        .ok_or_else(|| failure::err_msg("`Content-Type: multipart/form-data` \
+        .ok_or_else(|| anyhow!("`Content-Type: multipart/form-data` \
                                       boundary param not provided"))?;
 
     process_upload(&db, &tokens_stateless, &rate_limiter, &i18n, data, boundary)
@@ -304,7 +303,7 @@ pub fn quick_upload(
 
     let mut buf = Vec::default();
     if let Err(error) = std::io::copy(&mut data.open().take(UPLOAD_LIMIT), &mut buf) {
-        return MyResponse::bad_request("400-plain", failure::err_msg(error));
+        return MyResponse::bad_request("400-plain", anyhow!(error));
     }
 
     MyResponse::upload_response_quick(
@@ -367,7 +366,7 @@ pub fn process_post_form(
     for item in FormItems::from(&*String::from_utf8_lossy(&buf)) {
         let (key, value) = item.key_value();
         let decoded_value = value.url_decode().or_else(|_| {
-            Err(failure::err_msg(
+            Err(anyhow!(
                 "`Content-Type: application/x-www-form-urlencoded` \
                     not valid"))
         })?;
@@ -386,7 +385,7 @@ pub fn process_post_form(
         }
     }
 
-    Err(failure::err_msg("No keytext found"))
+    Err(anyhow!("No keytext found"))
 }
 
 
@@ -424,8 +423,8 @@ fn process_multipart(
             let reader = ent[0].data.readable()?;
             Ok(vks::process_key(db, i18n, tokens_stateless, rate_limiter, reader))
         }
-        Some(_) => Err(failure::err_msg("Multiple keytexts found")),
-        None => Err(failure::err_msg("No keytext found")),
+        Some(_) => Err(anyhow!("Multiple keytexts found")),
+        None => Err(anyhow!("No keytext found")),
     }
 }
 
@@ -488,9 +487,9 @@ pub fn verify_confirm(
         },
         PublishResponse::Error(error) => {
             let error_msg = if rate_limiter.action_check(rate_limit_id) {
-                failure::err_msg(error)
+                anyhow!(error)
             } else {
-                failure::err_msg(i18n!(i18n.catalog, "This address has already been verified."))
+                anyhow!(i18n!(i18n.catalog, "This address has already been verified."))
             };
             MyResponse::bad_request("400", error_msg)
         }

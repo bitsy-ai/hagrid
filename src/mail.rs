@@ -1,6 +1,6 @@
 use std::path::{PathBuf, Path};
 
-use failure;
+use anyhow;
 use handlebars::Handlebars;
 use lettre::{Transport as LettreTransport, SendmailTransport, file::FileTransport};
 use lettre::builder::{EmailBuilder, PartBuilder, Mailbox, MimeMultipartType};
@@ -77,7 +77,7 @@ impl Service {
         let templates = template_helpers::load_handlebars(template_dir)?;
         let domain =
             url::Url::parse(base_uri)
-            ?.host_str().ok_or_else(|| failure::err_msg("No host in base-URI"))
+            ?.host_str().ok_or_else(|| anyhow!("No host in base-URI"))
             ?.to_string();
         Ok(Self { from: from.into(), domain, templates, transport })
     }
@@ -208,10 +208,10 @@ impl Service {
     ) -> Result<(String, String)> {
         let html = self.templates.render(&format!("{}/{}.htm", locale, template), &ctx)
             .or_else(|_| self.templates.render(&format!("{}.htm", template), &ctx))
-            .map_err(|_| failure::err_msg("Email template failed to render"))?;
+            .map_err(|_| anyhow!("Email template failed to render"))?;
         let txt = self.templates.render(&format!("{}/{}.txt", locale, template), &ctx)
             .or_else(|_| self.templates.render(&format!("{}.txt", template), &ctx))
-            .map_err(|_| failure::err_msg("Email template failed to render"))?;
+            .map_err(|_| anyhow!("Email template failed to render"))?;
 
         Ok((html, txt))
     }

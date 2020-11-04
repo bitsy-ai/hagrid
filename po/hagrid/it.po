@@ -436,26 +436,26 @@ msgstr "Nessuna chiave per l'indirizzo: {address}"
 msgid "A request has already been sent for this address recently."
 msgstr "Una richiesta per questo indirizzo è già stata inviata recentemente."
 
-#: src/web/vks.rs:112
+#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr "Impossibile elaborare i dati della chiave."
 
-#: src/web/vks.rs:121
+#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr "Ooops, non caricare chiavi segrete!"
 
-#: src/web/vks.rs:134
+#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr "Nessuna chaive caricata."
 
-#: src/web/vks.rs:178
+#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr "Errore nell'elaborazione della chiave caricata."
 
-#: src/web/vks.rs:248
+#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr "Sessione di caricamento scaduta. Si prega di riprovare."
 
-#: src/web/vks.rs:285
+#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "Link di verifica non valido."

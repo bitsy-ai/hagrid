@@ -3,8 +3,9 @@
 use std::convert::TryInto;
 use std::path::PathBuf;
 
-extern crate failure;
-use failure::Fallible as Result;
+extern crate anyhow;
+use anyhow::Result as Result;
+
 extern crate structopt;
 use structopt::StructOpt;
 
@@ -36,11 +37,11 @@ pub struct Opt {
 
 fn main() {
     if let Err(e) = real_main() {
-        let mut cause = e.as_fail();
-        eprint!("{}", cause);
-        while let Some(c) = cause.cause() {
+        eprint!("{}", e);
+        let mut cause = e.source();
+        while let Some(c) = cause {
             eprint!(":\n  {}", c);
-            cause = c;
+            cause = c.source();
         }
         eprintln!();
         ::std::process::exit(2);
@@ -65,7 +66,7 @@ fn delete(db: &KeyDatabase, query: &Query, all_bindings: bool, mut all: bool)
     }
 
     let tpk = db.lookup(&query)?.ok_or_else(
-        || failure::format_err!("No TPK matching {:?}", query))?;
+        || anyhow::format_err!("No TPK matching {:?}", query))?;
 
     let fp: database::types::Fingerprint = tpk.fingerprint().try_into()?;
     let mut results = Vec::new();

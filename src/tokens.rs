@@ -40,19 +40,19 @@ impl Service {
     pub fn check<T>(&self, token_encoded: &str) -> Result<T>
             where T: StatelessSerializable {
         let token_sealed = base64::decode_config(&token_encoded, base64::URL_SAFE_NO_PAD)
-            .map_err(|_| failure::err_msg("invalid b64"))?;
+            .map_err(|_| anyhow!("invalid b64"))?;
         let token_str = self.sealed_state.unseal(token_sealed)
-            .map_err(|_| failure::err_msg("failed to validate"))?;
+            .map_err(|_| anyhow!("failed to validate"))?;
         let token: Token = serde_json::from_str(&token_str)
-            .map_err(|_| failure::err_msg("failed to deserialize"))?;
+            .map_err(|_| anyhow!("failed to deserialize"))?;
 
         let elapsed = current_time() - token.creation;
         if elapsed > self.validity {
-            Err(failure::err_msg("Token has expired!"))?;
+            Err(anyhow!("Token has expired!"))?;
         }
 
         let payload: T = serde_json::from_str(&token.payload)
-            .map_err(|_| failure::err_msg("failed to deserialize payload"))?;
+            .map_err(|_| anyhow!("failed to deserialize payload"))?;
 
         Ok(payload)
     }

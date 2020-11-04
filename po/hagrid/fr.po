@@ -443,26 +443,26 @@ msgstr "Il n’y a pas de clé pour cette adresse : {address}"
 msgid "A request has already been sent for this address recently."
 msgstr "Une demande a déjà été envoyée récemment pour cette adresse."
 
-#: src/web/vks.rs:112
+#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr "Échec d’analyse des données de la clé."
 
-#: src/web/vks.rs:121
+#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr "Attention : Veuillez ne pas téléverser de clés secrètes !"
 
-#: src/web/vks.rs:134
+#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr "Aucune clé n’a été téléversée."
 
-#: src/web/vks.rs:178
+#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr "Erreur de traitement de la clé téléversée."
 
-#: src/web/vks.rs:248
+#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr "La session de téléversement est expirée. Veuillez ressayer."
 
-#: src/web/vks.rs:285
+#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "Le lien de confirmation est invalide."

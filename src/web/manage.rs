@@ -3,7 +3,7 @@ use rocket::State;
 use rocket::request::Form;
 use rocket_i18n::I18n;
 
-use failure::Fallible as Result;
+use crate::Result;
 
 use gettext_macros::i18n;
 
@@ -143,7 +143,7 @@ pub fn vks_manage_post(
 
     if !email_exists {
         return MyResponse::ise(
-           failure::err_msg("Internal error: address check failed!"));
+           anyhow!("Internal error: address check failed!"));
     }
 
     if !rate_limiter.action_perform(format!("manage-{}", &email)) {

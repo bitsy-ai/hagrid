@@ -15,10 +15,10 @@ members = [
 [dependencies]
 hagrid-database = { path = "database" }
 chrono = "0.4.10"
-failure = "0.1.5"
+anyhow = "1"
 rocket = "0"
 rocket_codegen = "0"
-sequoia-openpgp =  { version = "0.14", default-features = false }
+sequoia-openpgp =  { version = "0.20", default-features = false, features = ["crypto-nettle"] }
 multipart = "0"
 serde = "1.0"
 serde_derive = "1.0"

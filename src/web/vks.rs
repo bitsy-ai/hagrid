@@ -1,4 +1,4 @@
-use failure::Fallible as Result;
+use crate::Result;
 
 use crate::database::{Database, KeyDatabase, StatefulTokens, EmailAddressStatus, TpkStatus, ImportResult};
 use crate::database::types::{Fingerprint,Email};
@@ -12,6 +12,9 @@ use rocket_i18n::I18n;
 use gettext_macros::i18n;
 
 use sequoia_openpgp::Cert;
+use sequoia_openpgp::parse::{Parse, PacketParserBuilder, Dearmor};
+use sequoia_openpgp::cert::CertParser;
+use sequoia_openpgp::armor::ReaderMode;
 
 use std::io::Read;
 use std::convert::TryFrom;
@@ -98,17 +101,13 @@ pub fn process_key(
     rate_limiter: &RateLimiter,
     reader: impl Read,
 ) -> response::UploadResponse {
-    use sequoia_openpgp::parse::{Parse, PacketParserBuilder, Dearmor};
-    use sequoia_openpgp::cert::CertParser;
-    use sequoia_openpgp::armor::ReaderMode;
-
     // First, parse all Certs and error out if one fails.
     let parser = match PacketParserBuilder::from_reader(reader)
         .and_then(|ppb| {
-            ppb.dearmor(Dearmor::Auto(ReaderMode::VeryTolerant)).finalize()
+            ppb.dearmor(Dearmor::Auto(ReaderMode::VeryTolerant)).build()
         })
     {
-        Ok(ppr) => CertParser::from_packet_parser(ppr),
+        Ok(ppr) => CertParser::from(ppr),
         Err(_) => return UploadResponse::err(i18n!(i18n.catalog, "Parsing of key data failed.")),
     };
     let mut tpks = Vec::new();
@@ -244,7 +243,7 @@ fn check_tpk_state(
     token: &str,
 ) -> Result<(VerifyTpkState,TpkStatus)> {
     let verify_state = token_stateless.check::<VerifyTpkState>(token)
-        .map_err(|_| failure::err_msg(i18n!(
+        .map_err(|_| anyhow!(i18n!(
                     i18n.catalog,
                     "Upload session expired. Please try again."
                 )))?;

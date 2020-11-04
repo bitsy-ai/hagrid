@@ -31,16 +31,18 @@ pub fn debug_info(
         false,
         false,
         None,
+        |_| { None },
+        |_| { None },
         32 * 4 + 80,
     );
     match dump_result {
-        Ok(Kind::Cert) => {
+        Ok((Kind::Cert, _)) => {
             match String::from_utf8(result) {
                 Ok(dump_text) => MyResponse::plain(dump_text),
                 Err(e) => MyResponse::ise(e.into()),
             }
         },
-        Ok(_) => MyResponse::ise(failure::err_msg("Internal parsing error!")),
+        Ok(_) => MyResponse::ise(anyhow!("Internal parsing error!")),
         Err(e) => MyResponse::ise(e),
     }
 }
