@@ -5,8 +5,7 @@ use std::thread;
 use std::cmp::min;
 use std::sync::Arc;
 
-extern crate failure;
-use failure::Fallible as Result;
+use anyhow::Result;
 
 extern crate tempfile;
 
@@ -195,8 +194,7 @@ fn read_file_to_tpks(
 }
 
 fn import_key(db: &KeyDatabase, packets: Vec<Packet>) -> Result<ImportResult> {
-    let packet_pile = openpgp::PacketPile::from(packets);
-    openpgp::Cert::from_packet_pile(packet_pile)
+    openpgp::Cert::from_packets(packets.into_iter())
         .and_then(|tpk| {
             db.merge(tpk)
         })

@@ -5,8 +5,8 @@ authors = ["Vincent Breitmoser <look@my.amazin.horse>"]
 
 [dependencies]
 hagrid-database = { path = "../database" }
-failure = "0.1.5"
-sequoia-openpgp =  { version = "0.14", default-features = false }
+anyhow = "1"
+sequoia-openpgp =  { version = "0.20", default-features = false, features = ["crypto-nettle"] }
 multipart = "0"
 log = "0"
 rand = "0.6"

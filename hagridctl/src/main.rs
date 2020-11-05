@@ -1,8 +1,8 @@
 #![feature(proc_macro_hygiene, plugin, decl_macro)]
 #![recursion_limit = "1024"]
 
+extern crate anyhow;
 extern crate clap;
-extern crate failure;
 extern crate tempfile;
 extern crate sequoia_openpgp as openpgp;
 extern crate hagrid_database as database;
@@ -16,7 +16,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use failure::Fallible as Result;
+use anyhow::Result;
 
 use clap::{Arg, App, SubCommand};
 

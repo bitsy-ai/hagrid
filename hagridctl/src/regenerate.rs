@@ -1,4 +1,4 @@
-use failure::Fallible as Result;
+use anyhow::Result;
 
 use std::path::Path;
 use std::time::Instant;
