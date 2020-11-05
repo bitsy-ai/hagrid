@@ -9,14 +9,6 @@ file_filter = po/hagrid/<lang>.po
 trans.zh-Hans = po/hagrid/zh_Hans.po
 type = PO
 
-[hagrid.about-proofs]
-minimum_perc = 100
-source_file = templates-untranslated/about/proofs.html.hbs
-file_filter = templates-translated/<lang>/about/proofs.html.hbs
-trans.zh-Hans = templates-translated/zh_Hans/about/proofs.html.hbs
-source_lang = en
-type = HTML
-
 [hagrid.about-about]
 minimum_perc = 100
 source_file = templates-untranslated/about/about.html.hbs

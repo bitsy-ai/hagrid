@@ -348,11 +348,6 @@ fn stats() -> MyResponse {
     MyResponse::ok_bare("about/stats")
 }
 
-#[get("/about/proofs")]
-fn proofs() -> MyResponse {
-    MyResponse::ok_bare("about/proofs")
-}
-
 #[get("/errors/<code>/<template>")]
 fn errors(
     i18n: I18n,
@@ -391,7 +386,6 @@ fn rocket_factory(mut rocket: rocket::Rocket) -> Result<rocket::Rocket> {
         usage,
         files,
         stats,
-        proofs,
         errors,
         // VKSv1
         vks_api::vks_v1_by_email,
@@ -403,7 +397,6 @@ fn rocket_factory(mut rocket: rocket::Rocket) -> Result<rocket::Rocket> {
         vks_api::request_verify_fallback,
         // User interaction.
         vks_web::search,
-        vks_web::render_profile,
         vks_web::upload,
         vks_web::upload_post_form,
         vks_web::upload_post_form_data,
