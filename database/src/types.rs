@@ -40,6 +40,11 @@ impl TryFrom<&UserID> for Email {
             let domain = idna::domain_to_ascii(domain)
                 .map_err(|e| anyhow!("punycode conversion failed: {:?}", e))?;
 
+            // TODO this is a hotfix for a lettre vulnerability. remove once fixed upstream.
+            if localpart.starts_with("-") {
+                return Err(anyhow!("malformed email address: '{:?}'", uid.value()));
+            }
+
             // Join.
             let address = format!("{}@{}", localpart, domain);
 
@@ -204,5 +209,11 @@ mod tests {
                    "foo@xn--yp8h.example.org");
         assert_eq!(c("Foo@example.org").as_str(), "foo@example.org");
         assert_eq!(c("foo@EXAMPLE.ORG").as_str(), "foo@example.org");
+    }
+
+    #[test]
+    fn email_vuln() {
+        assert!(Email::from_str("foo <-@EXAMPLE.ORG>").is_err());
+        assert!(Email::from_str("-@EXAMPLE.ORG").is_err());
     }
 }
