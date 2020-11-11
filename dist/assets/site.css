@@ -110,6 +110,10 @@ a.brand {
   color: #050505;
 }
 
+.usage > h2 a, .usage > h2 a:visited {
+  color: #050505;
+}
+
 .usage h2 div {
   display: inline-block;
   width: 2.5em;
