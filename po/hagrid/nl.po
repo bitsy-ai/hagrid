@@ -1,0 +1,462 @@
+#
+# Translators:
+# Henk van der Helm <henk@nedwerk.net>, 2020
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: hagrid\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-06-15 16:33-0700\n"
+"PO-Revision-Date: 2019-09-27 18:05+0000\n"
+"Last-Translator: Henk van der Helm <henk@nedwerk.net>, 2020\n"
+"Language-Team: Dutch (https://www.transifex.com/otf/teams/102430/nl/)\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/mail.rs:107
+msgctxt "Subject for verification email"
+msgid "Verify {userid} for your key on {domain}"
+msgstr "Verifieer {userid} voor uw sleutel op {domein}"
+
+#: src/mail.rs:140
+msgctxt "Subject for manage email"
+msgid "Manage your key on {domain}"
+msgstr "Beheer uw sleutel op {domein}"
+
+#: src/gettext_strings.rs:4
+msgid "Error"
+msgstr "Fout"
+
+#: src/gettext_strings.rs:5
+msgid "Looks like something went wrong :("
+msgstr "Het lijkt erop dat er iets mis is gegaan :("
+
+#: src/gettext_strings.rs:6
+msgid "Error message: {{ internal_error }}"
+msgstr "Foutmelding: {{internal_error}}"
+
+#: src/gettext_strings.rs:7
+msgid "There was an error with your request:"
+msgstr "Er is een fout opgetreden bij uw verzoek:"
+
+#: src/gettext_strings.rs:8
+msgid "We found an entry for <span class=\"email\">{{ query }}</span>:"
+msgstr "We hebben een vermelding gevonden voor {{query}}:"
+
+#: src/gettext_strings.rs:9
+msgid ""
+"<strong>Hint:</strong> It's more convenient to use <span class=\"brand"
+"\">keys.openpgp.org</span> from your OpenPGP software.<br /> Take a look at "
+"our <a href=\"/about/usage\">usage guide</a> for details."
+msgstr ""
+"<strong>Tip:</strong> het is handiger om <span class=\"brand\">keys.openpgp."
+"org</span> te gebruiken vanuit uw OpenPGP-software.<br /> Bekijk onze <a "
+"href=\"/about/usage\">gebruikershandleiding</a> voor meer informatie."
+
+#: src/gettext_strings.rs:10
+msgid "debug info"
+msgstr "debug info"
+
+#: src/gettext_strings.rs:11
+msgid "Search by Email Address / Key ID / Fingerprint"
+msgstr "Zoeken op e-mailadres / sleutel-ID / vingerafdruk"
+
+#: src/gettext_strings.rs:12
+msgid "Search"
+msgstr "Zoek"
+
+#: src/gettext_strings.rs:13
+msgid ""
+"You can also <a href=\"/upload\">upload</a> or <a href=\"/manage\">manage</"
+"a> your key."
+msgstr ""
+"U kunt uw sleutel ook <a href=\"/upload\">uploaden</a> of <a href=\"/manage"
+"\">beheren</a>."
+
+#: src/gettext_strings.rs:14
+msgid "Find out more <a href=\"/about\">about this service</a>."
+msgstr "Lees meer over <a href=\"/about\">deze dienst</a>."
+
+#: src/gettext_strings.rs:15
+msgid "News:"
+msgstr "Nieuws:"
+
+#: src/gettext_strings.rs:16
+msgid ""
+"<a href=\"/about/news#2019-09-12-three-months-later\">Three months after "
+"launch ✨</a> (2019-09-12)"
+msgstr ""
+"<a href=\"/about/news#2019-09-12-three-months-later\">Drie maanden na "
+"lancering ✨</a> (12-09-2019)"
+
+#: src/gettext_strings.rs:17
+msgid "v{{ version }} built from"
+msgstr "v{{version}} gebouwd van"
+
+#: src/gettext_strings.rs:18
+msgid "Powered by <a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a>"
+msgstr "Powered by <a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a>"
+
+#: src/gettext_strings.rs:19
+msgid ""
+"Background image retrieved from <a href=\"https://www.toptal.com/designers/"
+"subtlepatterns/subtle-grey/\">Subtle Patterns</a> under CC BY-SA 3.0"
+msgstr ""
+"Achtergrondafbeelding opgehaald van <a href=\"https://www.toptal.com/"
+"designers/subtlepatterns/subtle-grey/\">Subtle Patterns</a> onder CC BY-SA "
+"3.0"
+
+#: src/gettext_strings.rs:20
+msgid "Maintenance Mode"
+msgstr "Onderhoud"
+
+#: src/gettext_strings.rs:21
+msgid "Manage your key"
+msgstr "Beheer uw sleutel"
+
+#: src/gettext_strings.rs:22
+msgid "Enter any verified email address for your key"
+msgstr "Voer één van de geverifieerd e-mailadressen van uw sleutel in"
+
+#: src/gettext_strings.rs:23
+msgid "Send link"
+msgstr "Stuur link"
+
+#: src/gettext_strings.rs:24
+msgid ""
+"We will send you an email with a link you can use to remove any of your "
+"email addresses from search."
+msgstr ""
+"We sturen u een e-mail met een link die u kunt gebruiken om al uw e-"
+"mailadressen uit de zoekresultaten te verwijderen."
+
+#: src/gettext_strings.rs:25
+msgid ""
+"Managing the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
+"target=\"_blank\">{{ key_fpr }}</a></span>."
+msgstr ""
+"Beheren van de sleutel <span class=\"fingerprint\"><a href="
+"\"{{ key_link }}\" target=\"_blank\"> {{key_fpr}}</a></span>."
+
+#: src/gettext_strings.rs:26
+msgid "Your key is published with the following identity information:"
+msgstr "Uw sleutel wordt gepubliceerd met de volgende identiteitsgegevens:"
+
+#: src/gettext_strings.rs:27
+msgid "Delete"
+msgstr "Verwijderen"
+
+#: src/gettext_strings.rs:28
+msgid ""
+"Clicking \"delete\" on any address will remove it from this key. It will no "
+"longer appear in a search.<br /> To add another address, <a href=\"/upload"
+"\">upload</a> the key again."
+msgstr ""
+"Als u bij een van de adressen op \"verwijderen\" klikt, wordt het van deze "
+"sleutel verwijderd. Het wordt niet langer weergegeven in een zoekopdracht."
+"<br /> <a href=\"/upload\">Upload</a> de sleutel opnieuw om een ander adres "
+"toe te voegen."
+
+#: src/gettext_strings.rs:29
+msgid ""
+"Your key is published as only non-identity information.  (<a href=\"/about\" "
+"target=\"_blank\">What does this mean?</a>)"
+msgstr ""
+"Uw sleutel wordt gepubliceerd als niet-identiteitsinformatie. (<a href=\"/"
+"about\" target=\"_blank\">Wat betekent dit?</a>)"
+
+#: src/gettext_strings.rs:30
+msgid "To add an address, <a href=\"/upload\">upload</a> the key again."
+msgstr ""
+"<a href=\"/upload\">Upload</a> de sleutel opnieuw om een adres toe te voegen."
+
+#: src/gettext_strings.rs:31
+msgid ""
+"We have sent an email with further instructions to <span class=\"email"
+"\">{{ address }}</span>."
+msgstr ""
+"We hebben een e-mail gestuurd met verdere instructies naar <span class="
+"\"email\">{{address}}</span>."
+
+#: src/gettext_strings.rs:32
+msgid "This address has already been verified."
+msgstr "Dit adres is al geverifieerd."
+
+#: src/gettext_strings.rs:33
+msgid ""
+"Your key <span class=\"fingerprint\">{{ key_fpr }}</span> is now published "
+"for the identity <a href=\"{{userid_link}}\" target=\"_blank\"><span class="
+"\"email\">{{ userid }}</span></a>."
+msgstr ""
+"Uw sleutel <span class=\"fingerprint\">{{key_fpr}}</span> is nu gepubliceerd "
+"voor de identiteit <a href=\"{{userid_link}}\" target=\"_blank\"><span class="
+"\"email\">{{userid}}</span></a>."
+
+#: src/gettext_strings.rs:34
+msgid "Upload your key"
+msgstr "Upload uw sleutel"
+
+#: src/gettext_strings.rs:35
+msgid "Upload"
+msgstr "Upload"
+
+#: src/gettext_strings.rs:36
+msgid ""
+"Need more info? Check our <a target=\"_blank\" href=\"/about\">intro</a> and "
+"<a target=\"_blank\" href=\"/about/usage\">usage guide</a>."
+msgstr ""
+"Meer informatie nodig? Bekijk onze <a target=\"_blank\" href=\"/about"
+"\">intro</a> en <a target=\"_blank\" href=\"/about/usage"
+"\">gebruikshandleiding</a>."
+
+#: src/gettext_strings.rs:37
+msgid ""
+"You uploaded the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
+"target=\"_blank\">{{ key_fpr }}</a></span>."
+msgstr ""
+"U heeft de sleutel <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
+"target=\"_blank\">{{key_fpr}}</a></span> geüpload."
+
+#: src/gettext_strings.rs:38
+msgid "This key is revoked."
+msgstr "Deze sleutel is ingetrokken."
+
+#: src/gettext_strings.rs:39
+msgid ""
+"It is published without identity information and can't be made available for "
+"search by email address (<a href=\"/about\" target=\"_blank\">what does this "
+"mean?</a>)."
+msgstr ""
+"Dit wordt gepubliceerd zonder identiteitsgegevens en kan niet worden "
+"doorzocht op e-mailadres (<a href=\"/about\" target=\"_blank\">wat betekent "
+"dit?</a>)."
+
+#: src/gettext_strings.rs:40
+msgid ""
+"This key is now published with the following identity information (<a href="
+"\"/about\" target=\"_blank\">what does this mean?</a>):"
+msgstr ""
+"Deze sleutel wordt nu gepubliceerd met de volgende identiteitsgegevens (<a "
+"href=\"/about\" target=\"_blank\">wat betekent dit?</a>):"
+
+#: src/gettext_strings.rs:41
+msgid "Published"
+msgstr "Gepubliceerd"
+
+#: src/gettext_strings.rs:42
+msgid ""
+"This key is now published with only non-identity information. (<a href=\"/"
+"about\" target=\"_blank\">What does this mean?</a>)"
+msgstr ""
+"Deze sleutel wordt nu gepubliceerd zonder identiteitsinformatie. (<a href=\"/"
+"about\" target=\"_blank\">Wat betekent dit?</a>)"
+
+#: src/gettext_strings.rs:43
+msgid ""
+"To make the key available for search by email address, you can verify it "
+"belongs to you:"
+msgstr ""
+"Om de sleutel beschikbaar te maken voor zoeken op e-mailadres, kunt u "
+"valideren dat deze van u is:"
+
+#: src/gettext_strings.rs:44
+msgid "Verification Pending"
+msgstr "Verificatie in behandeling"
+
+#: src/gettext_strings.rs:45
+msgid ""
+"<strong>Note:</strong> Some providers delay emails for up to 15 minutes to "
+"prevent spam. Please be patient."
+msgstr ""
+"<strong>Opmerking:</strong> sommige providers vertragen e-mails maximaal 15 "
+"minuten om spam te voorkomen. Wees alstublieft geduldig."
+
+#: src/gettext_strings.rs:46
+msgid "Send Verification Email"
+msgstr "Verzend verificatie-e-mail"
+
+#: src/gettext_strings.rs:47
+msgid ""
+"This key contains one identity that could not be parsed as an email address."
+"<br /> This identity can't be published on <span class=\"brand\">keys."
+"openpgp.org</span>.  (<a href=\"/about/faq#non-email-uids\" target=\"_blank"
+"\">Why?</a>)"
+msgstr ""
+"Deze sleutel bevat één identiteit die niet kan worden ontleed als e-"
+"mailadres. Deze identiteit kan niet worden gepubliceerd op <span class="
+"\"brand\">keys.openpgp.org</span>. (<a href=\"/about/faq#non-email-uids\" "
+"target=\"_blank\">Waarom?</a>)"
+
+#: src/gettext_strings.rs:48
+msgid ""
+"This key contains {{ count_unparsed }} identities that could not be parsed "
+"as an email address.<br /> These identities can't be published on <span "
+"class=\"brand\">keys.openpgp.org</span>.  (<a href=\"/about/faq#non-email-"
+"uids\" target=\"_blank\">Why?</a>)"
+msgstr ""
+"Deze sleutel bevat {{count_unparsed}} identiteiten die niet kunnen worden "
+"ontleed als e-mailadres.<br /> Deze identiteiten kunnen niet worden "
+"gepubliceerd op <span class=\"brand\">keys.openpgp.org</span>. (<a href=\"/"
+"about/faq#non-email-uids\" target=\"_blank\">Waarom?</a>)"
+
+#: src/gettext_strings.rs:49
+msgid ""
+"This key contains one revoked identity, which is not published. (<a href=\"/"
+"about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
+msgstr ""
+"Deze sleutel bevat één ingetrokken identiteit, die niet is gepubliceerd. (<a "
+"href=\"/about/faq#revoked-uids\" target=\"_blank\">Waarom?</a>)"
+
+#: src/gettext_strings.rs:50
+msgid ""
+"This key contains {{ count_revoked }} revoked identities, which are not "
+"published. (<a href=\"/about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
+msgstr ""
+"Deze sleutel bevat {{count_revoked}} ingetrokken identiteiten, die niet zijn "
+"gepubliceerd. (<a href=\"/about/faq#revoked-uids\" target=\"_blank\">Waarom?"
+"</a>)"
+
+#: src/gettext_strings.rs:51
+msgid "Your keys have been successfully uploaded:"
+msgstr "Uw sleutels zijn succesvol geüpload:"
+
+#: src/gettext_strings.rs:52
+msgid ""
+"<strong>Note:</strong> To make keys searchable by email address, you must "
+"upload them individually."
+msgstr ""
+"<strong>Opmerking:</strong> Om sleutels doorzoekbaar te maken op e-"
+"mailadres, moet u deze afzonderlijk uploaden."
+
+#: src/gettext_strings.rs:53
+msgid "Verifying your email address…"
+msgstr "Uw e-mailadres verifiëren..."
+
+#: src/gettext_strings.rs:54
+msgid ""
+"If the process doesn't complete after a few seconds, please <input type="
+"\"submit\" class=\"textbutton\" value=\"click here\" />."
+msgstr ""
+"Als het proces na enkele seconden niet is voltooid, <input type=\"submit\" "
+"class=\"textbutton\" value=\"click here\" /> alstublieft."
+
+#: src/gettext_strings.rs:56
+msgid "Manage your key on {{domain}}"
+msgstr "Beheer uw sleutel op {{domain}}"
+
+#: src/gettext_strings.rs:58
+msgid "Hi,"
+msgstr "Hallo,"
+
+#: src/gettext_strings.rs:59
+msgid ""
+"This is an automated message from <a href=\"{{base_uri}}\" style=\"text-"
+"decoration:none; color: #333\">{{domain}}</a>."
+msgstr ""
+"Dit is een automatisch bericht van <a href=\"{{base_uri}}\" style=\"text-"
+"decoration:none; color: #333\">{{domain}}</a>."
+
+#: src/gettext_strings.rs:60
+msgid "If you didn't request this message, please ignore it."
+msgstr "Als je dit bericht niet hebt opgevraagd, negeer het dan."
+
+#: src/gettext_strings.rs:61
+msgid "OpenPGP key: <tt>{{primary_fp}}</tt>"
+msgstr "OpenPGP sleutel: <tt>{{primary_fp}}</tt>"
+
+#: src/gettext_strings.rs:62
+msgid ""
+"To manage and delete listed addresses on this key, please follow the link "
+"below:"
+msgstr ""
+"Om de vermelde adressen op deze sleutel te beheren en/of te verwijderen, "
+"volg de onderstaande link:"
+
+#: src/gettext_strings.rs:63
+msgid ""
+"You can find more info at <a href=\"{{base_uri}}/about\">{{domain}}/about</"
+"a>."
+msgstr ""
+"Je kunt meer informatie vinden op<a href=\"{{base_uri}}/about\"> {{domain}}/"
+"over</a>."
+
+#: src/gettext_strings.rs:64
+msgid "distributing OpenPGP keys since 2019"
+msgstr "distributie van OpenPGP-sleutels sinds 2019"
+
+#: src/gettext_strings.rs:67
+msgid "This is an automated message from {{domain}}."
+msgstr "Dit is een automatisch bericht van {{domain}}."
+
+#: src/gettext_strings.rs:69
+msgid "OpenPGP key: {{primary_fp}}"
+msgstr "OpenPGP sleutel: {{primary_fp}}"
+
+#: src/gettext_strings.rs:71
+msgid "You can find more info at {{base_uri}}/about"
+msgstr "Je kunt meer informatie vinden op {{base_uri}}/over"
+
+#: src/gettext_strings.rs:74
+msgid "Verify {{userid}} for your key on {{domain}}"
+msgstr "Verifieer {{userid}} voor uw sleutel op {{domein}}"
+
+#: src/gettext_strings.rs:80
+msgid ""
+"To let others find this key from your email address \"<a rel=\"nofollow\" "
+"href=\"#\" style=\"text-decoration:none; color: #333\">{{userid}}</a>\", "
+"please click the link below:"
+msgstr ""
+"Klik op de onderstaande link om anderen deze sleutel te laten vinden van uw "
+"e-mailadres \"<a rel=\"nofollow\" href=\"#\" style=\"text-decoration:none; "
+"color: #333\">{{userid}}</a>\":"
+
+#: src/gettext_strings.rs:88
+msgid ""
+"To let others find this key from your email address \"{{userid}}\",\n"
+"please follow the link below:"
+msgstr ""
+"Om anderen deze sleutel te laten vinden van uw e-mailadres \"{{userid}}\",\n"
+"klik op de onderstaande link:"
+
+#: src/web/manage.rs:103
+msgid "This link is invalid or expired"
+msgstr "Deze link is ongeldig of verlopen"
+
+#: src/web/manage.rs:129
+msgid "Malformed address: {address}"
+msgstr "Ongeldig adres: {adres}"
+
+#: src/web/manage.rs:136
+msgid "No key for address: {address}"
+msgstr "Geen sleutel voor adres: {address}"
+
+#: src/web/manage.rs:152
+msgid "A request has already been sent for this address recently."
+msgstr "Er is onlangs al een verzoek voor dit adres verzonden."
+
+#: src/web/vks.rs:111
+msgid "Parsing of key data failed."
+msgstr "Ontleden van sleutel gegevens is mislukt."
+
+#: src/web/vks.rs:120
+msgid "Whoops, please don't upload secret keys!"
+msgstr "Oeps, upload geen geheime sleutels!"
+
+#: src/web/vks.rs:133
+msgid "No key uploaded."
+msgstr "Geen sleutel geüpload."
+
+#: src/web/vks.rs:177
+msgid "Error processing uploaded key."
+msgstr "Fout bij het verwerken van geüploade sleutel."
+
+#: src/web/vks.rs:247
+msgid "Upload session expired. Please try again."
+msgstr "Uploadsessie is verlopen. Probeer het alstublieft opnieuw."
+
+#: src/web/vks.rs:284
+msgid "Invalid verification link."
+msgstr "Ongeldige verificatielink."

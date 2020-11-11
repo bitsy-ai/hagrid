@@ -20,7 +20,11 @@ extern crate hagrid_database as database;
 
 use gettext_macros::init_i18n;
 
-init_i18n!("hagrid", en, de, fr, it, ja, nb, pl, tr, zh_Hans);
+#[cfg(debug_assertions)]
+init_i18n!("hagrid", en, de, ja);
+
+#[cfg(not(debug_assertions))]
+init_i18n!("hagrid", en, de, fr, it, ja, nb, pl, tr, zh_Hans, ko, nl, ru);
 
 mod mail;
 mod anonymize_utils;
