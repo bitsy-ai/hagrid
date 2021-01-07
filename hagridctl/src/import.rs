@@ -168,7 +168,7 @@ fn import_from_file(db: &KeyDatabase, input: &Path, multi_progress: &MultiProgre
 }
 
 fn read_file_to_tpks(
-    reader: impl Read,
+    reader: impl Read + Send + Sync,
     callback: &mut impl FnMut(Vec<Packet>) -> ()
 ) -> Result<()> {
     let mut ppr = PacketParser::from_reader(reader)?;

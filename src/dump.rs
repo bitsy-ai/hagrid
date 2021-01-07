@@ -1,8 +1,6 @@
-// from https://gitlab.com/sequoia-pgp/sequoia/blob/master/tool/src/commands/dump.rs
-
 use std::io::{self, Read};
 
-extern crate sequoia_openpgp as openpgp;
+use sequoia_openpgp as openpgp;
 use self::openpgp::types::{Duration, Timestamp, SymmetricAlgorithm};
 use self::openpgp::fmt::hex;
 use self::openpgp::crypto::mpi;
@@ -54,7 +52,8 @@ impl Convert<chrono::DateTime<chrono::offset::Utc>> for Timestamp {
     }
 }
 
-pub fn dump<P, S, W>(input: &mut dyn io::Read, output: &mut dyn io::Write,
+pub fn dump<P, S, W>(input: &mut (dyn io::Read + Send + Sync),
+                     output: &mut dyn io::Write,
                      mpis: bool, hex: bool, mut sk: Option<SessionKey>,
                      decrypt_pkesk: P, decrypt_skesk: S,
                      width: W)
@@ -293,7 +292,7 @@ impl PacketDumper {
         if let Some(tag) = p.kind() {
             write!(output, "{}", tag)?;
         } else {
-            write!(output, "Unknown Packet")?;
+            write!(output, "Unknown or Unsupported Packet")?;
         }
 
         if let Some(h) = header {
@@ -386,7 +385,9 @@ impl PacketDumper {
 
                         pd.dump_mpis(output, &ii, &[&rest[..]], &["rest"])?;
                     },
-                    mpi::PublicKey::__Nonexhaustive => unreachable!(),
+
+                    // crypto::mpi:Publickey is non-exhaustive
+                    _ => writeln!(output, "{}  Unknown variant", ii)?,
                 }
             }
 
@@ -442,8 +443,9 @@ impl PacketDumper {
                                         pd.dump_mpis(output, &ii, &[rest],
                                                      &["rest"])?;
                                     },
-                                    mpi::SecretKeyMaterial::__Nonexhaustive =>
-                                        unreachable!(),
+
+                                    // crypto::mpi::SecretKeyMaterial is non-exhaustive.
+                                    _ => writeln!(output, "{}  Unknown variant", ii)?,
                                 }
                                 Ok(())
                             })?;
@@ -548,8 +550,9 @@ impl PacketDumper {
 
                             self.dump_mpis(output, &ii, &[&rest[..]], &["rest"])?;
                         },
-                        mpi::Signature::__Nonexhaustive => unreachable!(),
 
+                        // crypto::mpi::Signature is non-exhaustive.
+                        _ => writeln!(output, "{}  Unknown variant", ii)?,
                     }
                 }
             },
@@ -658,7 +661,9 @@ impl PacketDumper {
 
                             self.dump_mpis(output, &ii, &[rest], &["rest"])?;
                         },
-                        mpi::Ciphertext::__Nonexhaustive => unreachable!(),
+
+                        // crypto::mpi::Ciphertext is non-exhaustive.
+                        _ => writeln!(output, "{}  Unknown variant", ii)?,
                     }
                 }
             },
@@ -696,8 +701,8 @@ impl PacketDumper {
                                  hex::encode(s.aead_digest()))?;
                     },
 
-                    self::openpgp::packet::SKESK::__Nonexhaustive =>
-                        unreachable!(),
+                    // SKESK is non-exhaustive.
+                    _ => writeln!(output, "{}  Unknown variant", i)?,
                 }
             },
 
@@ -720,7 +725,8 @@ impl PacketDumper {
                 writeln!(output, "{}  IV: {}", i, hex::encode(a.iv()))?;
             },
 
-            __Nonexhaustive => unreachable!(),
+            // openpgp::Packet is non-exhaustive.
+            _ => writeln!(output, "{}  Unknown variant", i)?,
         }
 
         if let Some(fields) = additional_fields {
@@ -779,7 +785,8 @@ impl PacketDumper {
                 write!(output, "{}    Signature expiration time: {} ({})",
                        i, t.convert(),
                        if let Some(creation) = sig.signature_creation_time() {
-                           (creation + std::time::Duration::from_secs(t.as_secs())).convert().to_string()
+                           (creation + std::time::Duration::from(t.clone()))
+                               .convert().to_string()
                        } else {
                            " (no Signature Creation Time subpacket)".into()
                        })?,
@@ -857,7 +864,9 @@ impl PacketDumper {
                        .collect::<Vec<String>>().join(", "))?,
             IntendedRecipient(ref fp) =>
                 write!(output, "{}    Intended Recipient: {}", i, fp)?,
-            __Nonexhaustive => unreachable!(),
+
+            // SubpacketValue is non-exhaustive.
+            _ => writeln!(output, "{}  Unknown variant", i)?,
         }
 
         match s.value() {
@@ -917,7 +926,9 @@ impl PacketDumper {
                     writeln!(output, "{}    Parameters: {:?}", i, p)?;
                 }
             },
-            __Nonexhaustive => unreachable!(),
+
+            // S2K is non-exhaustive
+            _ => writeln!(output, "{}  Unknown variant", i)?,
         }
         Ok(())
     }
@@ -958,4 +969,6 @@ impl PacketDumper {
 
         format!("{}  ", &i.chars().take(amount).collect::<String>())
     }
+
+
 }

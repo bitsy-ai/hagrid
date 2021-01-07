@@ -207,7 +207,7 @@ pub trait Database: Sync + Send {
             .and_then(|bytes| Cert::from_bytes(bytes.as_bytes()).ok());
         let is_update = full_tpk_old.is_some();
         let (full_tpk_new, full_tpk_unchanged) = if let Some(full_tpk_old) = full_tpk_old {
-            let full_tpk_new = new_tpk.merge(full_tpk_old.clone())?;
+            let full_tpk_new = new_tpk.merge_public(full_tpk_old.clone())?;
             let full_tpk_unchanged = full_tpk_new == full_tpk_old;
             (full_tpk_new, full_tpk_unchanged)
         } else {

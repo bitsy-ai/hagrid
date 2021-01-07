@@ -99,7 +99,7 @@ pub fn process_key(
     i18n: &I18n,
     tokens_stateless: &tokens::Service,
     rate_limiter: &RateLimiter,
-    reader: impl Read,
+    reader: impl Read + Send + Sync,
 ) -> response::UploadResponse {
     // First, parse all Certs and error out if one fails.
     let parser = match PacketParserBuilder::from_reader(reader)
