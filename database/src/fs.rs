@@ -928,4 +928,12 @@ mod tests {
                    Some(fp.clone()));
         db.check_consistency().expect("inconsistent database");
     }
+
+    #[test]
+    fn attested_key_signatures() -> Result<()> {
+        let (_tmp_dir, mut db, log_path) = open_db();
+        test::attested_key_signatures(&mut db, &log_path)?;
+        db.check_consistency()?;
+        Ok(())
+    }
 }

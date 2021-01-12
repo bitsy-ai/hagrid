@@ -16,6 +16,7 @@
 
 use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
+use anyhow::Result;
 
 use Database;
 use Query;
@@ -1115,6 +1116,124 @@ pub fn test_no_selfsig(db: &mut impl Database, log_path: &Path) {
         email_status: vec!(),
         unparsed_uids: 0,
     }, tpk_status);
+}
+
+/// Makes sure that attested key signatures are correctly handled.
+pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path)
+                               -> Result<()> {
+    use std::time::{SystemTime, Duration};
+    use openpgp::{
+        packet::signature::SignatureBuilder,
+        types::*,
+    };
+    let t0 = SystemTime::now() - Duration::new(5 * 60, 0);
+    let t1 = SystemTime::now() - Duration::new(4 * 60, 0);
+
+    let (alice, _) = CertBuilder::new()
+        .set_creation_time(t0)
+        .add_userid("alice@foo.com")
+        .generate()?;
+    let mut alice_signer =
+        alice.primary_key().key().clone().parts_into_secret()?
+        .into_keypair()?;
+
+    let (bob, _) = CertBuilder::new()
+        .set_creation_time(t0)
+        .add_userid("bob@bar.com")
+        .generate()?;
+    let bobs_fp = Fingerprint::try_from(bob.fingerprint())?;
+    let mut bob_signer =
+        bob.primary_key().key().clone().parts_into_secret()?
+        .into_keypair()?;
+
+    // Have Alice certify the binding between "bob@bar.com" and
+    // Bob's key.
+    let alice_certifies_bob
+        = bob.userids().nth(0).unwrap().userid().bind(
+            &mut alice_signer, &bob,
+            SignatureBuilder::new(SignatureType::GenericCertification)
+                .set_signature_creation_time(t1)?)?;
+
+    // Have Bob attest that certification.
+    let attestations =
+        bob.userids().next().unwrap().attest_certifications(
+            &POLICY,
+            &mut bob_signer,
+            vec![&alice_certifies_bob])?;
+    assert_eq!(attestations.len(), 1);
+    let attestation = attestations[0].clone();
+
+    // Now for the test.  First, import Bob's cert as is.
+    db.merge(bob.clone())?;
+    check_log_entry(log_path, &bobs_fp);
+
+    // Confirm the email so that we can inspect the userid component.
+    db.set_email_published(&bobs_fp, &Email::from_str("bob@bar.com")?)?;
+
+    // Then, add the certification, merge into the db, check that the
+    // certification is stripped.
+    let bob = bob.insert_packets(vec![
+        alice_certifies_bob.clone(),
+    ])?;
+    db.merge(bob.clone())?;
+    check_log_entry(log_path, &bobs_fp);
+    let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
+    assert_eq!(bob_.bad_signatures().count(), 0);
+    assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 0);
+
+    // Add the attestation, merge into the db, check that the
+    // certification is now included.
+    let bob_attested = bob.clone().insert_packets(vec![
+        attestation.clone(),
+    ])?;
+    db.merge(bob_attested.clone())?;
+    check_log_entry(log_path, &bobs_fp);
+    let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
+    assert_eq!(bob_.bad_signatures().count(), 0);
+    assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 1);
+    assert_eq!(bob_.with_policy(&POLICY, None)?
+               .userids().nth(0).unwrap().attestation_key_signatures().count(), 1);
+    assert_eq!(bob_.with_policy(&POLICY, None)?
+               .userids().nth(0).unwrap().attested_certifications().count(), 1);
+
+    // Make a random merge with Bob's unattested cert, demonstrating
+    // that the attestation still works.
+    db.merge(bob.clone())?;
+    check_log_entry(log_path, &bobs_fp);
+    let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
+    assert_eq!(bob_.bad_signatures().count(), 0);
+    assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 1);
+
+    // Finally, withdraw consent by overriding the attestation, merge
+    // into the db, check that the certification is now gone.
+    let attestations =
+        bob_attested.userids().next().unwrap().attest_certifications(
+            &POLICY,
+            &mut bob_signer,
+            &[])?;
+    assert_eq!(attestations.len(), 1);
+    let clear_attestation = attestations[0].clone();
+
+    let bob = bob.insert_packets(vec![
+        clear_attestation.clone(),
+    ])?;
+    assert_eq!(bob.userids().nth(0).unwrap().certifications().count(), 1);
+    assert_eq!(bob.with_policy(&POLICY, None)?
+               .userids().nth(0).unwrap().attestation_key_signatures().count(), 1);
+    assert_eq!(bob.with_policy(&POLICY, None)?
+               .userids().nth(0).unwrap().attested_certifications().count(), 0);
+
+    db.merge(bob.clone())?;
+    check_log_entry(log_path, &bobs_fp);
+    let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
+    assert_eq!(bob_.bad_signatures().count(), 0);
+    assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 0);
+    assert_eq!(bob_.with_policy(&POLICY, None)?
+               .userids().nth(0).unwrap().attestation_key_signatures().count(), 1);
+    assert_eq!(bob_.with_policy(&POLICY, None)?
+               .userids().nth(0).unwrap().attested_certifications().count(), 0);
+
+    Ok(())
 }
 
 fn check_log_entry(log_path: &Path, fpr: &Fingerprint) {

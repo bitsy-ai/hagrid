@@ -4,6 +4,7 @@ use std::convert::TryFrom;
 use openpgp::{
     Cert,
     types::RevocationStatus,
+    cert::prelude::*,
     serialize::SerializeInto as _,
     policy::StandardPolicy,
 };
@@ -50,6 +51,17 @@ pub fn tpk_clean(tpk: &Cert) -> Result<Cert> {
         for s in uidb.self_signatures()   { acc.push(s.clone().into()) }
         for s in uidb.self_revocations()  { acc.push(s.clone().into()) }
         for s in uidb.other_revocations() { acc.push(s.clone().into()) }
+
+        // Reasoning about the currently attested certifications
+        // requires a policy.
+        if let Ok(vuid) = uidb.with_policy(&POLICY, None) {
+            for s in vuid.attestation_key_signatures() {
+                acc.push(s.clone().into());
+            }
+            for s in vuid.attested_certifications() {
+                acc.push(s.clone().into());
+            }
+        }
     }
 
     Cert::from_packets(acc.into_iter())
