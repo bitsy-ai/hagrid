@@ -53,7 +53,7 @@ pub fn tpk_clean(tpk: &Cert) -> Result<Cert> {
         for s in skb.other_revocations() { acc.push(s.clone().into()) }
     }
 
-    // Updates for UserIDs fulfilling `filter`.
+    // The UserIDs.
     for uidb in tpk.userids() {
         acc.push(uidb.userid().clone().into());
         for s in uidb.self_signatures()   { acc.push(s.clone().into()) }
