@@ -51,7 +51,7 @@ mod stateful_tokens;
 pub use stateful_tokens::StatefulTokens;
 
 mod openpgp_utils;
-use openpgp_utils::{tpk_filter_userids, tpk_filter_alive_emails, tpk_to_string, tpk_clean, is_status_revoked, POLICY};
+use openpgp_utils::{tpk_filter_alive_emails, tpk_to_string, tpk_clean, is_status_revoked, POLICY};
 
 #[cfg(test)]
 mod test;
@@ -269,7 +269,7 @@ pub trait Database: Sync + Send {
             tpk_filter_alive_emails(&full_tpk_new, &[])
         } else {
             tpk_filter_alive_emails(&full_tpk_new, &published_emails)
-        }?;
+        };
 
         let newly_revoked_emails: Vec<&Email> = published_emails
             .iter()
@@ -441,7 +441,7 @@ pub trait Database: Sync + Send {
         let mut published_emails = published_emails_old.clone();
         published_emails.push(email_new.clone());
 
-        let published_tpk_new = tpk_filter_alive_emails(&full_tpk, &published_emails)?;
+        let published_tpk_new = tpk_filter_alive_emails(&full_tpk, &published_emails);
 
         if !published_tpk_new
             .userids()
@@ -521,9 +521,8 @@ pub trait Database: Sync + Send {
             .flatten()
             .collect();
 
-        let published_tpk_new = {
-            tpk_filter_userids(&published_tpk_old, |uid| email_remove(uid.userid()))?
-        };
+        let published_tpk_new = published_tpk_old.clone().retain_userids(
+            |uid| email_remove(uid.userid()));
 
         let published_emails_new: Vec<Email> = published_tpk_new
             .userids()
