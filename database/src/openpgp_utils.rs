@@ -4,8 +4,7 @@ use std::convert::TryFrom;
 use openpgp::{
     Cert,
     types::RevocationStatus,
-    armor::{Writer, Kind},
-    serialize::Serialize as OpenPgpSerialize,
+    serialize::SerializeInto as _,
     policy::StandardPolicy,
 };
 
@@ -22,13 +21,7 @@ pub fn is_status_revoked(status: RevocationStatus) -> bool {
 }
 
 pub fn tpk_to_string(tpk: &Cert) -> Result<Vec<u8>> {
-    let mut buf = Vec::new();
-    {
-        let mut armor_writer = Writer::new(&mut buf, Kind::PublicKey)?;
-        tpk.serialize(&mut armor_writer)?;
-        armor_writer.finalize()?;
-    }
-    Ok(buf)
+    tpk.armored().to_vec()
 }
 
 pub fn tpk_clean(tpk: &Cert) -> Result<Cert> {
