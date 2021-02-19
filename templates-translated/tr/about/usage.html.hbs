@@ -7,9 +7,20 @@
 Daha fazla bilgi eklemeye devam ediyoruz. Eğer eklemeyi unuttuğumuzu düşündüğünüz bir şey varsa
 bize yazın ve biz de eklemeye çalışalım.</p>
 
-    <h2>
+    <h2 id="web" style="padding-left: 3%;"><a href="#web">Web Arayüzü</a></h2>
+    <p><span class="brand">keys.openpgp.org</span> adresindeki web arayüzü sayesinde aşağıdakileri yapabilirsiniz:</p>
+
+    <p>
+        </p>
+<ul>
+<li>Manuel olarak, parmak iziyle veya e-posta adresiyle anahtar <a href="/">arama</a>
+</li>
+            <li>Manuel olarak anahtar<a href="/upload">yükleme</a> ve yüklemeden sonra doğrulama.</li>
+            <li>Anahtarlarınızı <a href="/manage">yönetme</a> ve yayınlanmış kimlikleri kaldırma.</li>
+        </ul>
+<h2 id="enigmail">
         <div><img src="/assets/img/enigmail.svg"></div>
-        Enigmail
+        <a href="#enigmail">Enigmail</a>
     </h2>
     <p>Thunderbird eklentisi <a href="https://enigmail.net" target="_blank">Enigmail</a>, 2.0.12 sürümünden beri <span class="brand">keys.openpgp.org</span> varsayılan olarak kullanıyor.</p>
     <p>Enigmain 2.1'den (<a href="https://www.thunderbird.net/en-US/thunderbird/68.0beta/releasenotes/" target="_blank">Thunderbird 68</a> veya daha yeni için) beri tamamen destekleniyor:</p>
@@ -18,15 +29,15 @@ bize yazın ve biz de eklemeye çalışalım.</p>
             <li>Anahtar oluşturma sırasında, anahtarınızı yükleyebilir ve doğrulayabilirsiniz.</li>
             <li>E-posta adresiyle anahtarları bulabilirsiniz.</li>
         </ul>
-<h2>
+<h2 id="gpg-suite">
         <div><img src="/assets/img/gpgtools.png"></div>
-        GPG Suite
+        <a href="#gpg-suite">GPG Takımı</a>
     </h2>
     <p>macOS için <a href="https://gpgtools.org/">GPG Suite</a> araç takımı da <span class="brand">keys.openpgp.org</span> hizmetini Ağustos 2019'dan beri varsayılan olarak kullanıyor.</p>
 
-    <h2>
+    <h2 id="openkeychain">
         <div><img src="/assets/img/openkeychain.svg"></div>
-        OpenKeychain
+        <a href="#openkeychain">OpenKeychain</a>
     </h2>
     <p>Android için <a href="https://www.openkeychain.org/">OpenKeychain</a>, <span class="brand">keys.openpgp.org</span> hizmetini Temmuz 2019'dan beri varsayılan olarak kullanıyor.</p>
 <ul>
@@ -35,9 +46,9 @@ bize yazın ve biz de eklemeye çalışalım.</p>
         </ul>
 <p>Yükleme ve e-posta adresi doğrulama için henüz gömülü bir destek olmadığını unutmayın.</p>
 
-    <h2>
+    <h2 id="pignus">
         <div><img src="/assets/img/pignus.png"></div>
-        Pignus
+        <a href="#pignus">Pignus</a>
     </h2>
     <p>iOS için <a href="https://www.frobese.de/pignus/">Pignus</a> 
         Kasım 2019'dan beri varsayılan olarak
@@ -46,9 +57,9 @@ bize yazın ve biz de eklemeye çalışalım.</p>
 <li>Anahtarlarınız istediğiniz zaman yüklenebilir.</li>
             <li>E-posta adresiyle anahtarları bulabilirsiniz.</li>
         </ul>
-<h2>
+<h2 id="gnupg">
         <div><img src="/assets/img/gnupg.svg"></div>
-        GnuPG
+        <a href="#gnupg">GnuPG</a>
     </h2>
 
     <p><a href="https://gnupg.org">GnuPG</a>'nin <span class="brand">keys.openpgp.org</span> hizmetini anahtar sunucusu olarak kullanacak şekilde yapılandırmak için, aşağıdaki satırı <tt>gpg.conf</tt> dosyasına ekleyin: </p>
@@ -86,7 +97,7 @@ Bu sorunu çözmek için GnuPG ekibiyle birlikte çalışıyoruz.
 <blockquote>keyserver hkp://zkaan2xfbuxia2wpf7ofnkbz6r5zdbbvxbunvp5g2iebopbfc4iqmbad.onion</blockquote>
     
 
-    <h2 style="padding-left: 3%;" id="wkd-as-a-service"><a style="color: #050505;" href="#wkd-as-a-service">Hizmet olarak WKD</a></h2>
+    <h2 style="padding-left: 3%;" id="wkd-as-a-service"><a href="#wkd-as-a-service">Hizmet olarak WKD</a></h2>
 
     <p>Web Anahtar Dizini (WKD) OpenPGP anahtarlarınız e-posta, alan adı veya e-posta sağlayıcısı ile bulunabilmesi için bir standarttır. 
  <a href="https://www.gpg4win.de/about.html" target="_blank">GpgOL</a> gibi bazı e-posta istemcilerinde bilinmeyen anahtarları bulmak için kullanılır.</p>
@@ -108,11 +119,11 @@ Bu sorunu çözmek için GnuPG ekibiyle birlikte çalışıyoruz.
 <blockquote>$ gpg  --locate-keys --auto-key-locate clear,nodefault,wkd address@example.org<br>
 </blockquote>
 
-    <h2 style="margin-left: 3%;">API</h2>
+    <h2 style="padding-left: 3%;">API</h2>
 
     <p>OpenPGP uygulamalarında bütünleşik bir destek sunmak amacıyla bir API sağlıyoruz. <a href="/about/api">API belgemizi</a>inceleyebilirsiniz.</p>
 
-    <h2 style="margin-left: 3%;">Diğer</h2>
+    <h2 style="padding-left: 3%;">Diğer</h2>
 
     <p>Gözde gerçekleştiriminizde nasıl kullanılacağına ilişkin rehber yok mu? Sorun değil. Bu site henüz yapım aşamasında ve geliştirmeye çalışıyoruz. Yardımcı olmak istiyorsanız <span class="email">support at keys dot openpgp dot org</span> e-posta adresimize mesaj gönderebilirsiniz.</p>
 
