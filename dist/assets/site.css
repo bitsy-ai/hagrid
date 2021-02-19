@@ -162,23 +162,16 @@ code.snippet {
 blockquote {
   font-family: monospace;
   background: #f9f9f9;
-  border-left: 10px solid #ccc;
+  border-inline-start: 10px solid #ccc;
   margin: 1.5em 10px;
   padding: 0.5em 10px;
-}
-blockquote:before {
-  color: #ccc;
-  font-size: 4em;
-  line-height: 0.1em;
-  margin-right: 0.25em;
-  vertical-align: -0.4em;
 }
 blockquote p {
   display: inline;
 }
 
 li {
-  text-align: left;
+  text-align: start;
 }
 
 abbr {
@@ -196,10 +189,12 @@ abbr {
   border: 3px solid;
   padding: 5px;
   height: 20px;
-  border-radius: 5px;
   outline: none;
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
+  border-radius: 5px 0 0 5px;
+}
+
+.rtl .manageEmail, .rtl .searchTerm, .rtl .fileUpload {
+  border-radius: 0 5px 5px 0;
 }
 
 .manageEmail {
@@ -218,17 +213,20 @@ abbr {
   margin-left: auto;
   margin-right: auto;
   width: 65%;
-  text-align: left;
+  text-align: start;
 }
 .publishedUid div {
   float: right;
+}
+.rtl .publishedUid div {
+  float: left;
 }
 
 .verificationEmails {
   margin-left: auto;
   margin-right: auto;
   width: 50%;
-  text-align: left;
+  text-align: start;
 }
 .verificationEmails ul {
   margin-top: 0.3em;
@@ -265,8 +263,11 @@ abbr {
 }
 
 .searchButton, .manageButton, .uploadButton {
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
+  border-radius: 0 5px 5px 0;
+}
+
+.rtl .searchButton, .rtl .manageButton, .rtl .uploadButton {
+  border-radius: 5px 0 0 5px;
 }
 
 .button img, .button svg {
@@ -288,7 +289,7 @@ abbr {
 /* This is used to enlarge the card, but is also used to constrain the
    flow of text in /about.  */
 .card > .about {
-  text-align: left;
+  text-align: start;
 }
 
 span.fingerprint {
@@ -303,9 +304,11 @@ span.email {
 .debug_link {
   position: absolute;
   right: 0px;
+  left: 0px;
   top: 0px;
   margin: 10px;
   font-size: 12px;
+  text-align: end;
 }
 
 .debug_link a {
@@ -321,8 +324,9 @@ span.email {
   z-index: -1;
   bottom: 0;
   right: 0;
+  left: 0;
   width: 100%;
-  text-align: right;
+  text-align: end;
   font-size: 12px;
   color: #bbb;
   margin: 10px;

@@ -197,6 +197,8 @@ mod templates {
         pub version: String,
         pub base_uri: String,
         pub lang: String,
+        pub htmldir: String,
+        pub htmlclass: String,
         pub page: T,
     }
 
@@ -213,6 +215,7 @@ mod templates {
 
     impl<T: serde::Serialize> HagridLayout<T> {
         pub fn new(page: T, i18n: I18n, origin: RequestOrigin) -> Self {
+            let is_rtl = (i18n.lang) == "ar";
             Self {
                 error: None,
                 version: env!("VERGEN_SEMVER").to_string(),
@@ -220,6 +223,8 @@ mod templates {
                 base_uri: origin.get_base_uri().to_string(),
                 page: page,
                 lang: i18n.lang.to_string(),
+                htmldir: if is_rtl { "rtl".to_owned() } else { "ltr".to_owned() },
+                htmlclass: if is_rtl { "rtl".to_owned() } else { "".to_owned() },
             }
         }
     }
