@@ -86,11 +86,9 @@ msgstr "ニュース:"
 
 #: src/gettext_strings.rs:16
 msgid ""
-"<a href=\"/about/news#2019-09-12-three-months-later\">Three months after "
-"launch ✨</a> (2019-09-12)"
+"<a href=\"/about/news#2019-11-12-celebrating-100k\">Celebrating 100.000 "
+"verified addresses! 📈</a> (2019-11-12)"
 msgstr ""
-"<a href=\"/about/news#2019-09-12-three-months-later\">始動から三ヶ月後✨</a> "
-"(2019-09-12)"
 
 #: src/gettext_strings.rs:17
 msgid "v{{ version }} built from"
