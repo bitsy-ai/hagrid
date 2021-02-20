@@ -1,6 +1,6 @@
 [package]
 name = "hagrid"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Vincent Breitmoser <look@my.amazin.horse>", "Kai Michaelis <kai@sequoia-pgp.org>"]
 build = "build.rs"
 default-run = "hagrid"

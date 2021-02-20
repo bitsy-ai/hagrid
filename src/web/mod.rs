@@ -148,7 +148,7 @@ impl MyResponse {
         eprintln!("Internal error: {:?}", e);
         let ctx = templates::FiveHundred {
             internal_error: e.to_string(),
-            version: env!("VERGEN_SEMVER").to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
             commit: env!("VERGEN_SHA_SHORT").to_string(),
             lang: "en".to_string(),
         };
@@ -219,7 +219,7 @@ mod templates {
             let is_rtl = (i18n.lang) == "ar";
             Self {
                 error: None,
-                version: env!("VERGEN_SEMVER").to_string(),
+                version: env!("CARGO_PKG_VERSION").to_string(),
                 commit: env!("VERGEN_SHA_SHORT").to_string(),
                 base_uri: origin.get_base_uri().to_string(),
                 page: page,
