@@ -2,7 +2,7 @@
   {{#with page}}
 
   {{#with error}}
-    <p><strong>Error</strong>: {{ this }}</p>
+  <p><strong>{{ text "Error" }}</strong>: {{ this }}</p>
   {{/with}}
 
   <form action="/search" method="GET">

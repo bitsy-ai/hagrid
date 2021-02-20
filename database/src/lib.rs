@@ -62,6 +62,8 @@ pub enum Query {
     ByFingerprint(Fingerprint),
     ByKeyID(KeyID),
     ByEmail(Email),
+    InvalidShort(),
+    Invalid(),
 }
 
 impl FromStr for Query {
@@ -73,29 +75,15 @@ impl FromStr for Query {
         let looks_like_short_key_id = !term.contains('@') &&
             (term.starts_with("0x") && term.len() < 16 || term.len() == 8);
         if looks_like_short_key_id {
-            return Err(anyhow!("Search by Short Key ID is not supported, sorry!"));
-        }
-        if let Ok(fp) = Fingerprint::from_str(term) {
+            Ok(InvalidShort())
+        } else if let Ok(fp) = Fingerprint::from_str(term) {
             Ok(ByFingerprint(fp))
         } else if let Ok(keyid) = KeyID::from_str(term) {
             Ok(ByKeyID(keyid))
         } else if let Ok(email) = Email::from_str(term) {
             Ok(ByEmail(email))
         } else {
-            Err(anyhow!("Invalid search query!"))
-        }
-    }
-}
-
-impl Query {
-    pub fn describe_error(&self) -> String {
-        match self {
-            Query::ByFingerprint(fpr) =>
-                format!("No key found for fingerprint {}", fpr),
-            Query::ByKeyID(key_id) =>
-                format!("No key found for key id {}", key_id),
-            Query::ByEmail(email) =>
-                format!("No key found for e-mail address {}", email),
+            Ok(Invalid())
         }
     }
 }
@@ -152,6 +140,7 @@ pub trait Database: Sync + Send {
             ByFingerprint(ref fp) => self.by_fpr(fp),
             ByKeyID(ref keyid) => self.by_kid(keyid),
             ByEmail(ref email) => self.by_email(&email),
+            _ => None,
         };
 
         match armored {

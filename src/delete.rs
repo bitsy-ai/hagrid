@@ -62,7 +62,7 @@ fn delete(db: &KeyDatabase, query: &Query, all_bindings: bool, mut all: bool)
                        bindings.");
             all = true;
         },
-        Query::ByEmail(_) => (),
+        _ => (),
     }
 
     let tpk = db.lookup(&query)?.ok_or_else(

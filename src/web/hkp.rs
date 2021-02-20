@@ -14,6 +14,7 @@ use crate::database::{Database, Query, KeyDatabase};
 use crate::database::types::{Email, Fingerprint, KeyID};
 
 use crate::rate_limiter::RateLimiter;
+use crate::i18n_helpers::describe_query_error;
 
 use crate::tokens;
 
@@ -216,6 +217,7 @@ fn send_welcome_mail(
 pub fn pks_lookup(
     state: rocket::State<HagridState>,
     db: rocket::State<KeyDatabase>,
+    i18n: I18n,
     key: Hkp
 ) -> MyResponse {
     let (query, index) = match key {
@@ -235,31 +237,35 @@ pub fn pks_lookup(
     };
 
     if index {
-        key_to_hkp_index(db, query)
+        key_to_hkp_index(db, i18n, query)
     } else {
-        web::key_to_response_plain(state, db, query)
+        web::key_to_response_plain(state, db, i18n, query)
     }
 }
 
 #[get("/pks/internal/index/<query_string>")]
 pub fn pks_internal_index(
     db: rocket::State<KeyDatabase>,
+    i18n: I18n,
     query_string: String,
 ) -> MyResponse {
     match query_string.parse() {
-        Ok(query) => key_to_hkp_index(db, query),
+        Ok(query) => key_to_hkp_index(db, i18n, query),
         Err(_) => MyResponse::bad_request_plain("Invalid search query!")
     }
 }
 
-fn key_to_hkp_index(db: rocket::State<KeyDatabase>, query: Query)
-                        -> MyResponse {
+fn key_to_hkp_index(
+    db: rocket::State<KeyDatabase>,
+    i18n: I18n,
+    query: Query,
+) -> MyResponse {
     use sequoia_openpgp::types::RevocationStatus;
     use sequoia_openpgp::policy::StandardPolicy;
 
     let tpk = match db.lookup(&query) {
         Ok(Some(tpk)) => tpk,
-        Ok(None) => return MyResponse::not_found_plain(query.describe_error()),
+        Ok(None) => return MyResponse::not_found_plain(describe_query_error(&i18n, &query)),
         Err(err) => { return MyResponse::ise(err); }
     };
     let mut out = String::default();

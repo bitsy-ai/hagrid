@@ -21,6 +21,7 @@ use std::path::PathBuf;
 use crate::mail;
 use crate::tokens;
 use crate::counters;
+use crate::i18n_helpers::describe_query_error;
 use crate::template_helpers::TemplateOverrides;
 use crate::i18n::I18NHelper;
 use crate::rate_limiter::RateLimiter;
@@ -277,12 +278,13 @@ impl RequestOrigin {
 pub fn key_to_response_plain(
     state: rocket::State<HagridState>,
     db: rocket::State<KeyDatabase>,
+    i18n: I18n,
     query: Query,
 ) -> MyResponse {
     let fp = if let Some(fp) = db.lookup_primary_fingerprint(&query) {
         fp
     } else {
-        return MyResponse::not_found_plain(query.describe_error());
+        return MyResponse::not_found_plain(describe_query_error(&i18n, &query));
     };
 
     if state.x_accel_redirect {
@@ -299,7 +301,7 @@ pub fn key_to_response_plain(
 
     return match db.by_fpr(&fp) {
         Some(armored) => MyResponse::key(armored, &fp.into()),
-        None => MyResponse::not_found_plain(query.describe_error()),
+        None => MyResponse::not_found_plain(describe_query_error(&i18n, &query)),
     }
 }
 

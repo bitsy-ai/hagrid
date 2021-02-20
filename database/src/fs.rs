@@ -484,6 +484,7 @@ impl Database for Filesystem {
             ByFingerprint(ref fp) => self.link_by_fingerprint(fp),
             ByKeyID(ref keyid) => self.link_by_keyid(keyid),
             ByEmail(ref email) => self.link_by_email(email),
+            _ => return None
         };
         path.read_link()
             .ok()
@@ -497,6 +498,7 @@ impl Database for Filesystem {
             ByFingerprint(ref fp) => self.link_by_fingerprint(fp),
             ByKeyID(ref keyid) => self.link_by_keyid(keyid),
             ByEmail(ref email) => self.link_by_email(email),
+            _ => return None
         };
 
         if path.exists() {

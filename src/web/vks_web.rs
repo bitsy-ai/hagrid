@@ -15,6 +15,7 @@ use crate::mail;
 use crate::tokens;
 use crate::web::{RequestOrigin, MyResponse};
 use crate::rate_limiter::RateLimiter;
+use crate::i18n_helpers::describe_query_error;
 
 use std::io::Read;
 use std::collections::HashMap;
@@ -225,23 +226,25 @@ pub fn process_post_form_data(
 #[get("/search?<q>")]
 pub fn search(
     db: rocket::State<KeyDatabase>,
+    i18n: I18n,
     q: String,
 ) -> MyResponse {
     match q.parse::<Query>() {
-        Ok(query) => key_to_response(db, q, query),
+        Ok(query) => key_to_response(db, i18n, q, query),
         Err(e) => MyResponse::bad_request("index", e),
     }
 }
 
 fn key_to_response(
     db: rocket::State<KeyDatabase>,
+    i18n: I18n,
     query_string: String,
     query: Query,
 ) -> MyResponse {
     let fp = if let Some(fp) = db.lookup_primary_fingerprint(&query) {
         fp
     } else {
-        return MyResponse::not_found(None, query.describe_error());
+        return MyResponse::not_found(None, describe_query_error(&i18n, &query));
     };
 
     let context = template::Search{

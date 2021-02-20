@@ -1,13 +1,17 @@
 use std::io;
 
+use rocket_i18n::I18n;
+
 use crate::dump::{self, Kind};
 use crate::web::MyResponse;
+use crate::i18n_helpers::describe_query_error;
 
 use crate::database::{Database, KeyDatabase, Query};
 
 #[get("/debug?<q>")]
 pub fn debug_info(
     db: rocket::State<KeyDatabase>,
+    i18n: I18n,
     q: String,
 ) -> MyResponse {
     let query = match q.parse::<Query>() {
@@ -16,12 +20,12 @@ pub fn debug_info(
     };
     let fp = match db.lookup_primary_fingerprint(&query) {
         Some(fp) => fp,
-        None => return MyResponse::not_found_plain(query.describe_error()),
+        None => return MyResponse::not_found_plain(describe_query_error(&i18n, &query)),
     };
 
     let armored_key = match db.by_fpr(&fp) {
         Some(armored_key) => armored_key,
-        None => return MyResponse::not_found_plain(query.describe_error()),
+        None => return MyResponse::not_found_plain(describe_query_error(&i18n, &query)),
     };
 
     let mut result = Vec::new();

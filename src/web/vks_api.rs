@@ -140,38 +140,47 @@ pub fn request_verify_fallback(
 }
 
 #[get("/vks/v1/by-fingerprint/<fpr>")]
-pub fn vks_v1_by_fingerprint(state: rocket::State<HagridState>,
-                         db: rocket::State<KeyDatabase>,
-                         fpr: String) -> MyResponse {
+pub fn vks_v1_by_fingerprint(
+    state: rocket::State<HagridState>,
+    db: rocket::State<KeyDatabase>,
+    i18n: I18n,
+    fpr: String,
+) -> MyResponse {
     let query = match fpr.parse::<Fingerprint>() {
         Ok(fpr) => Query::ByFingerprint(fpr),
         Err(_) => return MyResponse::bad_request_plain("malformed fingerprint"),
     };
 
-    web::key_to_response_plain(state, db, query)
+    web::key_to_response_plain(state, db, i18n, query)
 }
 
 #[get("/vks/v1/by-email/<email>")]
-pub fn vks_v1_by_email(state: rocket::State<HagridState>,
-                   db: rocket::State<KeyDatabase>,
-                   email: String) -> MyResponse {
+pub fn vks_v1_by_email(
+    state: rocket::State<HagridState>,
+    db: rocket::State<KeyDatabase>,
+    i18n: I18n,
+    email: String,
+) -> MyResponse {
     let email = email.replace("%40", "@");
     let query = match email.parse::<Email>() {
         Ok(email) => Query::ByEmail(email),
         Err(_) => return MyResponse::bad_request_plain("malformed e-mail address"),
     };
 
-    web::key_to_response_plain(state, db, query)
+    web::key_to_response_plain(state, db, i18n, query)
 }
 
 #[get("/vks/v1/by-keyid/<kid>")]
-pub fn vks_v1_by_keyid(state: rocket::State<HagridState>,
-                   db: rocket::State<KeyDatabase>,
-                   kid: String) -> MyResponse {
+pub fn vks_v1_by_keyid(
+    state: rocket::State<HagridState>,
+    db: rocket::State<KeyDatabase>,
+    i18n: I18n,
+    kid: String,
+) -> MyResponse {
     let query = match kid.parse::<KeyID>() {
         Ok(keyid) => Query::ByKeyID(keyid),
         Err(_) => return MyResponse::bad_request_plain("malformed key id"),
     };
 
-    web::key_to_response_plain(state, db, query)
+    web::key_to_response_plain(state, db, i18n, query)
 }
