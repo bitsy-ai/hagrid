@@ -243,6 +243,8 @@ fn key_to_response(
 ) -> MyResponse {
     let fp = if let Some(fp) = db.lookup_primary_fingerprint(&query) {
         fp
+    } else if query.is_invalid() {
+        return MyResponse::bad_request("index", anyhow!(describe_query_error(&i18n, &query)));
     } else {
         return MyResponse::not_found(None, describe_query_error(&i18n, &query));
     };

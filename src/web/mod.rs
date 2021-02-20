@@ -281,6 +281,10 @@ pub fn key_to_response_plain(
     i18n: I18n,
     query: Query,
 ) -> MyResponse {
+    if query.is_invalid() {
+        return MyResponse::bad_request_plain(describe_query_error(&i18n, &query));
+    }
+
     let fp = if let Some(fp) = db.lookup_primary_fingerprint(&query) {
         fp
     } else {
@@ -979,13 +983,13 @@ pub mod tests {
     fn search_invalid() {
         let (_tmpdir, client) = client().unwrap();
         check_response(&client, "/search?q=0x1234abcd",
-                       Status::BadRequest, "not supported, sorry!");
+                       Status::BadRequest, "not supported");
         check_response(&client, "/search?q=1234abcd",
-                       Status::BadRequest, "not supported, sorry!");
+                       Status::BadRequest, "not supported");
         check_response(&client, "/pks/lookup?op=get&search=0x1234abcd",
-                       Status::BadRequest, "not supported, sorry!");
+                       Status::BadRequest, "not supported");
         check_response(&client, "/pks/lookup?op=get&search=1234abcd",
-                       Status::BadRequest, "not supported, sorry!");
+                       Status::BadRequest, "not supported");
 
     }
 

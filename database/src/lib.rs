@@ -66,6 +66,16 @@ pub enum Query {
     Invalid(),
 }
 
+impl Query {
+    pub fn is_invalid(&self) -> bool {
+        match self {
+            Query::Invalid() => true,
+            Query::InvalidShort() => true,
+            _ => false,
+        }
+    }
+}
+
 impl FromStr for Query {
     type Err = anyhow::Error;
 
