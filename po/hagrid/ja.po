@@ -25,6 +25,27 @@ msgctxt "Subject for manage email"
 msgid "Manage your key on {domain}"
 msgstr "{domain}の鍵を管理する"
 
+#: src/i18n_helpers.rs:8
+msgid "No key found for fingerprint {fingerprint}"
+msgstr ""
+
+#: src/i18n_helpers.rs:10
+msgid "No key found for key id {key_id}"
+msgstr ""
+
+#: src/i18n_helpers.rs:12
+#, fuzzy
+msgid "No key found for email address {email}"
+msgstr "このアドレスに対する鍵がありません: {address}"
+
+#: src/i18n_helpers.rs:13
+msgid "Search by Short Key ID is not supported."
+msgstr ""
+
+#: src/i18n_helpers.rs:14
+msgid "Invalid search query."
+msgstr ""
+
 #: src/gettext_strings.rs:4
 msgid "Error"
 msgstr "エラー"

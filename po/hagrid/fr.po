@@ -1,5 +1,7 @@
+#
 # Translators:
-# AO <ao@localizationlab.org>, 2019
+# Vincent Breitmoser <look@my.amazin.horse>, 2020
+# AO <ao@localizationlab.org>, 2021
 #
 msgid ""
 msgstr ""
@@ -7,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-06-15 16:33-0700\n"
 "PO-Revision-Date: 2019-09-27 18:05+0000\n"
-"Last-Translator: AO <ao@localizationlab.org>, 2019\n"
+"Last-Translator: AO <ao@localizationlab.org>, 2021\n"
 "Language-Team: French (https://www.transifex.com/otf/teams/102430/fr/)\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -24,6 +26,26 @@ msgstr "Confirmer {userid} pour votre clé sur {domain}"
 msgctxt "Subject for manage email"
 msgid "Manage your key on {domain}"
 msgstr "Gérer votre clé sur {domain}"
+
+#: src/i18n_helpers.rs:8
+msgid "No key found for fingerprint {fingerprint}"
+msgstr "Aucune clé n’a été trouvée pour l’empreinte {fingerprint}"
+
+#: src/i18n_helpers.rs:10
+msgid "No key found for key id {key_id}"
+msgstr "Aucune clé n’a été trouvée pour l’ID de clé {key_id}"
+
+#: src/i18n_helpers.rs:12
+msgid "No key found for email address {email}"
+msgstr "Aucune clé n’a été trouvée pour l’adresse courriel {email}"
+
+#: src/i18n_helpers.rs:13
+msgid "Search by Short Key ID is not supported."
+msgstr "La recherche par ID de clé courte n’est pas prise en charge."
+
+#: src/i18n_helpers.rs:14
+msgid "Invalid search query."
+msgstr "La requête d’interrogation est invalide."
 
 #: src/gettext_strings.rs:4
 msgid "Error"
@@ -87,11 +109,11 @@ msgstr "Nouvelles :"
 
 #: src/gettext_strings.rs:16
 msgid ""
-"<a href=\"/about/news#2019-09-12-three-months-later\">Three months after "
-"launch ✨</a> (2019-09-12)"
+"<a href=\"/about/news#2019-11-12-celebrating-100k\">Celebrating 100.000 "
+"verified addresses! 📈</a> (2019-11-12)"
 msgstr ""
-"<a href=\"/about/news#2019-09-12-three-months-later\">Trois mois après le "
-"lancement ✨</a> (12-09-2019) (page en anglais)"
+"<a href=\"/about/news#2019-11-12-celebrating-100k\">Nous célébrons 100 "
+"000 adresses confirmées ! 📈</a> (12-11-2019)"
 
 #: src/gettext_strings.rs:17
 msgid "v{{ version }} built from"
@@ -99,9 +121,7 @@ msgstr "v{{ version }} compilée à partir de"
 
 #: src/gettext_strings.rs:18
 msgid "Powered by <a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a>"
-msgstr ""
-"Propulsé par <a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a> (site en "
-"anglais)"
+msgstr "Propulsé par <a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a>"
 
 #: src/gettext_strings.rs:19
 msgid ""

@@ -28,6 +28,27 @@ msgctxt "Subject for manage email"
 msgid "Manage your key on {domain}"
 msgstr "Натрой свой ключ на {domain}"
 
+#: src/i18n_helpers.rs:8
+msgid "No key found for fingerprint {fingerprint}"
+msgstr ""
+
+#: src/i18n_helpers.rs:10
+msgid "No key found for key id {key_id}"
+msgstr ""
+
+#: src/i18n_helpers.rs:12
+#, fuzzy
+msgid "No key found for email address {email}"
+msgstr "Нет ключа для адреса: {address}"
+
+#: src/i18n_helpers.rs:13
+msgid "Search by Short Key ID is not supported."
+msgstr ""
+
+#: src/i18n_helpers.rs:14
+msgid "Invalid search query."
+msgstr ""
+
 #: src/gettext_strings.rs:4
 msgid "Error"
 msgstr "Ошибка"
@@ -89,11 +110,9 @@ msgstr "Новости:"
 
 #: src/gettext_strings.rs:16
 msgid ""
-"<a href=\"/about/news#2019-09-12-three-months-later\">Three months after "
-"launch ✨</a> (2019-09-12)"
+"<a href=\"/about/news#2019-11-12-celebrating-100k\">Celebrating 100.000 "
+"verified addresses! 📈</a> (2019-11-12)"
 msgstr ""
-"<a href=\"/about/news#2019-09-12-three-months-later\">Спустя три месяца "
-"после запуска✨</a> (2019-09-12)"
 
 #: src/gettext_strings.rs:17
 msgid "v{{ version }} built from"
@@ -461,3 +480,10 @@ msgstr "Сессия загрузки просрочена. Попробуй с�
 #: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "Неверная проверочная ссылка."
+
+#~ msgid ""
+#~ "<a href=\"/about/news#2019-09-12-three-months-later\">Three months after "
+#~ "launch ✨</a> (2019-09-12)"
+#~ msgstr ""
+#~ "<a href=\"/about/news#2019-09-12-three-months-later\">Спустя три месяца "
+#~ "после запуска✨</a> (2019-09-12)"

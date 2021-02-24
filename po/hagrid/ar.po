@@ -27,6 +27,26 @@ msgctxt "Subject for manage email"
 msgid "Manage your key on {domain}"
 msgstr "‫أدرْ مفتاحك في {domain}‬"
 
+#: src/i18n_helpers.rs:8
+msgid "No key found for fingerprint {fingerprint}"
+msgstr "‫لم يعثر على المفتاح ذي البصمة {fingerprint}"
+
+#: src/i18n_helpers.rs:10
+msgid "No key found for key id {key_id}"
+msgstr "‫لم يعثر على المفتاح ذي المُعرِّف {key_id}"
+
+#: src/i18n_helpers.rs:12
+msgid "No key found for email address {email}"
+msgstr "‫لم يعثر على المفتاح ذي العنوان الإلكتروني {email}"
+
+#: src/i18n_helpers.rs:13
+msgid "Search by Short Key ID is not supported."
+msgstr "‫إن البحث بالمُعرِّف المختصر للمفتاح ليس مدعوما."
+
+#: src/i18n_helpers.rs:14
+msgid "Invalid search query."
+msgstr "طلب البحث غير صالح.‏"
+
 #: src/gettext_strings.rs:4
 msgid "Error"
 msgstr "هناك خطأ"
@@ -87,11 +107,11 @@ msgstr "اﻷخبار :‏"
 
 #: src/gettext_strings.rs:16
 msgid ""
-"<a href=\"/about/news#2019-09-12-three-months-later\">Three months after "
-"launch ✨</a> (2019-09-12)"
+"<a href=\"/about/news#2019-11-12-celebrating-100k\">Celebrating 100.000 "
+"verified addresses! 📈</a> (2019-11-12)"
 msgstr ""
-"‫<a href=\"/about/news#2019-09-12-three-months-later\">بعد مرور ثلاثة أشهر "
-"على انطلاقه ✨</a> (2019-09-12) (الصفحة بالإنجليزية)‬"
+"<a href=\"/about/news#2019-11-12-celebrating-100k\">‫احتفلنا بالتحقق من 100‎ "
+"000 عنوان للبريد الإلكتروني ! 📈</a> (2019-11-12)"
 
 #: src/gettext_strings.rs:17
 msgid "v{{ version }} built from"

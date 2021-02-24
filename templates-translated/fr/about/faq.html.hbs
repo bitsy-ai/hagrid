@@ -3,6 +3,8 @@
 <a href="/about">À propos</a> | <a href="/about/news">Nouvelles</a> | <a href="/about/usage">Utilisation</a> | FAQ | <a href="/about/stats">Statistiques</a> | <a href="/about/privacy">Protection des données</a>
 </h2></center>
 
+    <p><strong>Des instructions se trouvent dans notre <a href="/about/usage">guide d’utilisation</a>.</strong></p>
+
     <h3 id="sks-pool"><a href="#sks-pool">Ce serveur fait-il partie de la réserve « SKS » ? </a></h3>
 
     <p>Non. Le modèle fédéré de la réserve SKS présente divers problèmes en matière de fiabilité, de résistance aux abus, de confidentialité et d’utilisabilité. Nous réaliserons peut-être quelque chose de semblable, mais <span class="brand">keys.openpgp.org</span> ne fera jamais partie de la réserve SKS même.</p>
@@ -32,7 +34,7 @@
 
     <p>Nous utilisons une norme moderne appelée <a href="https://www.hardenize.com/blog/mta-sts" target="_blank">MTA-STS</a> combinée à <a href="https://starttls-everywhere.org/" target="_blank">STARTTLS Everywhere</a> de la FFÉ (sites en anglais), afin de nous assurer que les courriels de confirmation sont envoyés en toute sécurité. Ces mesures protègent contre l’écoute et l’interception en cours de livraison.</p>
 
-    <p>Le mécanisme MTA-STS dépend de la bonne configuration des serveurs de courriel. Vous pouvez <a href="https://www.hardenize.com/">exécuter ce test</a> pour voir si votre fournisseur de services de courriel le prend en charge. Si l’entrée « MTA-STS » située sur la gauche ne présente pas de coche verte, veuillez demander à votre fournisseur de mettre à jour sa configuration.</p>
+    <p>Le mécanisme MTA-STS ne fonctionne que s’il est pris en charge par le service de courriel des destinataires. Les courriels seront autrement remis comme d’habitude. Vous pouvez <a href="https://www.hardenize.com/">exécuter ce test</a> pour voir si votre service de courriel le prend en charge. Si l’entrée « MTA-STS » située sur la gauche ne présente pas de coche verte, veuillez demander à votre fournisseur de mettre à jour sa configuration.</p>
 
     <h3 id="third-party-signatures"><a href="#third-party-signatures">Distribuez-vous les « signatures par des tiers » ?</a></h3>
 
@@ -77,8 +79,28 @@
     </ol>
 <h3 id="older-gnupg"><a href="#older-gnupg">J’éprouve des difficultés à mettre à jour certaines clés avec GnuPG. Y a-t-il un bogue ? </a></h3>
 
-    <p>Un problème existe avec les versions actuelles de GnuPG. Si vous tentez de mettre à jour une clé de <span class="brand">keys.openpgp.org</span> qui ne comporte pas de <a href="/about">renseignement d’identité</a>, GnuPG refusera de traiter la clé :</p>
-    <blockquote>$ gpg --receive-keys EB85BB5FA33A75E15E944E63F231550C4F47E38E<br>
-      gpg: clé F231550C4F47E38E : pas d’identité</blockquote>
-    <p>Nous travaillons avec l’équipe GnuPG afin de résoudre ce problème.</p>
+    <p>GnuPG considère que les clés qui ne comprennent pas de renseignements d’identité sont invalides et refuse de les importer. Cependant, une clé qui n’a <a href="/about">pas d’adresse courriel confirmée</a> peut quand même comprendre des renseignements utiles. Plus précisément, il est possible de vérifier si la clé est révoquée ou non.</p>
+    <p>En juin 2019, l’équipe de <span class="brand">keys.openpgp.org</span> a créé un correctif qui permet à GnuPG de traiter les mises à jour des clés sans renseignements d’identité.
+Ce correctif a rapidement été intégré à plusieurs versions en aval de GnuPG, dont Debian, Fedora, NixOS, et GPG Suite pour macOS.</p>
+    <p>En mars 2020, l’équipe de GnuPG a rejeté le correctif et a changé l’état du problème à « Wontfix » (ne sera pas corrigé). Cela signifie que <strong> les versions non corrigées de GnuPG ne peuvent pas recevoir de mises à jour de <span class="brand">keys.openpgp.org</span> pour les clés qui n’ont pas d’adresse courriel confirmée</strong>. Vous trouverez plus de précisions au sujet de cette décision dans le problème <a href="https://dev.gnupg.org/T4393#133689">T4393</a> du système de suivi des bogues de GnuPG (page en anglais).</p>
+    <p>Les instructions qui suivent vous permettront de vérifier si votre version de GnuPG est affectée.</p>
+    <blockquote>
+<span style="font-size: larger;">Importez la clé de test :</span><br><br>
+      $ curl https://keys.openpgp.org/assets/uid-test.pub.asc | gpg --import<br>
+      gpg: clef F231550C4F47E38E: « Alice Lovelace &lt;alice@openpgp.example&gt; » importée<br>
+      gpg: Quantité totale traitée : 1<br>
+      gpg:               importées  1<br><br>
+</blockquote>
+    <blockquote>
+<span style="font-size: larger;">Avec le correctif, la clé sera mise à jour si elle est connue localement :</span><br><br>
+      $ gpg --recv-keys EB85BB5FA33A75E15E944E63F231550C4F47E38E<br>
+      gpg: clef F231550C4F47E38E : « Alice Lovelace &lt;alice@openpgp.example&gt; » inchangée<br>
+      gpg: Quantité totale traitée : 1<br>
+      gpg:              inchangées : 1<br><br>
+</blockquote>
+    <blockquote>
+<span style="font-size: larger;">Sans le correctif, une clé dépourvue d’identité est toujours rejetée :</span><br><br>
+      $ gpg --recv-keys EB85BB5FA33A75E15E944E63F231550C4F47E38E<br>
+      gpg: key EB85BB5FA33A75E15E944E63F231550C4F47E38E : n'est pas un identifiant de clef <br>
+</blockquote>
 </div>
