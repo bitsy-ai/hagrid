@@ -1,18 +1,20 @@
+# 
 # Translators:
-# T. E. Kalayci <tekrei@gmail.com>, 2019
-#
+# Vincent Breitmoser <look@my.amazin.horse>, 2020
+# T. E. Kalayci <tekrei@gmail.com>, 2021
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: hagrid\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-06-15 16:33-0700\n"
 "PO-Revision-Date: 2019-09-27 18:05+0000\n"
-"Last-Translator: T. E. Kalayci <tekrei@gmail.com>, 2019\n"
+"Last-Translator: T. E. Kalayci <tekrei@gmail.com>, 2021\n"
 "Language-Team: Turkish (https://www.transifex.com/otf/teams/102430/tr/)\n"
-"Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: tr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: src/mail.rs:107
@@ -27,24 +29,23 @@ msgstr "{domain} sunucusundaki anahtarınızı yönetin"
 
 #: src/i18n_helpers.rs:8
 msgid "No key found for fingerprint {fingerprint}"
-msgstr ""
+msgstr "Parmak izi {fingerprint} için anahtar bulunamadı"
 
 #: src/i18n_helpers.rs:10
 msgid "No key found for key id {key_id}"
-msgstr ""
+msgstr "Anahtar kimliği {key_id} için anahtar bulunamadı"
 
 #: src/i18n_helpers.rs:12
-#, fuzzy
 msgid "No key found for email address {email}"
-msgstr "Anahtarsız adres: {address}"
+msgstr "E-posta adresi {email} için anahtar bulunamadı"
 
 #: src/i18n_helpers.rs:13
 msgid "Search by Short Key ID is not supported."
-msgstr ""
+msgstr "Kısa Anahtar Kimliği ile arama desteklenmiyor."
 
 #: src/i18n_helpers.rs:14
 msgid "Invalid search query."
-msgstr ""
+msgstr "Geçersiz arama sorgusu."
 
 #: src/gettext_strings.rs:4
 msgid "Error"
@@ -68,9 +69,9 @@ msgstr "<span class=\"email\">{{ query }}</span> için bir girdi bulundu:"
 
 #: src/gettext_strings.rs:9
 msgid ""
-"<strong>Hint:</strong> It's more convenient to use <span class=\"brand"
-"\">keys.openpgp.org</span> from your OpenPGP software.<br /> Take a look at "
-"our <a href=\"/about/usage\">usage guide</a> for details."
+"<strong>Hint:</strong> It's more convenient to use <span "
+"class=\"brand\">keys.openpgp.org</span> from your OpenPGP software.<br /> "
+"Take a look at our <a href=\"/about/usage\">usage guide</a> for details."
 msgstr ""
 "<strong>İpucu:</strong> <span class=\"brand\">keys.openpgp.org</span> "
 "hizmetini OpenPGP yazılımından kullanmak daha elverişlidir.<br />Ayrıntılar "
@@ -90,11 +91,11 @@ msgstr "Ara"
 
 #: src/gettext_strings.rs:13
 msgid ""
-"You can also <a href=\"/upload\">upload</a> or <a href=\"/manage\">manage</"
-"a> your key."
+"You can also <a href=\"/upload\">upload</a> or <a "
+"href=\"/manage\">manage</a> your key."
 msgstr ""
-"Ayrıca anahtarınızı <a href=\"/upload\">yükleyebilir</a> veya <a href=\"/"
-"manage\">yönetebilirsiniz</a>."
+"Ayrıca anahtarınızı <a href=\"/upload\">yükleyebilir</a> veya <a "
+"href=\"/manage\">yönetebilirsiniz</a>."
 
 #: src/gettext_strings.rs:14
 msgid "Find out more <a href=\"/about\">about this service</a>."
@@ -109,6 +110,8 @@ msgid ""
 "<a href=\"/about/news#2019-11-12-celebrating-100k\">Celebrating 100.000 "
 "verified addresses! 📈</a> (2019-11-12)"
 msgstr ""
+"<a href=\"/about/news#2019-11-12-celebrating-100k\"> 100.000 doğrulanmış "
+"adresi kutluyoruz 📈</a> (2019-11-12)"
 
 #: src/gettext_strings.rs:17
 msgid "v{{ version }} built from"
@@ -120,11 +123,12 @@ msgstr "<a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a>desteklidir"
 
 #: src/gettext_strings.rs:19
 msgid ""
-"Background image retrieved from <a href=\"https://www.toptal.com/designers/"
-"subtlepatterns/subtle-grey/\">Subtle Patterns</a> under CC BY-SA 3.0"
+"Background image retrieved from <a "
+"href=\"https://www.toptal.com/designers/subtlepatterns/subtle-grey/\">Subtle"
+" Patterns</a> under CC BY-SA 3.0"
 msgstr ""
-"Arkaplan resmi <a href=\"https://www.toptal.com/designers/subtlepatterns/"
-"subtle-grey/\">Subtle Patterns</a>tarafından CC BY-SA 3.0 lisansıyla "
+"Arkaplan resmi <a href=\"https://www.toptal.com/designers/subtlepatterns"
+"/subtle-grey/\">Subtle Patterns</a>tarafından CC BY-SA 3.0 lisansıyla "
 "sağlanmıştır."
 
 #: src/gettext_strings.rs:20
@@ -156,8 +160,8 @@ msgid ""
 "Managing the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
 "target=\"_blank\">{{ key_fpr }}</a></span>."
 msgstr ""
-"<span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank"
-"\">{{ key_fpr }}</a></span> anahtarı yönetiliyor."
+"<span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank\">{{ "
+"key_fpr }}</a></span> anahtarı yönetiliyor."
 
 #: src/gettext_strings.rs:26
 msgid "Your key is published with the following identity information:"
@@ -170,8 +174,8 @@ msgstr "Sil"
 #: src/gettext_strings.rs:28
 msgid ""
 "Clicking \"delete\" on any address will remove it from this key. It will no "
-"longer appear in a search.<br /> To add another address, <a href=\"/upload"
-"\">upload</a> the key again."
+"longer appear in a search.<br /> To add another address, <a "
+"href=\"/upload\">upload</a> the key again."
 msgstr ""
 "Herhangi bir adreste \"sil\"e tıklamanız durumunda, o adresi anahtardan "
 "kaldıracaktır. Aramada artık gözükmeyecektir. <br />Başka bir adres eklemek "
@@ -179,24 +183,23 @@ msgstr ""
 
 #: src/gettext_strings.rs:29
 msgid ""
-"Your key is published as only non-identity information.  (<a href=\"/about\" "
-"target=\"_blank\">What does this mean?</a>)"
+"Your key is published as only non-identity information.  (<a href=\"/about\""
+" target=\"_blank\">What does this mean?</a>)"
 msgstr ""
 "Anahtarınız kimlik bilgisi içermeden yayınlanıyor. (<a href=\"/about\" "
 "target=\"_blank\">Bunun anlamı nedir</a>)"
 
 #: src/gettext_strings.rs:30
 msgid "To add an address, <a href=\"/upload\">upload</a> the key again."
-msgstr ""
-"Bir adres eklemek için anahtarı tekrar <a href=\"/upload\">yükleyin</a>."
+msgstr "Bir adres eklemek için anahtarı tekrar <a href=\"/upload\">yükleyin</a>."
 
 #: src/gettext_strings.rs:31
 msgid ""
-"We have sent an email with further instructions to <span class=\"email"
-"\">{{ address }}</span>."
+"We have sent an email with further instructions to <span class=\"email\">{{ "
+"address }}</span>."
 msgstr ""
-"Ek yönergeleri içeren bir e-postayı <span class=\"email\">{{ address }}</"
-"span> adresine gönderdik."
+"Ek yönergeleri içeren bir e-postayı <span class=\"email\">{{ address "
+"}}</span> adresine gönderdik."
 
 #: src/gettext_strings.rs:32
 msgid "This address has already been verified."
@@ -205,12 +208,12 @@ msgstr "Bu adres zaten doğrulanmış."
 #: src/gettext_strings.rs:33
 msgid ""
 "Your key <span class=\"fingerprint\">{{ key_fpr }}</span> is now published "
-"for the identity <a href=\"{{userid_link}}\" target=\"_blank\"><span class="
-"\"email\">{{ userid }}</span></a>."
+"for the identity <a href=\"{{userid_link}}\" target=\"_blank\"><span "
+"class=\"email\">{{ userid }}</span></a>."
 msgstr ""
-"<span class=\"fingerprint\">{{ key_fpr }}</span> anahtarınız şimdi <a href="
-"\"{{userid_link}}\" target=\"_blank\"><span class=\"email\">{{ userid }}</"
-"span></a> kimliği için yayınlandı."
+"<span class=\"fingerprint\">{{ key_fpr }}</span> anahtarınız şimdi <a "
+"href=\"{{userid_link}}\" target=\"_blank\"><span class=\"email\">{{ userid "
+"}}</span></a> kimliği için yayınlandı."
 
 #: src/gettext_strings.rs:34
 msgid "Upload your key"
@@ -222,8 +225,8 @@ msgstr "Yükle"
 
 #: src/gettext_strings.rs:36
 msgid ""
-"Need more info? Check our <a target=\"_blank\" href=\"/about\">intro</a> and "
-"<a target=\"_blank\" href=\"/about/usage\">usage guide</a>."
+"Need more info? Check our <a target=\"_blank\" href=\"/about\">intro</a> and"
+" <a target=\"_blank\" href=\"/about/usage\">usage guide</a>."
 msgstr ""
 "Daha fazla bilgi için<a target=\"_blank\" href=\"/about\">tanıtım</a> veya "
 "<a target=\"_blank\" href=\"/about/usage\">kullanma kılavuzuna</a> "
@@ -234,8 +237,8 @@ msgid ""
 "You uploaded the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
 "target=\"_blank\">{{ key_fpr }}</a></span>."
 msgstr ""
-"<span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank"
-"\">{{ key_fpr }}</a></span> anahtarını yüklediniz."
+"<span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank\">{{ "
+"key_fpr }}</a></span> anahtarını yüklediniz."
 
 #: src/gettext_strings.rs:38
 msgid "This key is revoked."
@@ -243,17 +246,17 @@ msgstr "Bu anahtar feshedildi."
 
 #: src/gettext_strings.rs:39
 msgid ""
-"It is published without identity information and can't be made available for "
-"search by email address (<a href=\"/about\" target=\"_blank\">what does this "
-"mean?</a>)."
+"It is published without identity information and can't be made available for"
+" search by email address (<a href=\"/about\" target=\"_blank\">what does "
+"this mean?</a>)."
 msgstr ""
-"Kimlik bilgisi olmayan yayınlandı ve e-posta aramasıyla bulunamaz (<a href="
-"\"/about\" target=\"_blank\">bunun anlamı nedir?</a>)"
+"Kimlik bilgisi olmayan yayınlandı ve e-posta aramasıyla bulunamaz (<a "
+"href=\"/about\" target=\"_blank\">bunun anlamı nedir?</a>)"
 
 #: src/gettext_strings.rs:40
 msgid ""
-"This key is now published with the following identity information (<a href="
-"\"/about\" target=\"_blank\">what does this mean?</a>):"
+"This key is now published with the following identity information (<a "
+"href=\"/about\" target=\"_blank\">what does this mean?</a>):"
 msgstr ""
 "Bu anahtar şimdi aşağıdaki kimlik bilgisiyle yayınlandı (<a href=\"/about\" "
 "target=\"_blank\">bunun anlamı nedir?</a>)"
@@ -264,11 +267,11 @@ msgstr "Yayınlandı"
 
 #: src/gettext_strings.rs:42
 msgid ""
-"This key is now published with only non-identity information. (<a href=\"/"
-"about\" target=\"_blank\">What does this mean?</a>)"
+"This key is now published with only non-identity information. (<a "
+"href=\"/about\" target=\"_blank\">What does this mean?</a>)"
 msgstr ""
-"Bu anahtar şimdi sadece kimlik olmayan bilgiyle yayınlandı (<a href=\"/about"
-"\" target=\"_blank\">bunun anlamı nedir?</a>)"
+"Bu anahtar şimdi sadece kimlik olmayan bilgiyle yayınlandı (<a "
+"href=\"/about\" target=\"_blank\">bunun anlamı nedir?</a>)"
 
 #: src/gettext_strings.rs:43
 msgid ""
@@ -297,15 +300,15 @@ msgstr "Doğrulama E-postasını Gönder"
 
 #: src/gettext_strings.rs:47
 msgid ""
-"This key contains one identity that could not be parsed as an email address."
-"<br /> This identity can't be published on <span class=\"brand\">keys."
-"openpgp.org</span>.  (<a href=\"/about/faq#non-email-uids\" target=\"_blank"
-"\">Why?</a>)"
+"This key contains one identity that could not be parsed as an email "
+"address.<br /> This identity can't be published on <span "
+"class=\"brand\">keys.openpgp.org</span>.  (<a href=\"/about/faq#non-email-"
+"uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
-"Bu anahtar e-posta adresi olarak çözümlenemeyen bir kimlik içeriyor. <br /"
-">Bu kimlik bilgisi <span class=\"brand\">keys.openpgp.org</span>hizmetinde "
-"yayınlanamaz. (<a href=\"/about/faq#non-email-uids\" target=\"_blank\">Neden?"
-"</a>)"
+"Bu anahtar e-posta adresi olarak çözümlenemeyen bir kimlik içeriyor. <br "
+"/>Bu kimlik bilgisi <span class=\"brand\">keys.openpgp.org</span>hizmetinde "
+"yayınlanamaz. (<a href=\"/about/faq#non-email-uids\" "
+"target=\"_blank\">Neden?</a>)"
 
 #: src/gettext_strings.rs:48
 msgid ""
@@ -315,17 +318,17 @@ msgid ""
 "uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
 "Bu anahtar e-posta adresi olarak çözümlenemeyen {{ count_unparsed }} kimlik "
-"bilgisi içeriyor. <br />Bu kimlik bilgileri <span class=\"brand\">keys."
-"openpgp.org</span> hizmtinde yayınlanamaz. (<a href=\"/about/faq#non-email-"
-"uids\" target=\"_blank\">Neden?</a>)"
+"bilgisi içeriyor. <br />Bu kimlik bilgileri <span "
+"class=\"brand\">keys.openpgp.org</span> hizmtinde yayınlanamaz. (<a "
+"href=\"/about/faq#non-email-uids\" target=\"_blank\">Neden?</a>)"
 
 #: src/gettext_strings.rs:49
 msgid ""
-"This key contains one revoked identity, which is not published. (<a href=\"/"
-"about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
+"This key contains one revoked identity, which is not published. (<a "
+"href=\"/about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
-"Bu anahtar feshedilmiş, yayınlanmayan bir kimlik içeriyor. (<a href=\"/about/"
-"faq#revoked-uids\" target=\"_blank\">Neden?</a>)"
+"Bu anahtar feshedilmiş, yayınlanmayan bir kimlik içeriyor. (<a "
+"href=\"/about/faq#revoked-uids\" target=\"_blank\">Neden?</a>)"
 
 #: src/gettext_strings.rs:50
 msgid ""
@@ -353,11 +356,11 @@ msgstr "E-posta adresiniz doğrulanıyor..."
 
 #: src/gettext_strings.rs:54
 msgid ""
-"If the process doesn't complete after a few seconds, please <input type="
-"\"submit\" class=\"textbutton\" value=\"click here\" />."
+"If the process doesn't complete after a few seconds, please <input "
+"type=\"submit\" class=\"textbutton\" value=\"click here\" />."
 msgstr ""
-"Eğer işlem bir kaç saniye içerisinde tamamlanmazsa, lütfen <input type="
-"\"submit\" class=\"textbutton\" value=\"click here\" />."
+"Eğer işlem bir kaç saniye içerisinde tamamlanmazsa, lütfen <input "
+"type=\"submit\" class=\"textbutton\" value=\"click here\" />."
 
 #: src/gettext_strings.rs:56
 msgid "Manage your key on {{domain}}"
@@ -388,13 +391,13 @@ msgid ""
 "To manage and delete listed addresses on this key, please follow the link "
 "below:"
 msgstr ""
-"Bu anahtarla listelenmiş adresleri yönetmek ve silmek için, lütfen aşağıdaki "
-"bağlantıya tıklayın:"
+"Bu anahtarla listelenmiş adresleri yönetmek ve silmek için, lütfen aşağıdaki"
+" bağlantıya tıklayın:"
 
 #: src/gettext_strings.rs:63
 msgid ""
-"You can find more info at <a href=\"{{base_uri}}/about\">{{domain}}/about</"
-"a>."
+"You can find more info at <a "
+"href=\"{{base_uri}}/about\">{{domain}}/about</a>."
 msgstr ""
 "Daha fazla bilgiyi <a href=\"{{base_uri}}/about\">{{domain}}/about</a> "
 "sayfasında bulabilirsiniz."
@@ -417,7 +420,8 @@ msgstr "Daha fazla bilgiyi {{base_uri}}/about sayfasında bulabilirsiniz."
 
 #: src/gettext_strings.rs:74
 msgid "Verify {{userid}} for your key on {{domain}}"
-msgstr "{{userid}} kimliğini {{domain}} üzerindeki anahtarınız için doğrulayın"
+msgstr ""
+"{{userid}} kimliğini {{domain}} üzerindeki anahtarınız için doğrulayın"
 
 #: src/gettext_strings.rs:80
 msgid ""
@@ -476,10 +480,3 @@ msgstr "Yükleme oturumunun süresi doldu. Lütfen tekrar deneyin."
 #: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "Geçersiz doğrulama bağlantısı."
-
-#~ msgid ""
-#~ "<a href=\"/about/news#2019-09-12-three-months-later\">Three months after "
-#~ "launch ✨</a> (2019-09-12)"
-#~ msgstr ""
-#~ "<a href=\"/about/news#2019-09-12-three-months-later\">Başlangıçtan "
-#~ "itibaren üç ay✨</a> (12 Eylül 2019)"
