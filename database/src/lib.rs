@@ -219,7 +219,7 @@ pub trait Database: Sync + Send {
             full_tpk_new.keys().subkeys().next().is_some() ||
             full_tpk_new.userids().next().is_some();
         if !is_ok {
-            self.write_to_quarantine(&fpr_primary, &tpk_to_string(&full_tpk_new)?)?;
+            // self.write_to_quarantine(&fpr_primary, &tpk_to_string(&full_tpk_new)?)?;
             return Err(anyhow!("Not a well-formed key!"));
         }
 
