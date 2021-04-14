@@ -19,12 +19,12 @@ msgstr ""
 #: src/mail.rs:107
 msgctxt "Subject for verification email"
 msgid "Verify {userid} for your key on {domain}"
-msgstr "Verifieer {userid} voor uw sleutel op {domein}"
+msgstr "Verifieer {userid} voor uw sleutel op {domain}"
 
 #: src/mail.rs:140
 msgctxt "Subject for manage email"
 msgid "Manage your key on {domain}"
-msgstr "Beheer uw sleutel op {domein}"
+msgstr "Beheer uw sleutel op {domain}"
 
 #: src/i18n_helpers.rs:8
 msgid "No key found for fingerprint {fingerprint}"
@@ -420,7 +420,7 @@ msgstr "Je kunt meer informatie vinden op {{base_uri}}/over"
 
 #: src/gettext_strings.rs:74
 msgid "Verify {{userid}} for your key on {{domain}}"
-msgstr "Verifieer {{userid}} voor uw sleutel op {{domein}}"
+msgstr "Verifieer {{userid}} voor uw sleutel op {{domain}}"
 
 #: src/gettext_strings.rs:80
 msgid ""

@@ -1,19 +1,20 @@
-#
+# 
 # Translators:
-# ylsun <y15un@y15un.dog>, 2020
-#
+# Vincent Breitmoser <look@my.amazin.horse>, 2020
+# ylsun <y15un@y15un.dog>, 2021
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: hagrid\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-06-15 16:33-0700\n"
 "PO-Revision-Date: 2019-09-27 18:05+0000\n"
-"Last-Translator: ylsun <y15un@y15un.dog>, 2020\n"
+"Last-Translator: ylsun <y15un@y15un.dog>, 2021\n"
 "Language-Team: Korean (https://www.transifex.com/otf/teams/102430/ko/)\n"
-"Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: ko\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/mail.rs:107
@@ -28,24 +29,23 @@ msgstr "{domain}에 올린 내 키 관리"
 
 #: src/i18n_helpers.rs:8
 msgid "No key found for fingerprint {fingerprint}"
-msgstr ""
+msgstr "지문 {fingerprint}에 해당하는 키를 찾지 못했습니다."
 
 #: src/i18n_helpers.rs:10
 msgid "No key found for key id {key_id}"
-msgstr ""
+msgstr "키 ID {key_id}에 해당하는 키를 찾지 못했습니다."
 
 #: src/i18n_helpers.rs:12
-#, fuzzy
 msgid "No key found for email address {email}"
-msgstr "다음 주소와 엮인 키 없음: {address}"
+msgstr "전자 메일 주소 {email}에 해당하는 키를 찾지 못했습니다."
 
 #: src/i18n_helpers.rs:13
 msgid "Search by Short Key ID is not supported."
-msgstr ""
+msgstr "'짧은 키 ID' 형식은 지원하지 않습니다."
 
 #: src/i18n_helpers.rs:14
 msgid "Invalid search query."
-msgstr ""
+msgstr "올바르지 않은 검색어입니다."
 
 #: src/gettext_strings.rs:4
 msgid "Error"
@@ -69,13 +69,13 @@ msgstr "<span class=\"email\">{{ query }}</span>에 해당하는 키를 찾았�
 
 #: src/gettext_strings.rs:9
 msgid ""
-"<strong>Hint:</strong> It's more convenient to use <span class=\"brand"
-"\">keys.openpgp.org</span> from your OpenPGP software.<br /> Take a look at "
-"our <a href=\"/about/usage\">usage guide</a> for details."
+"<strong>Hint:</strong> It's more convenient to use <span "
+"class=\"brand\">keys.openpgp.org</span> from your OpenPGP software.<br /> "
+"Take a look at our <a href=\"/about/usage\">usage guide</a> for details."
 msgstr ""
-"<strong>알아두면 좋아요:</strong> <span class=\"brand\">keys.openpgp.org</"
-"span> 이용은 내 OpenPGP 소프트웨어를 통해서 하는 게 더 편하답니다.<br /> 자세"
-"한 사항은 <a href=\"/about/usage\">사용 안내서</a>에서 알아보세요."
+"<strong>알아두면 좋아요:</strong> <span class=\"brand\">keys.openpgp.org</span> 이용은"
+" 내 OpenPGP 소프트웨어를 통해서 하는 게 더 편하답니다.<br /> 자세한 사항은 <a "
+"href=\"/about/usage\">사용 안내서</a>에서 알아보세요."
 
 #: src/gettext_strings.rs:10
 msgid "debug info"
@@ -91,11 +91,9 @@ msgstr "찾기"
 
 #: src/gettext_strings.rs:13
 msgid ""
-"You can also <a href=\"/upload\">upload</a> or <a href=\"/manage\">manage</"
-"a> your key."
-msgstr ""
-"내 키를 <a href=\"/upload\">올리</a>거나 <a href=\"/manage\">관리</a>할 수도 "
-"있습니다."
+"You can also <a href=\"/upload\">upload</a> or <a "
+"href=\"/manage\">manage</a> your key."
+msgstr "내 키를 <a href=\"/upload\">올리</a>거나 <a href=\"/manage\">관리</a>할 수도 있습니다."
 
 #: src/gettext_strings.rs:14
 msgid "Find out more <a href=\"/about\">about this service</a>."
@@ -110,6 +108,8 @@ msgid ""
 "<a href=\"/about/news#2019-11-12-celebrating-100k\">Celebrating 100.000 "
 "verified addresses! 📈</a> (2019-11-12)"
 msgstr ""
+"<a href=\"/about/news#2019-11-12-celebrating-100k\">주소 인증 100,000건을 달성했습니다! "
+"📈</a> (2019-11-12)"
 
 #: src/gettext_strings.rs:17
 msgid "v{{ version }} built from"
@@ -121,8 +121,9 @@ msgstr "<a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a> 기반"
 
 #: src/gettext_strings.rs:19
 msgid ""
-"Background image retrieved from <a href=\"https://www.toptal.com/designers/"
-"subtlepatterns/subtle-grey/\">Subtle Patterns</a> under CC BY-SA 3.0"
+"Background image retrieved from <a "
+"href=\"https://www.toptal.com/designers/subtlepatterns/subtle-grey/\">Subtle"
+" Patterns</a> under CC BY-SA 3.0"
 msgstr ""
 "배경 그림은 <a href=\"https://www.toptal.com/designers/subtlepatterns/subtle-"
 "grey/\">Subtle Patterns</a>에서 가져왔고 CC BY-SA 3.0 허가서를 따릅니다"
@@ -147,17 +148,15 @@ msgstr "링크 보내기"
 msgid ""
 "We will send you an email with a link you can use to remove any of your "
 "email addresses from search."
-msgstr ""
-"내 전자 메일 주소를 검색에서 지울 수 있는 링크가 담긴 전자 메일 한 통이 갈 거"
-"예요."
+msgstr "내 전자 메일 주소를 검색에서 지울 수 있는 링크가 담긴 전자 메일 한 통이 갈 거예요."
 
 #: src/gettext_strings.rs:25
 msgid ""
 "Managing the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
 "target=\"_blank\">{{ key_fpr }}</a></span>."
 msgstr ""
-"<span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank"
-"\">{{ key_fpr }}</a></span> 키를 관리합니다."
+"<span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank\">{{ "
+"key_fpr }}</a></span> 키를 관리합니다."
 
 #: src/gettext_strings.rs:26
 msgid "Your key is published with the following identity information:"
@@ -170,19 +169,19 @@ msgstr "지우기"
 #: src/gettext_strings.rs:28
 msgid ""
 "Clicking \"delete\" on any address will remove it from this key. It will no "
-"longer appear in a search.<br /> To add another address, <a href=\"/upload"
-"\">upload</a> the key again."
+"longer appear in a search.<br /> To add another address, <a "
+"href=\"/upload\">upload</a> the key again."
 msgstr ""
-"\"지우기\"를 누르면 해당 주소가 내 키에서 지워지고 검색에 나타나지 않습니다."
-"<br />다른 주소를 추가하려면 이 키를 다시 <a href=\"/upload\">올리세요</a>."
+"\"지우기\"를 누르면 해당 주소가 내 키에서 지워지고 검색에 나타나지 않습니다.<br />다른 주소를 추가하려면 이 키를 다시 <a "
+"href=\"/upload\">올리세요</a>."
 
 #: src/gettext_strings.rs:29
 msgid ""
-"Your key is published as only non-identity information.  (<a href=\"/about\" "
-"target=\"_blank\">What does this mean?</a>)"
+"Your key is published as only non-identity information.  (<a href=\"/about\""
+" target=\"_blank\">What does this mean?</a>)"
 msgstr ""
-"내 키의 비-명의 정보만 공개된 상태입니다. (<a href=\"/about\" target=\"_blank"
-"\">이게 뭘 뜻하나요?</a>)"
+"내 키의 비-명의 정보만 공개된 상태입니다. (<a href=\"/about\" target=\"_blank\">이게 뭘 "
+"뜻하나요?</a>)"
 
 #: src/gettext_strings.rs:30
 msgid "To add an address, <a href=\"/upload\">upload</a> the key again."
@@ -190,11 +189,9 @@ msgstr "새 주소를 추가하려면 이 키를 다시 <a href=\"/upload\">올�
 
 #: src/gettext_strings.rs:31
 msgid ""
-"We have sent an email with further instructions to <span class=\"email"
-"\">{{ address }}</span>."
-msgstr ""
-"상세 사용 설명이 담긴 전자 메일을 <span class=\"email\">{{ address }}</span> "
-"주소로 보냈습니다."
+"We have sent an email with further instructions to <span class=\"email\">{{ "
+"address }}</span>."
+msgstr "상세 사용 설명이 담긴 전자 메일을 <span class=\"email\">{{ address }}</span> 주소로 보냈습니다."
 
 #: src/gettext_strings.rs:32
 msgid "This address has already been verified."
@@ -203,12 +200,12 @@ msgstr "이 주소는 이미 인증됐습니다."
 #: src/gettext_strings.rs:33
 msgid ""
 "Your key <span class=\"fingerprint\">{{ key_fpr }}</span> is now published "
-"for the identity <a href=\"{{userid_link}}\" target=\"_blank\"><span class="
-"\"email\">{{ userid }}</span></a>."
+"for the identity <a href=\"{{userid_link}}\" target=\"_blank\"><span "
+"class=\"email\">{{ userid }}</span></a>."
 msgstr ""
-"이제 <a href=\"{{userid_link}}\" target=\"_blank\"><span class=\"email"
-"\">{{ userid }}</span></a> 명의가 내 <span class=\"fingerprint"
-"\">{{ key_fpr }}</span> 키의 일부로 공개됩니다."
+"이제 <a href=\"{{userid_link}}\" target=\"_blank\"><span class=\"email\">{{ "
+"userid }}</span></a> 명의가 내 <span class=\"fingerprint\">{{ key_fpr }}</span> "
+"키의 일부로 공개됩니다."
 
 #: src/gettext_strings.rs:34
 msgid "Upload your key"
@@ -220,19 +217,19 @@ msgstr "올리기"
 
 #: src/gettext_strings.rs:36
 msgid ""
-"Need more info? Check our <a target=\"_blank\" href=\"/about\">intro</a> and "
-"<a target=\"_blank\" href=\"/about/usage\">usage guide</a>."
+"Need more info? Check our <a target=\"_blank\" href=\"/about\">intro</a> and"
+" <a target=\"_blank\" href=\"/about/usage\">usage guide</a>."
 msgstr ""
-"도움이 더 필요한가요? <a target=\"_blank\" href=\"/about\">서비스 소개</a>와 "
-"<a target=\"_blank\" href=\"/about/usage\">사용 안내서</a>를 읽어보세요."
+"도움이 더 필요한가요? <a target=\"_blank\" href=\"/about\">서비스 소개</a>와 <a "
+"target=\"_blank\" href=\"/about/usage\">사용 안내서</a>를 읽어보세요."
 
 #: src/gettext_strings.rs:37
 msgid ""
 "You uploaded the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
 "target=\"_blank\">{{ key_fpr }}</a></span>."
 msgstr ""
-"<span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank"
-"\">{{ key_fpr }}</a></span> 키를 올렸습니다."
+"<span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank\">{{ "
+"key_fpr }}</a></span> 키를 올렸습니다."
 
 #: src/gettext_strings.rs:38
 msgid "This key is revoked."
@@ -240,20 +237,20 @@ msgstr "이 키는 폐기됐습니다."
 
 #: src/gettext_strings.rs:39
 msgid ""
-"It is published without identity information and can't be made available for "
-"search by email address (<a href=\"/about\" target=\"_blank\">what does this "
-"mean?</a>)."
+"It is published without identity information and can't be made available for"
+" search by email address (<a href=\"/about\" target=\"_blank\">what does "
+"this mean?</a>)."
 msgstr ""
-"명의 정보가 없는 상태로 공개됐기 때문에 이 키는 전자 메일 주소로 찾을 수 없습"
-"니다. (<a href=\"/about\" target=\"_blank\">이게 뭘 뜻하나요?</a>)"
+"명의 정보가 없는 상태로 공개됐기 때문에 이 키는 전자 메일 주소로 찾을 수 없습니다. (<a href=\"/about\" "
+"target=\"_blank\">이게 뭘 뜻하나요?</a>)"
 
 #: src/gettext_strings.rs:40
 msgid ""
-"This key is now published with the following identity information (<a href="
-"\"/about\" target=\"_blank\">what does this mean?</a>):"
+"This key is now published with the following identity information (<a "
+"href=\"/about\" target=\"_blank\">what does this mean?</a>):"
 msgstr ""
-"이제 다음 명의가 이 키의 일부로 함께 공개됩니다: (<a href=\"/about\" target="
-"\"_blank\">이게 뭘 뜻하나요?</a>)"
+"이제 다음 명의가 이 키의 일부로 함께 공개됩니다: (<a href=\"/about\" target=\"_blank\">이게 뭘 "
+"뜻하나요?</a>)"
 
 #: src/gettext_strings.rs:41
 msgid "Published"
@@ -261,19 +258,15 @@ msgstr "공개됨"
 
 #: src/gettext_strings.rs:42
 msgid ""
-"This key is now published with only non-identity information. (<a href=\"/"
-"about\" target=\"_blank\">What does this mean?</a>)"
-msgstr ""
-"이 키는 이제 비-명의 정보만 공개됩니다. (<a href=\"/about\" target=\"_blank"
-"\">이게 뭘 뜻하나요?</a>)"
+"This key is now published with only non-identity information. (<a "
+"href=\"/about\" target=\"_blank\">What does this mean?</a>)"
+msgstr "이 키는 이제 비-명의 정보만 공개됩니다. (<a href=\"/about\" target=\"_blank\">이게 뭘 뜻하나요?</a>)"
 
 #: src/gettext_strings.rs:43
 msgid ""
 "To make the key available for search by email address, you can verify it "
 "belongs to you:"
-msgstr ""
-"이 키를 전자 메일 주소로 찾을 수 있게 하려면 내가 진짜 이 주소를 가지고 있음"
-"을 인증하세요:"
+msgstr "이 키를 전자 메일 주소로 찾을 수 있게 하려면 내가 진짜 이 주소를 가지고 있음을 인증하세요:"
 
 #: src/gettext_strings.rs:44
 msgid "Verification Pending"
@@ -284,8 +277,8 @@ msgid ""
 "<strong>Note:</strong> Some providers delay emails for up to 15 minutes to "
 "prevent spam. Please be patient."
 msgstr ""
-"<strong>알아두기:</strong> 몇몇 서비스 제공자는 스팸 방지를 위해 최대 15분까"
-"지 전자 메일 발송을 미루기도 합니다. 조금만 여유로이 기다려볼까요?"
+"<strong>알아두기:</strong> 몇몇 서비스 제공자는 스팸 방지를 위해 최대 15분까지 전자 메일 발송을 미루기도 합니다. "
+"조금만 여유로이 기다려볼까요?"
 
 #: src/gettext_strings.rs:46
 msgid "Send Verification Email"
@@ -293,14 +286,14 @@ msgstr "인증 전자 메일 보내기"
 
 #: src/gettext_strings.rs:47
 msgid ""
-"This key contains one identity that could not be parsed as an email address."
-"<br /> This identity can't be published on <span class=\"brand\">keys."
-"openpgp.org</span>.  (<a href=\"/about/faq#non-email-uids\" target=\"_blank"
-"\">Why?</a>)"
+"This key contains one identity that could not be parsed as an email "
+"address.<br /> This identity can't be published on <span "
+"class=\"brand\">keys.openpgp.org</span>.  (<a href=\"/about/faq#non-email-"
+"uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
-"이 키에는 전자 메일 주소가 아닌 것으로 보이는 명의 하나가 포함돼 있네요.<br /"
-">이런 명의는 <span class=\"brand\">keys.openpgp.org</span>에 공개할 수 없습니"
-"다. (<a href=\"/about/faq#non-email-uids\" target=\"_blank\">왜죠?</a>)"
+"이 키에는 전자 메일 주소가 아닌 것으로 보이는 명의 하나가 포함돼 있네요.<br />이런 명의는 <span "
+"class=\"brand\">keys.openpgp.org</span>에 공개할 수 없습니다. (<a href=\"/about/faq"
+"#non-email-uids\" target=\"_blank\">왜죠?</a>)"
 
 #: src/gettext_strings.rs:48
 msgid ""
@@ -309,27 +302,25 @@ msgid ""
 "class=\"brand\">keys.openpgp.org</span>.  (<a href=\"/about/faq#non-email-"
 "uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
-"이 키에는 전자 메일 주소가 아닌 것으로 보이는 명의 {{ count_unparsed }} 개가 "
-"포함돼 있네요.<br />이런 명의는 <span class=\"brand\">keys.openpgp.org</span>"
-"에 공개할 수 없습니다. (<a href=\"/about/faq#non-email-uids\" target=\"_blank"
-"\">왜죠?</a>)"
+"이 키에는 전자 메일 주소가 아닌 것으로 보이는 명의 {{ count_unparsed }} 개가 포함돼 있네요.<br />이런 명의는 "
+"<span class=\"brand\">keys.openpgp.org</span>에 공개할 수 없습니다. (<a "
+"href=\"/about/faq#non-email-uids\" target=\"_blank\">왜죠?</a>)"
 
 #: src/gettext_strings.rs:49
 msgid ""
-"This key contains one revoked identity, which is not published. (<a href=\"/"
-"about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
+"This key contains one revoked identity, which is not published. (<a "
+"href=\"/about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
-"이 키에는 폐기된 명의 하나가 포함돼 있네요. 폐기된 명의는 공개하지 않습니다. "
-"(<a href=\"/about/faq#revoked-uids\" target=\"_blank\">왜죠?</a>)"
+"이 키에는 폐기된 명의 하나가 포함돼 있네요. 폐기된 명의는 공개하지 않습니다. (<a href=\"/about/faq#revoked-"
+"uids\" target=\"_blank\">왜죠?</a>)"
 
 #: src/gettext_strings.rs:50
 msgid ""
 "This key contains {{ count_revoked }} revoked identities, which are not "
 "published. (<a href=\"/about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
-"이 키에는 폐기된 명의 {{ count_revoked }} 개가 포함돼 있네요. 폐기된 명의는 "
-"공개하지 않습니다. (<a href=\"/about/faq#revoked-uids\" target=\"_blank\">왜"
-"죠?</a>)"
+"이 키에는 폐기된 명의 {{ count_revoked }} 개가 포함돼 있네요. 폐기된 명의는 공개하지 않습니다. (<a "
+"href=\"/about/faq#revoked-uids\" target=\"_blank\">왜죠?</a>)"
 
 #: src/gettext_strings.rs:51
 msgid "Your keys have been successfully uploaded:"
@@ -339,9 +330,7 @@ msgstr "내 키를 성공적으로 올렸습니다:"
 msgid ""
 "<strong>Note:</strong> To make keys searchable by email address, you must "
 "upload them individually."
-msgstr ""
-"<strong>알아두기:</strong> 개별 키를 전자 메일 주소로 찾을 수 있게 하려면 각"
-"각 따로 올리세요."
+msgstr "<strong>알아두기:</strong> 개별 키를 전자 메일 주소로 찾을 수 있게 하려면 각각 따로 올리세요."
 
 #: src/gettext_strings.rs:53
 msgid "Verifying your email address…"
@@ -349,11 +338,11 @@ msgstr "전자 메일 주소를 인증하는 중..."
 
 #: src/gettext_strings.rs:54
 msgid ""
-"If the process doesn't complete after a few seconds, please <input type="
-"\"submit\" class=\"textbutton\" value=\"click here\" />."
+"If the process doesn't complete after a few seconds, please <input "
+"type=\"submit\" class=\"textbutton\" value=\"click here\" />."
 msgstr ""
-"몇 초가 지나도 이 절차가 끝나지 않는다면 <input type=\"submit\" class="
-"\"textbutton\" value=\"여기를 누르세요\" />."
+"몇 초가 지나도 이 절차가 끝나지 않는다면 <input type=\"submit\" class=\"textbutton\" "
+"value=\"여기를 누르세요\" />."
 
 #: src/gettext_strings.rs:56
 msgid "Manage your key on {{domain}}"
@@ -383,15 +372,13 @@ msgstr "OpenPGP 키: <tt>{{primary_fp}}</tt>"
 msgid ""
 "To manage and delete listed addresses on this key, please follow the link "
 "below:"
-msgstr "위 키에 엮인 주소를 숨기거나 하는 키 관리는 아래 링크에서 가능합니다:"
+msgstr "위 키에 엮인 주소를 숨기는 등의 키 관리는 아래 링크에서 할 수 있어요:"
 
 #: src/gettext_strings.rs:63
 msgid ""
-"You can find more info at <a href=\"{{base_uri}}/about\">{{domain}}/about</"
-"a>."
-msgstr ""
-"더 자세한 사항은 <a href=\"{{base_uri}}/about\">{{domain}}/about</a> 페이지"
-"를 참고하세요."
+"You can find more info at <a "
+"href=\"{{base_uri}}/about\">{{domain}}/about</a>."
+msgstr "더 자세한 사항은 <a href=\"{{base_uri}}/about\">{{domain}}/about</a> 페이지를 참고하세요."
 
 #: src/gettext_strings.rs:64
 msgid "distributing OpenPGP keys since 2019"
@@ -407,7 +394,7 @@ msgstr "OpenPGP 키: {{primary_fp}}"
 
 #: src/gettext_strings.rs:71
 msgid "You can find more info at {{base_uri}}/about"
-msgstr "더 자세한 사항은 {{base_uri}}/about 페이지를 참고하세요"
+msgstr "더 자세한 사항은 {{base_uri}}/about 페이지를 참고하세요."
 
 #: src/gettext_strings.rs:74
 msgid "Verify {{userid}} for your key on {{domain}}"
@@ -420,8 +407,8 @@ msgid ""
 "please click the link below:"
 msgstr ""
 "다른 사람들이 내 전자 메일 주소(<a rel=\"nofollow\" href=\"#\" style=\"text-"
-"decoration:none; color: #333\">{{userid}}</a>)로 위 키를 찾을 수 있게 하려면 "
-"아래 링크를 따라가세요:"
+"decoration:none; color: #333\">{{userid}}</a>)로 위 키를 찾을 수 있게 하려면 아래 링크를 "
+"따라가세요:"
 
 #: src/gettext_strings.rs:88
 msgid ""
@@ -470,10 +457,3 @@ msgstr "올리기 세션이 만료됐습니다. 다시 해보세요."
 #: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "올바르지 않은 인증 링크"
-
-#~ msgid ""
-#~ "<a href=\"/about/news#2019-09-12-three-months-later\">Three months after "
-#~ "launch ✨</a> (2019-09-12)"
-#~ msgstr ""
-#~ "<a href=\"/about/news#2019-09-12-three-months-later\">서비스 개시 후 3개월"
-#~ "이 지났습니다 ✨</a> (2019-09-12)"

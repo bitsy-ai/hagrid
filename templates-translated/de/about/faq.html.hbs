@@ -3,6 +3,8 @@
 <a href="/about">Übersicht</a> | <a href="/about/news">News</a> | <a href="/about/usage">Nutzung</a> | FAQ | <a href="/about/stats">Statistik</a> | <a href="/about/privacy">Privacy Policy</a>
 </h2></center>
 
+    <p><strong>Für Details zur Nutzung, siehe <a href="/about/usage">Nutzungshinweise</a>.</strong></p>
+
     <h3 id="sks-pool"><a href="#sks-pool">Ist dieser Server Teil des "SKS Pools"?</a></h3>
 
     <p>Nein. Das Föderations-Modell des SKS Pools hat mehrere Probleme bezüglich Zuverlässigkeit, Widerstandsfähigkeit gegen Vandalismus, und Nutzbarkeit. Wir werden in Zukunft möglicherweise eine ähnlich verteilte Infrastruktur einführen, aber <span class="brand">keys.openpgp.org</span> wird nie Teil des SKS Pools werden.</p>
@@ -87,8 +89,32 @@ wir können die Einschränkung nicht ohne das Einverständnis des Nutzers abänd
     </ol>
 <h3 id="older-gnupg"><a href="#older-gnupg">Ich erhalte beim Aktualisieren von Schlüsseln mittels GnuPG eine Fehlermeldung. Handelt es sich um einen Bug?</a></h3>
 
-    <p>Dies ist ein Problem in aktuellen Versionen von GnuPG. Bei dem Versuch einen Schlüssel von <span class="brand">keys.openpgp.org</span> zu aktualisieren, der keine <a href="/about">Identitäts-Informationen</a>beinhaltet, bricht GnuPG den Import mit der folgenden Fehlermeldung ab:</p>
-    <blockquote>$ gpg --receive-keys EB85BB5FA33A75E15E944E63F231550C4F47E38E1
-gpg: key EB85BB5FA33A75E15E944E63F231550C4F47E38E: no user ID</blockquote>
-    <p>Wir arbeiten mit dem GnuPG-Team an einer Lösung.</p>
+    <p>GnuPG sieht Schlüssel, die keine Identitätsinformationen beinhalten, als ungültig und weigert sich die Schlüssel zu importieren.
+      Allerdings kann ein Schlüssel, der <a href="/about">keine überprüfte E-Mail-Adresse beinhaltet</a> trotzdem nützliche Informationen beinhalten.
+      So ist es noch möglich zu prüfen, ob der Schlüssel zurückgerufen ist oder nicht.</p>
+    <p>Im Juni 2019 hat die <span class="brand">keys.openpgp.org</span>-Gruppe einen Patch erstellt, der es GnuPG erlaubt Aktualisierungen von Schlüsseln ohne Identitätsinformationen zu verarbeiten.
+      Dieser Patch wurde schnell in vielen Distributionen von GnuPG, wie Debian, Fedora, NixOS und GPG Suite for macOS, übernommen.</p>
+    <p>Im März 2020 hat die GnuPG-Gruppe den Patch abgelehnt und hat den Problemstatus auf "Wontfix" gesetzt.
+      Das bedeutet, dass <strong>GnuPG-Versionen ohne den Patch keine Aktualisierungen von <span class="brand">keys.openpgp.org</span> für Schlüssel ohne eine überprüfte E-Mail Adresse empfangen können</strong>.
+      Sie können die Diskussion im Problem <a href="https://dev.gnupg.org/T4393#133689">T4393</a> auf dem GnuPG Fehler-Tracker verfolgen.</p>
+    <p>Sie können mit den folgenden Anweisungen überprüfen, ob Ihre Version von GnuPG betroffen ist.</p>
+    <blockquote>
+<span style="font-size: larger;">Test-Schlüssel importieren:</span><br><br>
+      $ curl https://keys.openpgp.org/assets/uid-test.pub.asc | gpg --import<br>
+      gpg: key F231550C4F47E38E: "Alice Lovelace &lt;alice@openpgp.example&gt;" imported<br>
+      gpg: Total number processed: 1<br>
+      gpg:               imported: 1<br><br>
+</blockquote>
+    <blockquote>
+<span style="font-size: larger;">Mit dem Patch wird der Schlüssel aktualisiert, wenn er lokal bekannt ist:</span><br><br>
+      $ gpg --recv-keys EB85BB5FA33A75E15E944E63F231550C4F47E38E<br>
+      gpg: key F231550C4F47E38E: "Alice Lovelace &lt;alice@openpgp.example&gt;" not changed<br>
+      gpg: Total number processed: 1<br>
+      gpg:              unchanged: 1<br><br>
+</blockquote>
+    <blockquote>
+<span style="font-size: larger;">Ohne den Patch wird ein Schlüssel ohne Identitätsinformationen immer abgelehnt:</span><br><br>
+      $ gpg --recv-keys EB85BB5FA33A75E15E944E63F231550C4F47E38E<br>
+      gpg: key EB85BB5FA33A75E15E944E63F231550C4F47E38E: no user ID<br>
+</blockquote>
 </div>

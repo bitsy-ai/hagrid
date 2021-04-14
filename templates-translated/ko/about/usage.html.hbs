@@ -5,9 +5,21 @@
 
     <p>이 페이지에는 다양한 OpenPGP 소프트웨어에서 <span class="brand">keys.openpgp.org</span> 서비스를 사용하는 방법을 다룹니다.<br>이 페이지의 내용은 끊임없이 보충될 예정입니다. 뭔가 부족하다 싶은 게 있으면 알려주세요! 추가하도록 노력하겠습니다.</p>
 
-    <h2>
+    <h2 id="web" style="padding-left: 3%;"><a href="#web">웹 인터페이스</a></h2>
+    <p><span class="brand">keys.openpgp.org</span> 웹 인터페이스는 다음 기능을 제공합니다:</p>
+
+    <p>
+        </p>
+<ul>
+<li>지문이나 전자 메일 주소로 키 <a href="/">찾기</a>
+</li>
+            <li>키를 직접 <a href="/upload">올리고</a> 인증하기</li>
+            <li>공개된 명의를 지우는 등의 내 키 <a href="/manage">관리하기</a>
+</li>
+        </ul>
+<h2 id="enigmail">
         <div><img src="/assets/img/enigmail.svg"></div>
-        Enigmail
+        <a href="#enigmail">Enigmail</a>
     </h2>
     <p>Thunderbird용 <a href="https://enigmail.net" target="_blank">Enigmail</a>은 버전 2.0.12부터 <span class="brand">keys.openpgp.org</span> 서비스를 기본으로 사용하고 있습니다.</p>
     <p>(<a href="https://www.thunderbird.net/en-US/thunderbird/68.0beta/releasenotes/" target="_blank">Thunderbird 68</a> 또는 그 이후 버전을 위한) Enigmail 2.1부터 다음과 같은 기능이 완벽 지원됩니다:</p>
@@ -16,15 +28,15 @@
             <li>키 생성 과정에서 키 올리기와 인증을 동시에 할 수 있습니다.</li>
             <li>전자 메일 주소로 키 찾기를 지원합니다.</li>
         </ul>
-<h2>
+<h2 id="gpg-suite">
         <div><img src="/assets/img/gpgtools.png"></div>
-        GPG Suite
+        <a href="#gpg-suite">GPG Suite</a>
     </h2>
     <p>macOS용 <a href="https://gpgtools.org/">GPG Suite</a>는 2019년 8월부터 <span class="brand">keys.openpgp.org</span> 서비스를 기본으로 사용합니다.</p>
 
-    <h2>
+    <h2 id="openkeychain">
         <div><img src="/assets/img/openkeychain.svg"></div>
-        OpenKeychain
+        <a href="#openkeychain">OpenKeychain</a>
     </h2>
     <p>Android용 <a href="https://www.openkeychain.org/">OpenKeychain</a>은 2019년 7월부터 <span class="brand">keys.openpgp.org</span> 서비스를 기본으로 사용합니다.</p>
 <ul>
@@ -33,18 +45,18 @@
         </ul>
 <p>아직 앱 내에서 키 올리기와 전자 메일 주소 인증을 지원하지 않음을 유의하세요.</p>
 
-    <h2>
+    <h2 id="pignus">
         <div><img src="/assets/img/pignus.png"></div>
-        Pignus
+        <a href="#pignus">Pignus</a>
     </h2>
     <p>iOS용 <a href="https://www.frobese.de/pignus/">Pignus</a>는 2019년 11월부터 <span class="brand">keys.openpgp.org</span> 서비스를 기본으로 사용합니다.</p>
 <ul>
 <li>언제 어디서든 내 키 올리기가 가능합니다.</li>
             <li>전자 메일 주소로 키 찾기를 지원합니다.</li>
         </ul>
-<h2>
+<h2 id="gnupg">
         <div><img src="/assets/img/gnupg.svg"></div>
-        GnuPG
+        <a href="#gnupg">GnuPG</a>
     </h2>
 
     <p><a href="https://gnupg.org">GnuPG</a>가 <span class="brand">keys.openpgp.org</span> 서비스를 키서버로 사용하게끔 설정하려면 아래 한 줄을 <tt>gpg.conf</tt> 파일에 추가하세요:</p>
@@ -81,7 +93,7 @@
 <blockquote>keyserver hkp://zkaan2xfbuxia2wpf7ofnkbz6r5zdbbvxbunvp5g2iebopbfc4iqmbad.onion</blockquote>
     
 
-    <h2 style="padding-left: 3%;" id="wkd-as-a-service"><a style="color: #050505;" href="#wkd-as-a-service">서비스로의 WKD</a></h2>
+    <h2 style="padding-left: 3%;" id="wkd-as-a-service"><a href="#wkd-as-a-service">서비스로서의 WKD</a></h2>
 
     <p>Web Key Directory(WKD)는 전자 메일 서비스 제공자의 도메인을 통해 전자 메일 주소만 가지고 OpenPGP 키를 찾아올 수 있게 하는 표준 기술입니다. <a href="https://www.gpg4win.de/about.html" target="_blank">GpgOL</a>을 위시한 일부 전자 메일 클라이언트는 기존에 알려지지 않은 키를 WKD로 찾도록 지원합니다.</p>
 <p><span class="brand">keys.openpgp.org</span>는 임의의 도메인에 대해서 WKD 서비스를 위임받아 제공할 수 있습니다. 단순히 <tt>openpgpkey</tt> 서브 도메인에 대한 <tt>CNAME</tt> 레코드를 <tt>wkd.keys.openpgp.org</tt> 주소를 가리키도록 설정해두면 됩니다. 어느 DNS 호스팅이든 웹 인터페이스를 통해 충분히 설정할 수 있을 걸요.</p>
@@ -100,11 +112,11 @@
 <blockquote>$ gpg  --locate-keys --auto-key-locate clear,nodefault,wkd address@example.org<br>
 </blockquote>
 
-    <h2 style="margin-left: 3%;">API</h2>
+    <h2 style="padding-left: 3%;">API</h2>
 
     <p>OpenPGP 응용 프로그램에 기능 통합 지원을 위한 API도 제공 중입니다. <a href="/about/api">API 문서</a>를 확인해보세요.</p>
 
-    <h2 style="margin-left: 3%;">기타 사항</h2>
+    <h2 style="padding-left: 3%;">기타 사항</h2>
 
     <p>여러분이 애용하는 구현체에 대한 사용 안내가 없나요? 이 사이트는 아직 미완성이고 계속해서 개선 중임을 기억해주세요. 혹시라도 도움 주실 생각이라면 언제든 <span class="email">support 골뱅이 keys 닷 openpgp 닷 org</span>로 연락주세요!</p>
 
