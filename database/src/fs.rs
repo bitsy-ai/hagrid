@@ -455,7 +455,7 @@ impl Database for Filesystem {
 
         let path_published = self.fingerprint_to_path_published(fpr_target);
 
-        if let Ok(link_fpr_target) = link_keyid.canonicalize() {
+        if let Ok(link_fpr_target) = link_fpr.canonicalize() {
              if !link_fpr_target.ends_with(&path_published) {
                 info!("Fingerprint points to different key for {} (expected {:?} to be suffix of {:?})",
                     fpr, &path_published, &link_fpr_target);
