@@ -183,24 +183,7 @@ fn pks_add_ok(
         return format!("Upload successful.");
     }
 
-    // We send this out on the *second* time the key is uploaded (within one ratelimit period).
-    let uploaded_repeatedly = !rate_limiter.action_perform(format!("hkp-upload-{}", &key_fpr));
-    if uploaded_repeatedly && rate_limiter.action_perform(format!("hkp-sent-{}", &primary_uid)) {
-        if send_upload_mail(&request_origin, &mail_service, key_fpr, &primary_uid, token) {
-            return format!("Upload successful. An upload information email has been sent.");
-        }
-    }
     return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = request_origin.get_base_uri())
-}
-
-fn send_upload_mail(
-    request_origin: &RequestOrigin,
-    mail_service: &mail::Service,
-    fpr: String,
-    primary_uid: &Email,
-    token: String,
-) -> bool {
-    mail_service.send_upload(request_origin.get_base_uri(), fpr, primary_uid, &token).is_ok()
 }
 
 fn send_welcome_mail(
@@ -459,16 +442,6 @@ mod tests {
 
         let upload_mail_1 = pop_mail(filemail_into.as_path()).unwrap();
         assert!(upload_mail_1.is_none());
-
-        // Add the first again a second time - we should get an upload mail
-        let response = client.post("/pks/add")
-            .body(post_data_first.as_bytes())
-            .header(ContentType::Form)
-            .dispatch();
-        assert_eq!(response.status(), Status::Ok);
-
-        let upload_mail_2 = pop_mail(filemail_into.as_path()).unwrap();
-        assert!(upload_mail_2.is_some());
 
         check_mr_responses_by_fingerprint(&client, &tpk_0, 0);
         check_mr_responses_by_fingerprint(&client, &tpk_1, 0);

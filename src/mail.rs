@@ -148,32 +148,6 @@ impl Service {
         )
     }
 
-    pub fn send_upload(
-        &self,
-        base_uri: &str,
-        tpk_name: String,
-        userid: &Email,
-        token: &str
-    ) -> Result<()> {
-        let ctx = context::Welcome {
-            lang: "en".to_owned(),
-            primary_fp: tpk_name,
-            uri: format!("{}/upload/{}", base_uri, token),
-            base_uri: base_uri.to_owned(),
-            domain: self.domain.clone(),
-        };
-
-        counters::inc_mail_sent("upload", userid);
-
-        self.send(
-            &vec![userid],
-            &format!("Your key upload on {domain}", domain = self.domain),
-            "upload",
-            "en",
-            ctx,
-        )
-    }
-
     pub fn send_welcome(
         &self,
         base_uri: &str,
