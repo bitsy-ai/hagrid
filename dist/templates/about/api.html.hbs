@@ -190,13 +190,15 @@
     limited:
   </p>
   <ul>
-    <li>Requests by fingerprint or key id are limited to a rate of five requests
-      per second. Excessive requests are delayed to match this rate. Short
-      bursts are allowed.
+    <li>
+      Requests by fingerprint or key id are limited to five requests per second.
+      Excessive requests will fail with <tt>error 429</tt>.
+      There is a burst window of 1000.
     </li>
-    <li>Requests by email address are limited to one request per minute.
-      Excessive requests will fail with <tt>error 429</tt>. Short bursts are
-      allowed.
+    <li>
+      Requests by email address are limited to one request per minute.
+      Excessive requests will fail with <tt>error 429</tt>.
+      There is a burst window of 50.
     </li>
   </ul>
 
