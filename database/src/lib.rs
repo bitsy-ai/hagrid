@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene, plugin, decl_macro)]
 #![recursion_limit = "1024"]
 
 use std::convert::TryFrom;
