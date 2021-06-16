@@ -186,6 +186,13 @@ abbr {
   padding: 0 15%;
 }
 
+@media screen and (min-width: 450px) {
+  .search, .upload, .manage {
+    display: flex;
+    padding: 0 15%;
+  }
+}
+
 .manageEmail, .searchTerm, .fileUpload {
   flex-grow: 1;
   border: 3px solid;
