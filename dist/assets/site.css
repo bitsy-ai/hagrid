@@ -4,6 +4,8 @@ body {
   font-family: 'Roboto', sans-serif;
   font-weight: 300;
   color: #050505;
+  width: 100%;
+  word-wrap: break-word;
 }
 
 /* roboto-300 - latin-ext */
