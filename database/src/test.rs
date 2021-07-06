@@ -22,7 +22,11 @@ use Database;
 use Query;
 use openpgp::cert::{CertBuilder, UserIDRevocationBuilder};
 use openpgp::{
-    packet::UserID, parse::Parse, Packet, types::RevocationStatus, Cert
+    packet::{
+        UserID,
+        signature::*,
+    },
+    parse::Parse, Packet, types::RevocationStatus, Cert,
 };
 use openpgp::types::{ReasonForRevocation, SignatureType, KeyFlags};
 use types::{Email, Fingerprint, KeyID};
@@ -1123,7 +1127,6 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path)
                                -> Result<()> {
     use std::time::{SystemTime, Duration};
     use openpgp::{
-        packet::signature::SignatureBuilder,
         types::*,
     };
     let t0 = SystemTime::now() - Duration::new(5 * 60, 0);
@@ -1256,4 +1259,36 @@ fn cert_without_uid(cert: Cert, removed_uid: &UserID) -> Cert {
             }
         });
     Cert::from_packets(packets).unwrap()
+}
+
+pub fn nonexportable_sigs(db: &mut impl Database, _log_path: &Path)
+                          -> Result<()> {
+    let str_uid1 = "Test A <test_a@example.org>";
+    let str_uid2 = "Test B <test_b@example.org>";
+
+    // Generate a cert with two User IDs, the second being bound by a
+    // non-exportable binding signature.
+    let (cert, _revocation) = CertBuilder::new()
+        .add_userid(str_uid1)
+        .add_userid_with(
+            str_uid2,
+            SignatureBuilder::new(SignatureType::PositiveCertification)
+                .set_exportable_certification(false)?)?
+        .generate()
+        .unwrap();
+    let email1 = Email::from_str(str_uid1).unwrap();
+    let email2 = Email::from_str(str_uid2).unwrap();
+    let fpr = Fingerprint::try_from(cert.fingerprint()).unwrap();
+
+    db.merge(cert.clone()).unwrap();
+
+    // email1 is exportable, expect success.
+    db.set_email_published(&fpr, &email1).unwrap();
+    check_mail_some(db, &email1);
+
+    // email2 is non-exportable, expect failure.
+    db.set_email_published(&fpr, &email2).unwrap_err();
+    check_mail_none(db, &email2);
+
+    Ok(())
 }

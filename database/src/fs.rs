@@ -936,4 +936,12 @@ mod tests {
         db.check_consistency()?;
         Ok(())
     }
+
+    #[test]
+    fn nonexportable_sigs() -> Result<()> {
+        let (_tmp_dir, mut db, log_path) = open_db();
+        test::nonexportable_sigs(&mut db, &log_path)?;
+        db.check_consistency()?;
+        Ok(())
+    }
 }

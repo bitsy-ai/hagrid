@@ -22,7 +22,7 @@ pub fn is_status_revoked(status: RevocationStatus) -> bool {
 }
 
 pub fn tpk_to_string(tpk: &Cert) -> Result<Vec<u8>> {
-    tpk.armored().to_vec()
+    tpk.armored().export_to_vec()
 }
 
 pub fn tpk_clean(tpk: &Cert) -> Result<Cert> {

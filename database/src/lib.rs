@@ -622,7 +622,7 @@ pub trait Database: Sync + Send {
         published_tpk: &Cert
     ) -> Result<()> {
         let published_wkd_tpk_tmp = if published_tpk.userids().next().is_some() {
-            Some(self.write_to_temp(&published_tpk.to_vec()?)?)
+            Some(self.write_to_temp(&published_tpk.export_to_vec()?)?)
         } else {
             None
         };
