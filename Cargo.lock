@@ -803,7 +803,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "hagrid"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow 1.0.34 (registry+https://github.com/rust-lang/crates.io-index)",
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
