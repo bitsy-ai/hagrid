@@ -22,14 +22,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aead"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "generic-array 0.14.4 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "aes"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -331,14 +323,6 @@ version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "cipher"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "generic-array 0.14.4 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "clang-sys"
 version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -376,15 +360,6 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "cmac"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "crypto-mac 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "dbl 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -444,32 +419,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "generic-array 0.12.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "crypto-mac"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "cipher 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "generic-array 0.14.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "subtle 2.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "ctr"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "cipher 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "dbl"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "generic-array 0.14.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -552,18 +501,6 @@ dependencies = [
 name = "dyn-clone"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "eax"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "aead 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "cipher 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "cmac 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "ctr 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "subtle 2.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "either"
@@ -826,7 +763,7 @@ dependencies = [
  "rocket_i18n 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_prometheus 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "runtime-fmt 0.4.1 (git+https://github.com/Valodim/runtime-fmt?rev=44c15d832cb327ef33f95548a9a964d98c006fe4)",
- "sequoia-openpgp 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sequoia-openpgp 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.59 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -852,7 +789,7 @@ dependencies = [
  "multipart 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pathdiff 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "sequoia-openpgp 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sequoia-openpgp 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.59 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -879,7 +816,7 @@ dependencies = [
  "multipart 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pathdiff 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "sequoia-openpgp 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sequoia-openpgp 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.59 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2062,7 +1999,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "sequoia-openpgp"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "anyhow 1.0.34 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2071,7 +2008,6 @@ dependencies = [
  "buffered-reader 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "dyn-clone 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "eax 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "idna 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lalrpop 0.19.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lalrpop-util 0.19.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2752,7 +2688,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum addr2line 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7c0929d69e78dd9bf5408269919fcbcaeb2e35e5d43e5815517cdc6a8e11a423"
 "checksum adler 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ee2a4ec343196209d6594e19543ae87a39f96d5534d7174822a3ad825dd6ed7e"
 "checksum aead 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4cf01b9b56e767bb57b94ebf91a58b338002963785cdd7013e21c0d4679471e4"
-"checksum aead 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7fc95d1bdb8e6666b2b217308eeeb09f2d6728d104be3e31916cc74d15420331"
 "checksum aes 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "54eb1d8fe354e5fc611daf4f2ea97dd45a765f4f1e4512306ec183ae2e8f20c9"
 "checksum aes-gcm 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "834a6bda386024dbb7c8fc51322856c10ffe69559f972261c868485f5759c638"
 "checksum aes-soft 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "cfd7e7ae3f9a1fb5c03b389fc6bb9a51400d0c13053f0dca698c832bfd893a0d"
@@ -2793,21 +2728,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum cfg-if 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 "checksum chrono 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)" = "670ad68c9088c2a963aaa298cb369688cf3f9465ce5e2d4ca10e6e0098a1ce73"
 "checksum chunked_transfer 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "498d20a7aaf62625b9bf26e637cf7736417cde1d0c99f1d04d1170229a85cf87"
-"checksum cipher 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "12f8e7987cbd042a63249497f41aed09f8e65add917ea6566effbc56578d6801"
 "checksum clang-sys 0.28.1 (registry+https://github.com/rust-lang/crates.io-index)" = "81de550971c976f176130da4b2978d3b524eaa0fd9ac31f3ceb5ae1231fb4853"
 "checksum clap 2.33.3 (registry+https://github.com/rust-lang/crates.io-index)" = "37e58ac78573c40708d45522f0d80fa2f01cc4f9b4e2bf749807255454312002"
 "checksum cloudabi 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 "checksum cloudabi 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4344512281c643ae7638bbabc3af17a11307803ec8f0fcad9fae512a8bf36467"
-"checksum cmac 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "73d4de4f7724e5fe70addfb2bd37c2abd2f95084a429d7773b0b9645499b4272"
 "checksum console 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a50aab2529019abfabfa93f1e6c41ef392f91fbf179b347a7e96abb524884a08"
 "checksum const_fn 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)" = "c478836e029dcef17fb47c89023448c64f781a046e0300e257ad8225ae59afab"
 "checksum constant_time_eq 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
 "checksum cookie 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)" = "5795cda0897252e34380a27baf884c53aa7ad9990329cdad96d4c5d027015d44"
 "checksum crossbeam-utils 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "c3c7c73a2d1e9fc0886a08b93e98eb643461230d5f1925e4036204d5f2e261a8"
-"checksum crypto-mac 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4857fd85a0c34b3c3297875b747c1e02e06b6a0ea32dd892d8192b9ce0813ea6"
 "checksum crypto-mac 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4434400df11d95d556bac068ddfedd482915eb18fe8bea89bc80b6e4b1c179e5"
-"checksum ctr 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fb4a30d54f7443bf3d6191dcd486aca19e67cb3c49fa7a06a319966346707e7f"
-"checksum dbl 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2735145c3b9ba15f2d7a3ae8cdafcbc8c98a7bef7f62afe9d08bd99fbf7130de"
 "checksum devise 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "74e04ba2d03c5fa0d954c061fc8c9c288badadffc272ebb87679a89846de3ed3"
 "checksum devise_codegen 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "066ceb7928ca93a9bedc6d0e612a8a0424048b0ab1f75971b203d01420c055d7"
 "checksum devise_core 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "cf41c59b22b5e3ec0ea55c7847e5f358d340f3a8d6d53a5cf4f1564967f96487"
@@ -2818,7 +2748,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum discard 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "212d0f5754cb6769937f4501cc0e67f4f4483c8d2c3e1e922ee9edbe4ab4c7c0"
 "checksum docopt 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7f525a586d310c87df72ebcd98009e57f1cc030c8c268305287a476beb653969"
 "checksum dyn-clone 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "d55796afa1b20c2945ca8eabfc421839f2b766619209f1ede813cf2484f31804"
-"checksum eax 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e1f76e7a5e594b299a0fa9a99de627530725e341df41376aa342aecb2c5eb76e"
 "checksum either 1.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 "checksum email 0.0.20 (registry+https://github.com/rust-lang/crates.io-index)" = "91549a51bb0241165f13d57fc4c72cef063b4088fb078b019ecbf464a45f22e4"
 "checksum ena 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d7402b94a93c24e742487327a7cd839dc9d36fec9de9fb25b09f2dae459f36c3"
@@ -2982,7 +2911,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum scopeguard 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 "checksum semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
 "checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
-"checksum sequoia-openpgp 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f82df6ce6bfe6c86a2f4134a73ac23390cfba6dfa550574b4db21bf023a8d8c4"
+"checksum sequoia-openpgp 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4a3e71a96447ff3b7a80ca7ec425078a9a0db9c859b29788e4da26257e65f470"
 "checksum serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)" = "b88fa983de7720629c9387e9f517353ed404164b1e482c970a90c1a4aaf7dc1a"
 "checksum serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)" = "cbd1ae72adb44aab48f325a02444a5fc079349a8d804c1fc922aed3f7454c74e"
 "checksum serde_json 1.0.59 (registry+https://github.com/rust-lang/crates.io-index)" = "dcac07dbffa1c65e7f816ab9eba78eb142c6d44410f4eeba1e26e4f5dfa56b95"
