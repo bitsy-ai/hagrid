@@ -52,15 +52,13 @@ impl Convert<chrono::DateTime<chrono::offset::Utc>> for Timestamp {
     }
 }
 
-pub fn dump<P, S, W>(input: &mut (dyn io::Read + Send + Sync),
-                     output: &mut dyn io::Write,
-                     mpis: bool, hex: bool, mut sk: Option<SessionKey>,
-                     decrypt_pkesk: P, decrypt_skesk: S,
-                     width: W)
-                     -> Result<(Kind, Option<SessionKey>)>
-    where P: Fn(&PKESK) -> Option<SessionKey>,
-          S: Fn(&SKESK) -> Option<SessionKey>,
-          W: Into<Option<usize>>
+#[allow(clippy::redundant_pattern_matching)]
+pub fn dump<W>(input: &mut (dyn io::Read + Sync + Send),
+               output: &mut dyn io::Write,
+               mpis: bool, hex: bool, sk: Option<&SessionKey>,
+               width: W)
+               -> Result<Kind>
+    where W: Into<Option<usize>>
 {
     let mut ppr
         = self::openpgp::parse::PacketParserBuilder::from_reader(input)?
@@ -71,18 +69,6 @@ pub fn dump<P, S, W>(input: &mut (dyn io::Read + Send + Sync),
 
     while let PacketParserResult::Some(mut pp) = ppr {
         let additional_fields = match pp.packet {
-            Packet::PKESK(ref p) => {
-                if sk.is_none() {
-                    sk = decrypt_pkesk(p);
-                }
-                None
-            },
-            Packet::SKESK(ref p) => {
-                if sk.is_none() {
-                    sk = decrypt_skesk(p);
-                }
-                None
-            },
             Packet::Literal(_) => {
                 let mut prefix = vec![0; 40];
                 let n = pp.read(&mut prefix)?;
@@ -171,21 +157,21 @@ pub fn dump<P, S, W>(input: &mut (dyn io::Read + Send + Sync),
 
     dumper.flush(output)?;
 
-    Ok((if let PacketParserResult::EOF(eof) = ppr {
+    if let PacketParserResult::EOF(eof) = ppr {
         if eof.is_message().is_ok() {
-            Kind::Message {
+            Ok(Kind::Message {
                 encrypted: message_encrypted,
-            }
+            })
         } else if eof.is_cert().is_ok() {
-            Kind::Cert
+            Ok(Kind::Cert)
         } else if eof.is_keyring().is_ok() {
-            Kind::Keyring
+            Ok(Kind::Keyring)
         } else {
-            Kind::Unknown
+            Ok(Kind::Unknown)
         }
     } else {
         unreachable!()
-    }, sk))
+    }
 }
 
 struct Node {
@@ -200,10 +186,10 @@ impl Node {
     fn new(header: Header, packet: Packet, map: Option<Map>,
            additional_fields: Option<Vec<String>>) -> Self {
         Node {
-            header: header,
-            packet: packet,
-            map: map,
-            additional_fields: additional_fields,
+            header,
+            packet,
+            map,
+            additional_fields,
             children: Vec::new(),
         }
     }
@@ -226,8 +212,8 @@ pub struct PacketDumper {
 impl PacketDumper {
     pub fn new(width: usize, mpis: bool) -> Self {
         PacketDumper {
-            width: width,
-            mpis: mpis,
+            width,
+            mpis,
             root: None,
         }
     }
@@ -240,14 +226,12 @@ impl PacketDumper {
         if self.root.is_none() {
             assert_eq!(depth, 0);
             self.root = Some(node);
+        } else if depth == 0 {
+            let root = self.root.take().unwrap();
+            self.dump_tree(output, "", &root)?;
+            self.root = Some(node);
         } else {
-            if depth == 0 {
-                let root = self.root.take().unwrap();
-                self.dump_tree(output, "", &root)?;
-                self.root = Some(node);
-            } else {
-                self.root.as_mut().unwrap().append(depth - 1, node);
-            }
+            self.root.as_mut().unwrap().append(depth - 1, node);
         }
         Ok(())
     }
