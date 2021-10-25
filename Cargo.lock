@@ -763,7 +763,7 @@ dependencies = [
  "rocket_i18n 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_prometheus 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "runtime-fmt 0.4.1 (git+https://github.com/Valodim/runtime-fmt?rev=44c15d832cb327ef33f95548a9a964d98c006fe4)",
- "sequoia-openpgp 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sequoia-openpgp 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.59 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -789,7 +789,7 @@ dependencies = [
  "multipart 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pathdiff 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "sequoia-openpgp 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sequoia-openpgp 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.59 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -816,7 +816,7 @@ dependencies = [
  "multipart 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pathdiff 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "sequoia-openpgp 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sequoia-openpgp 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.59 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1999,7 +1999,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "sequoia-openpgp"
-version = "1.4.0"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "anyhow 1.0.34 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2019,7 +2019,6 @@ dependencies = [
  "regex-syntax 0.6.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha1collisiondetection 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 1.0.22 (registry+https://github.com/rust-lang/crates.io-index)",
- "unicode-normalization 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2911,7 +2910,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum scopeguard 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 "checksum semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
 "checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
-"checksum sequoia-openpgp 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4a3e71a96447ff3b7a80ca7ec425078a9a0db9c859b29788e4da26257e65f470"
+"checksum sequoia-openpgp 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d99023a5010403956bae568a28dc7574a447665477509edd35ddd547cff1e6ec"
 "checksum serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)" = "b88fa983de7720629c9387e9f517353ed404164b1e482c970a90c1a4aaf7dc1a"
 "checksum serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)" = "cbd1ae72adb44aab48f325a02444a5fc079349a8d804c1fc922aed3f7454c74e"
 "checksum serde_json 1.0.59 (registry+https://github.com/rust-lang/crates.io-index)" = "dcac07dbffa1c65e7f816ab9eba78eb142c6d44410f4eeba1e26e4f5dfa56b95"
