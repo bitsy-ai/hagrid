@@ -105,10 +105,10 @@ impl Service {
             &vec![userid],
             &i18n!(
                 i18n.catalog,
-                context = "Subject for verification email",
-                "Verify {userid} for your key on {domain}";
-                userid = userid,
-                domain = self.domain
+                context = "Subject for verification email, {0} = userid, {1} = keyserver domain",
+                "Verify {0} for your key on {1}";
+                userid,
+                &self.domain,
             ),
             "verify",
             i18n.lang,
@@ -138,9 +138,9 @@ impl Service {
             &[recipient],
             &i18n!(
                 i18n.catalog,
-                context = "Subject for manage email",
-                "Manage your key on {domain}";
-                domain = self.domain
+                context = "Subject for manage email, {} = keyserver domain",
+                "Manage your key on {}";
+                &self.domain
             ),
             "manage",
             i18n.lang,

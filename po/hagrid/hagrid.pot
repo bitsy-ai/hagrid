@@ -12,332 +12,250 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: src/mail.rs:107
-msgctxt "Subject for verification email"
-msgid "Verify {userid} for your key on {domain}"
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
 msgstr ""
 
-#: src/mail.rs:140
-msgctxt "Subject for manage email"
-msgid "Manage your key on {domain}"
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
 msgstr ""
 
-#: src/i18n_helpers.rs:8
-msgid "No key found for fingerprint {fingerprint}"
+msgid "No key found for fingerprint {}"
 msgstr ""
 
-#: src/i18n_helpers.rs:10
-msgid "No key found for key id {key_id}"
+msgid "No key found for key id {}"
 msgstr ""
 
-#: src/i18n_helpers.rs:12
-msgid "No key found for email address {email}"
+msgid "No key found for email address {}"
 msgstr ""
 
-#: src/i18n_helpers.rs:13
 msgid "Search by Short Key ID is not supported."
 msgstr ""
 
-#: src/i18n_helpers.rs:14
 msgid "Invalid search query."
 msgstr ""
 
-#: src/gettext_strings.rs:4
 msgid "Error"
 msgstr ""
 
-#: src/gettext_strings.rs:5
 msgid "Looks like something went wrong :("
 msgstr ""
 
-#: src/gettext_strings.rs:6
 msgid "Error message: {{ internal_error }}"
 msgstr ""
 
-#: src/gettext_strings.rs:7
 msgid "There was an error with your request:"
 msgstr ""
 
-#: src/gettext_strings.rs:8
 msgid "We found an entry for <span class=\"email\">{{ query }}</span>:"
 msgstr ""
 
-#: src/gettext_strings.rs:9
 msgid "<strong>Hint:</strong> It's more convenient to use <span class=\"brand\">keys.openpgp.org</span> from your OpenPGP software.<br /> Take a look at our <a href=\"/about/usage\">usage guide</a> for details."
 msgstr ""
 
-#: src/gettext_strings.rs:10
 msgid "debug info"
 msgstr ""
 
-#: src/gettext_strings.rs:11
 msgid "Search by Email Address / Key ID / Fingerprint"
 msgstr ""
 
-#: src/gettext_strings.rs:12
 msgid "Search"
 msgstr ""
 
-#: src/gettext_strings.rs:13
 msgid "You can also <a href=\"/upload\">upload</a> or <a href=\"/manage\">manage</a> your key."
 msgstr ""
 
-#: src/gettext_strings.rs:14
 msgid "Find out more <a href=\"/about\">about this service</a>."
 msgstr ""
 
-#: src/gettext_strings.rs:15
 msgid "News:"
 msgstr ""
 
-#: src/gettext_strings.rs:16
 msgid "<a href=\"/about/news#2019-11-12-celebrating-100k\">Celebrating 100.000 verified addresses! 📈</a> (2019-11-12)"
 msgstr ""
 
-#: src/gettext_strings.rs:17
 msgid "v{{ version }} built from"
 msgstr ""
 
-#: src/gettext_strings.rs:18
 msgid "Powered by <a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a>"
 msgstr ""
 
-#: src/gettext_strings.rs:19
 msgid "Background image retrieved from <a href=\"https://www.toptal.com/designers/subtlepatterns/subtle-grey/\">Subtle Patterns</a> under CC BY-SA 3.0"
 msgstr ""
 
-#: src/gettext_strings.rs:20
 msgid "Maintenance Mode"
 msgstr ""
 
-#: src/gettext_strings.rs:21
 msgid "Manage your key"
 msgstr ""
 
-#: src/gettext_strings.rs:22
 msgid "Enter any verified email address for your key"
 msgstr ""
 
-#: src/gettext_strings.rs:23
 msgid "Send link"
 msgstr ""
 
-#: src/gettext_strings.rs:24
 msgid "We will send you an email with a link you can use to remove any of your email addresses from search."
 msgstr ""
 
-#: src/gettext_strings.rs:25
 msgid "Managing the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank\">{{ key_fpr }}</a></span>."
 msgstr ""
 
-#: src/gettext_strings.rs:26
 msgid "Your key is published with the following identity information:"
 msgstr ""
 
-#: src/gettext_strings.rs:27
 msgid "Delete"
 msgstr ""
 
-#: src/gettext_strings.rs:28
 msgid "Clicking \"delete\" on any address will remove it from this key. It will no longer appear in a search.<br /> To add another address, <a href=\"/upload\">upload</a> the key again."
 msgstr ""
 
-#: src/gettext_strings.rs:29
 msgid "Your key is published as only non-identity information.  (<a href=\"/about\" target=\"_blank\">What does this mean?</a>)"
 msgstr ""
 
-#: src/gettext_strings.rs:30
 msgid "To add an address, <a href=\"/upload\">upload</a> the key again."
 msgstr ""
 
-#: src/gettext_strings.rs:31
 msgid "We have sent an email with further instructions to <span class=\"email\">{{ address }}</span>."
 msgstr ""
 
-#: src/gettext_strings.rs:32
 msgid "This address has already been verified."
 msgstr ""
 
-#: src/gettext_strings.rs:33
 msgid "Your key <span class=\"fingerprint\">{{ key_fpr }}</span> is now published for the identity <a href=\"{{userid_link}}\" target=\"_blank\"><span class=\"email\">{{ userid }}</span></a>."
 msgstr ""
 
-#: src/gettext_strings.rs:34
 msgid "Upload your key"
 msgstr ""
 
-#: src/gettext_strings.rs:35
 msgid "Upload"
 msgstr ""
 
-#: src/gettext_strings.rs:36
 msgid "Need more info? Check our <a target=\"_blank\" href=\"/about\">intro</a> and <a target=\"_blank\" href=\"/about/usage\">usage guide</a>."
 msgstr ""
 
-#: src/gettext_strings.rs:37
 msgid "You uploaded the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" target=\"_blank\">{{ key_fpr }}</a></span>."
 msgstr ""
 
-#: src/gettext_strings.rs:38
 msgid "This key is revoked."
 msgstr ""
 
-#: src/gettext_strings.rs:39
 msgid "It is published without identity information and can't be made available for search by email address (<a href=\"/about\" target=\"_blank\">what does this mean?</a>)."
 msgstr ""
 
-#: src/gettext_strings.rs:40
 msgid "This key is now published with the following identity information (<a href=\"/about\" target=\"_blank\">what does this mean?</a>):"
 msgstr ""
 
-#: src/gettext_strings.rs:41
 msgid "Published"
 msgstr ""
 
-#: src/gettext_strings.rs:42
 msgid "This key is now published with only non-identity information. (<a href=\"/about\" target=\"_blank\">What does this mean?</a>)"
 msgstr ""
 
-#: src/gettext_strings.rs:43
 msgid "To make the key available for search by email address, you can verify it belongs to you:"
 msgstr ""
 
-#: src/gettext_strings.rs:44
 msgid "Verification Pending"
 msgstr ""
 
-#: src/gettext_strings.rs:45
 msgid "<strong>Note:</strong> Some providers delay emails for up to 15 minutes to prevent spam. Please be patient."
 msgstr ""
 
-#: src/gettext_strings.rs:46
 msgid "Send Verification Email"
 msgstr ""
 
-#: src/gettext_strings.rs:47
 msgid "This key contains one identity that could not be parsed as an email address.<br /> This identity can't be published on <span class=\"brand\">keys.openpgp.org</span>.  (<a href=\"/about/faq#non-email-uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
 
-#: src/gettext_strings.rs:48
 msgid "This key contains {{ count_unparsed }} identities that could not be parsed as an email address.<br /> These identities can't be published on <span class=\"brand\">keys.openpgp.org</span>.  (<a href=\"/about/faq#non-email-uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
 
-#: src/gettext_strings.rs:49
 msgid "This key contains one revoked identity, which is not published. (<a href=\"/about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
 
-#: src/gettext_strings.rs:50
 msgid "This key contains {{ count_revoked }} revoked identities, which are not published. (<a href=\"/about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
 msgstr ""
 
-#: src/gettext_strings.rs:51
 msgid "Your keys have been successfully uploaded:"
 msgstr ""
 
-#: src/gettext_strings.rs:52
 msgid "<strong>Note:</strong> To make keys searchable by email address, you must upload them individually."
 msgstr ""
 
-#: src/gettext_strings.rs:53
 msgid "Verifying your email address…"
 msgstr ""
 
-#: src/gettext_strings.rs:54
 msgid "If the process doesn't complete after a few seconds, please <input type=\"submit\" class=\"textbutton\" value=\"click here\" />."
 msgstr ""
 
-#: src/gettext_strings.rs:56
 msgid "Manage your key on {{domain}}"
 msgstr ""
 
-#: src/gettext_strings.rs:58
 msgid "Hi,"
 msgstr ""
 
-#: src/gettext_strings.rs:59
 msgid "This is an automated message from <a href=\"{{base_uri}}\" style=\"text-decoration:none; color: #333\">{{domain}}</a>."
 msgstr ""
 
-#: src/gettext_strings.rs:60
 msgid "If you didn't request this message, please ignore it."
 msgstr ""
 
-#: src/gettext_strings.rs:61
 msgid "OpenPGP key: <tt>{{primary_fp}}</tt>"
 msgstr ""
 
-#: src/gettext_strings.rs:62
 msgid "To manage and delete listed addresses on this key, please follow the link below:"
 msgstr ""
 
-#: src/gettext_strings.rs:63
 msgid "You can find more info at <a href=\"{{base_uri}}/about\">{{domain}}/about</a>."
 msgstr ""
 
-#: src/gettext_strings.rs:64
 msgid "distributing OpenPGP keys since 2019"
 msgstr ""
 
-#: src/gettext_strings.rs:67
 msgid "This is an automated message from {{domain}}."
 msgstr ""
 
-#: src/gettext_strings.rs:69
 msgid "OpenPGP key: {{primary_fp}}"
 msgstr ""
 
-#: src/gettext_strings.rs:71
 msgid "You can find more info at {{base_uri}}/about"
 msgstr ""
 
-#: src/gettext_strings.rs:74
 msgid "Verify {{userid}} for your key on {{domain}}"
 msgstr ""
 
-#: src/gettext_strings.rs:80
 msgid "To let others find this key from your email address \"<a rel=\"nofollow\" href=\"#\" style=\"text-decoration:none; color: #333\">{{userid}}</a>\", please click the link below:"
 msgstr ""
 
-#: src/gettext_strings.rs:88
 msgid "To let others find this key from your email address \"{{userid}}\",\nplease follow the link below:"
 msgstr ""
 
-#: src/web/manage.rs:103
 msgid "This link is invalid or expired"
 msgstr ""
 
-#: src/web/manage.rs:129
-msgid "Malformed address: {address}"
+msgid "Malformed address: {}"
 msgstr ""
 
-#: src/web/manage.rs:136
-msgid "No key for address: {address}"
+msgid "No key for address: {}"
 msgstr ""
 
-#: src/web/manage.rs:152
 msgid "A request has already been sent for this address recently."
 msgstr ""
 
-#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr ""
 
-#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr ""
 
-#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr ""
 
-#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr ""
 
-#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr ""
 
-#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr ""

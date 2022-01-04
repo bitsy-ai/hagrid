@@ -17,57 +17,49 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
-#: src/mail.rs:107
-msgctxt "Subject for verification email"
-msgid "Verify {userid} for your key on {domain}"
+#, fuzzy
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
 msgstr "‫تحققْ من {userid} لأجل مفتاحك في {domain}‬"
 
-#: src/mail.rs:140
-msgctxt "Subject for manage email"
-msgid "Manage your key on {domain}"
+#, fuzzy
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
 msgstr "‫أدرْ مفتاحك في {domain}‬"
 
-#: src/i18n_helpers.rs:8
-msgid "No key found for fingerprint {fingerprint}"
+#, fuzzy
+msgid "No key found for fingerprint {}"
 msgstr "‫لم يعثر على المفتاح ذي البصمة {fingerprint}"
 
-#: src/i18n_helpers.rs:10
-msgid "No key found for key id {key_id}"
+#, fuzzy
+msgid "No key found for key id {}"
 msgstr "‫لم يعثر على المفتاح ذي المُعرِّف {key_id}"
 
-#: src/i18n_helpers.rs:12
-msgid "No key found for email address {email}"
+#, fuzzy
+msgid "No key found for email address {}"
 msgstr "‫لم يعثر على المفتاح ذي العنوان الإلكتروني {email}"
 
-#: src/i18n_helpers.rs:13
 msgid "Search by Short Key ID is not supported."
 msgstr "‫إن البحث بالمُعرِّف المختصر للمفتاح ليس مدعوما."
 
-#: src/i18n_helpers.rs:14
 msgid "Invalid search query."
 msgstr "طلب البحث غير صالح.‏"
 
-#: src/gettext_strings.rs:4
 msgid "Error"
 msgstr "هناك خطأ"
 
-#: src/gettext_strings.rs:5
 msgid "Looks like something went wrong :("
 msgstr "‫يبدو أن مشكلة ما حصلت :(‬"
 
-#: src/gettext_strings.rs:6
 msgid "Error message: {{ internal_error }}"
 msgstr "‫رسالة الخطأ : {{ internal_error }}‬"
 
-#: src/gettext_strings.rs:7
 msgid "There was an error with your request:"
 msgstr "‫هناك خطأ في طلبك :"
 
-#: src/gettext_strings.rs:8
 msgid "We found an entry for <span class=\"email\">{{ query }}</span>:"
 msgstr "‫لقد عثرنا على مُدخَلة لـ <span class=\"email\">{{ query }}</span> :"
 
-#: src/gettext_strings.rs:9
 msgid ""
 "<strong>Hint:</strong> It's more convenient to use <span class=\"brand"
 "\">keys.openpgp.org</span> from your OpenPGP software.<br /> Take a look at "
@@ -77,19 +69,15 @@ msgstr ""
 "org</span> انطلاقا من برنامج OpenPGP. <br /> عليك بإلقاء نظرة عن ذلك في <a "
 "href=\"/about/usage\">دليل الاستخدام</a> للمزيد من التفاصيل.‬"
 
-#: src/gettext_strings.rs:10
 msgid "debug info"
 msgstr "معلومات التصحيح"
 
-#: src/gettext_strings.rs:11
 msgid "Search by Email Address / Key ID / Fingerprint"
 msgstr "ابحث بعنوان البريد الإلكتروني أو بمُعرِّف المفتاح أو بالبصمة"
 
-#: src/gettext_strings.rs:12
 msgid "Search"
 msgstr "ابحث"
 
-#: src/gettext_strings.rs:13
 msgid ""
 "You can also <a href=\"/upload\">upload</a> or <a href=\"/manage\">manage</"
 "a> your key."
@@ -97,15 +85,12 @@ msgstr ""
 "يمكنك أيضا <a href=\"/upload\">رفع</a> أو <a href=\"/manage\">إدارة</a> "
 "مفتاحك.‏"
 
-#: src/gettext_strings.rs:14
 msgid "Find out more <a href=\"/about\">about this service</a>."
 msgstr "اعرف المزيد <a href=\"/about\">عن هذه الخدمة</a>.‏"
 
-#: src/gettext_strings.rs:15
 msgid "News:"
 msgstr "اﻷخبار :‏"
 
-#: src/gettext_strings.rs:16
 msgid ""
 "<a href=\"/about/news#2019-11-12-celebrating-100k\">Celebrating 100.000 "
 "verified addresses! 📈</a> (2019-11-12)"
@@ -113,15 +98,12 @@ msgstr ""
 "<a href=\"/about/news#2019-11-12-celebrating-100k\">‫احتفلنا بالتحقق من 100‎ "
 "000 عنوان للبريد الإلكتروني ! 📈</a> (2019-11-12)"
 
-#: src/gettext_strings.rs:17
 msgid "v{{ version }} built from"
 msgstr "‫الإصدار {{ version }} بُنِي انطلاقا من"
 
-#: src/gettext_strings.rs:18
 msgid "Powered by <a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a>"
 msgstr "‫مُشغَّل بواسطة <a href=\"https://sequoia-pgp.org\">Sequoia-PGP</a>‬"
 
-#: src/gettext_strings.rs:19
 msgid ""
 "Background image retrieved from <a href=\"https://www.toptal.com/designers/"
 "subtlepatterns/subtle-grey/\">Subtle Patterns</a> under CC BY-SA 3.0"
@@ -130,23 +112,18 @@ msgstr ""
 "subtlepatterns/subtle-grey/\">Subtle Patterns</a> بموجب اﻹصدار 3.0‬ من « رخصة "
 "المشاع الإبداعي » (النِّسبَة، الترخيص بالمثل)"
 
-#: src/gettext_strings.rs:20
 msgid "Maintenance Mode"
 msgstr "وضع الصيانة"
 
-#: src/gettext_strings.rs:21
 msgid "Manage your key"
 msgstr "أدِر مفتاحك"
 
-#: src/gettext_strings.rs:22
 msgid "Enter any verified email address for your key"
 msgstr "أدخِل عنوان البريد الإلكتروني المُتحقَّق منه لمفتاحك"
 
-#: src/gettext_strings.rs:23
 msgid "Send link"
 msgstr "أرسِلْ الوصلة"
 
-#: src/gettext_strings.rs:24
 msgid ""
 "We will send you an email with a link you can use to remove any of your "
 "email addresses from search."
@@ -154,7 +131,6 @@ msgstr ""
 "سنرسل لك رسالة إلكترونية تحتوي على وصلة تسمح لك بإزالة أحد عناوين بريدك "
 "اﻹلكتروني من البحث.‏"
 
-#: src/gettext_strings.rs:25
 msgid ""
 "Managing the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
 "target=\"_blank\">{{ key_fpr }}</a></span>."
@@ -162,15 +138,12 @@ msgstr ""
 "‫إدارة المفتاح <span class=\"fingerprint\"><a href=\"{{ key_link }}\" target="
 "\"_blank\">{{ key_fpr }}</a></span>.‬"
 
-#: src/gettext_strings.rs:26
 msgid "Your key is published with the following identity information:"
 msgstr "مفتاحك منشور بموجب معلومات الهوية أسفله :‏"
 
-#: src/gettext_strings.rs:27
 msgid "Delete"
 msgstr "احدف"
 
-#: src/gettext_strings.rs:28
 msgid ""
 "Clicking \"delete\" on any address will remove it from this key. It will no "
 "longer appear in a search.<br /> To add another address, <a href=\"/upload"
@@ -180,7 +153,6 @@ msgstr ""
 "يظهر بعد ذلك في البحث. <br /> لإضافة عنوان آخر، عليك ب<a href=\"/upload"
 "\">رفع</a> المفتاح مرة أخرى.‬"
 
-#: src/gettext_strings.rs:29
 msgid ""
 "Your key is published as only non-identity information.  (<a href=\"/about\" "
 "target=\"_blank\">What does this mean?</a>)"
@@ -188,11 +160,9 @@ msgstr ""
 "‫لقد نُشِر مفتاحك فقط كمعلومة لا تمكِّن من التعرف على هويتك. (<a href=\"/about\" "
 "target=\"_blank\">ماذا يعني ذلك ؟</a>)‬"
 
-#: src/gettext_strings.rs:30
 msgid "To add an address, <a href=\"/upload\">upload</a> the key again."
 msgstr "ﻹضافة عنوان، عليك ب<a href=\"/upload\">رفع</a> المفتاح مرة أخرى.‏"
 
-#: src/gettext_strings.rs:31
 msgid ""
 "We have sent an email with further instructions to <span class=\"email"
 "\">{{ address }}</span>."
@@ -200,11 +170,9 @@ msgstr ""
 "‫لقد أرسلنا رسالة إليك، فيها تعليمات أخرى إلى العنوان اﻹلكتروني <span class="
 "\"email\">{{ address }}</span>.‬"
 
-#: src/gettext_strings.rs:32
 msgid "This address has already been verified."
 msgstr "لقد سبق التحقق من هذا العنوان.‏"
 
-#: src/gettext_strings.rs:33
 msgid ""
 "Your key <span class=\"fingerprint\">{{ key_fpr }}</span> is now published "
 "for the identity <a href=\"{{userid_link}}\" target=\"_blank\"><span class="
@@ -214,15 +182,12 @@ msgstr ""
 "للهوية <a href=\"{{userid_link}}\" target=\"_blank\"><span class=\"email"
 "\">{{ userid }}</span></a>.‬"
 
-#: src/gettext_strings.rs:34
 msgid "Upload your key"
 msgstr "ارفع مفتاحك"
 
-#: src/gettext_strings.rs:35
 msgid "Upload"
 msgstr "ارفع"
 
-#: src/gettext_strings.rs:36
 msgid ""
 "Need more info? Check our <a target=\"_blank\" href=\"/about\">intro</a> and "
 "<a target=\"_blank\" href=\"/about/usage\">usage guide</a>."
@@ -230,7 +195,6 @@ msgstr ""
 "‫أأنت بحاجة إلى معلومات أخرى ؟ يمكنك تفقد <a target=\"_blank\" href=\"/about"
 "\">مقدمتنا</a> و<a target=\"_blank\" href=\"/about/usage\">دليلنا</a>.‬"
 
-#: src/gettext_strings.rs:37
 msgid ""
 "You uploaded the key <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
 "target=\"_blank\">{{ key_fpr }}</a></span>."
@@ -238,11 +202,9 @@ msgstr ""
 "‫لقد رفعت المفتاح <span class=\"fingerprint\"><a href=\"{{ key_link }}\" "
 "target=\"_blank\">{{ key_fpr }}</a></span>.‬"
 
-#: src/gettext_strings.rs:38
 msgid "This key is revoked."
 msgstr "لقد أُبطِل هذا المفتاح.‏"
 
-#: src/gettext_strings.rs:39
 msgid ""
 "It is published without identity information and can't be made available for "
 "search by email address (<a href=\"/about\" target=\"_blank\">what does this "
@@ -252,7 +214,6 @@ msgstr ""
 "بواسطة عنوان البريد الإلكتروني (<a href=\"/about\" target=\"_blank\">ماذا "
 "يعني ذلك ؟</a>)‬.‏‬"
 
-#: src/gettext_strings.rs:40
 msgid ""
 "This key is now published with the following identity information (<a href="
 "\"/about\" target=\"_blank\">what does this mean?</a>):"
@@ -260,11 +221,9 @@ msgstr ""
 "مفتاحك منشور بموجب معلومات الهوية أسفله (<a href=\"/about\" target=\"_blank"
 "\">ماذا يعني ذلك ؟</a>) :‏"
 
-#: src/gettext_strings.rs:41
 msgid "Published"
 msgstr "نُشِر"
 
-#: src/gettext_strings.rs:42
 msgid ""
 "This key is now published with only non-identity information. (<a href=\"/"
 "about\" target=\"_blank\">What does this mean?</a>)"
@@ -272,18 +231,15 @@ msgstr ""
 "‫لقد نُشِر مفتاحك الآن فقط كمعلومة لا تمكِّن من التعرف على هويتك. (<a href=\"/"
 "about\" target=\"_blank\">ماذا يعني ذلك ؟</a>)‬"
 
-#: src/gettext_strings.rs:43
 msgid ""
 "To make the key available for search by email address, you can verify it "
 "belongs to you:"
 msgstr ""
 "لتمكين البحث عن المفتاح عبر عنوان البريد اﻹلكتروني، يمكنك تأكيد ملكيتك له :‏"
 
-#: src/gettext_strings.rs:44
 msgid "Verification Pending"
 msgstr "في انتظار التحقُّق"
 
-#: src/gettext_strings.rs:45
 msgid ""
 "<strong>Note:</strong> Some providers delay emails for up to 15 minutes to "
 "prevent spam. Please be patient."
@@ -291,11 +247,9 @@ msgstr ""
 "<strong>ملاحظة : </strong>قد يؤخر بعض مزودي خدمة البريد اﻹلكتروني وصول "
 "الرسائل إلى ما يقارب 15 دقيقة للوقاية من الرسائل المزعجة. يُرجى الصبر قليلا.‏"
 
-#: src/gettext_strings.rs:46
 msgid "Send Verification Email"
 msgstr "أرسِل رسالة التحقُّق"
 
-#: src/gettext_strings.rs:47
 msgid ""
 "This key contains one identity that could not be parsed as an email address."
 "<br /> This identity can't be published on <span class=\"brand\">keys."
@@ -306,7 +260,6 @@ msgstr ""
 "<br /> لذا، سيتعذر نشر هذه الهوية في <span class=\"brand\">keys.openpgp.org</"
 "span>. (<a href=\"/about/faq#non-email-uids\" target=\"_blank\">لماذا ؟</a>)‬"
 
-#: src/gettext_strings.rs:48
 msgid ""
 "This key contains {{ count_unparsed }} identities that could not be parsed "
 "as an email address.<br /> These identities can't be published on <span "
@@ -318,7 +271,6 @@ msgstr ""
 "\">keys.openpgp.org</span>. (<a href=\"/about/faq#non-email-uids\" target="
 "\"_blank\">لماذا ؟</a>)‬"
 
-#: src/gettext_strings.rs:49
 msgid ""
 "This key contains one revoked identity, which is not published. (<a href=\"/"
 "about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
@@ -326,7 +278,6 @@ msgstr ""
 "‫يحتوي هذا المفتاح على هوية واحدة قد أُبطلَت، ولم يتم نشرها. (<a href=\"/about/"
 "faq#non-email-uids\" target=\"_blank\">لماذا ؟</a>)‬"
 
-#: src/gettext_strings.rs:50
 msgid ""
 "This key contains {{ count_revoked }} revoked identities, which are not "
 "published. (<a href=\"/about/faq#revoked-uids\" target=\"_blank\">Why?</a>)"
@@ -334,11 +285,9 @@ msgstr ""
 "‫يحتوي هذا المفتاح على {{ count_revoked }} هويات قد أُبطلَت، ولم يتم نشرها. (<a "
 "href=\"/about/faq#non-email-uids\" target=\"_blank\">لماذا ؟</a>)‬"
 
-#: src/gettext_strings.rs:51
 msgid "Your keys have been successfully uploaded:"
 msgstr "لقد رُفعَت مفاتيحك بنجاح :‏"
 
-#: src/gettext_strings.rs:52
 msgid ""
 "<strong>Note:</strong> To make keys searchable by email address, you must "
 "upload them individually."
@@ -346,11 +295,9 @@ msgstr ""
 "‬<strong>ملاحظة :</strong> لتمكين البحث عن مفاتيحك بواسطة عنوان البريد "
 "الإلكتروني، عليك برفعها فرديا. "
 
-#: src/gettext_strings.rs:53
 msgid "Verifying your email address…"
 msgstr "يجري التحقق من عنوان بريدك الإلكتروني…‏"
 
-#: src/gettext_strings.rs:54
 msgid ""
 "If the process doesn't complete after a few seconds, please <input type="
 "\"submit\" class=\"textbutton\" value=\"click here\" />."
@@ -358,15 +305,12 @@ msgstr ""
 "إذا لم تكتمل العملية بعد بضع ثوان، يُرجى <input type=\"submit\" class="
 "\"textbutton\" value=\"cliquer ici\"/>.‏"
 
-#: src/gettext_strings.rs:56
 msgid "Manage your key on {{domain}}"
 msgstr "أدرْ مفتاحك في {domain}"
 
-#: src/gettext_strings.rs:58
 msgid "Hi,"
 msgstr "أهلا بك،‏"
 
-#: src/gettext_strings.rs:59
 msgid ""
 "This is an automated message from <a href=\"{{base_uri}}\" style=\"text-"
 "decoration:none; color: #333\">{{domain}}</a>."
@@ -374,22 +318,18 @@ msgstr ""
 "‫هذه رسالة آلية من <a href=\"{{base_uri}}\" style=\"text-decoration:none; "
 "color: #333\">{{domain}}</a>.‬"
 
-#: src/gettext_strings.rs:60
 msgid "If you didn't request this message, please ignore it."
 msgstr "إذا لم تطلب التوصل بهذه الرسالة، يُرجى تجاهلها.‏"
 
-#: src/gettext_strings.rs:61
 msgid "OpenPGP key: <tt>{{primary_fp}}</tt>"
 msgstr "‫مفتاح OpenPGP ‏: <tt>{{primary_fp}}</tt>‬"
 
-#: src/gettext_strings.rs:62
 msgid ""
 "To manage and delete listed addresses on this key, please follow the link "
 "below:"
 msgstr ""
 "لإدارة أو حذف العناوين المُدرَجة مع هذا المفتاح، يُرجى اتباع الوصلة أسفله :‏"
 
-#: src/gettext_strings.rs:63
 msgid ""
 "You can find more info at <a href=\"{{base_uri}}/about\">{{domain}}/about</"
 "a>."
@@ -397,27 +337,21 @@ msgstr ""
 "‫يمكنك الاطلاع على المزيد من المعلومات عبر الصفحة <a href=\"{{base_uri}}/about"
 "\">‎‪{{domain}}/about‬</a>."
 
-#: src/gettext_strings.rs:64
 msgid "distributing OpenPGP keys since 2019"
 msgstr "‫يوزِّع مفاتيح OpenPGP منذ 2019‬"
 
-#: src/gettext_strings.rs:67
 msgid "This is an automated message from {{domain}}."
 msgstr "‫هذه رسالة آلية من {{domain}}.‬‬"
 
-#: src/gettext_strings.rs:69
 msgid "OpenPGP key: {{primary_fp}}"
 msgstr "‫مفتاح OpenPGP ‏: {{primary_fp}}‬"
 
-#: src/gettext_strings.rs:71
 msgid "You can find more info at {{base_uri}}/about"
 msgstr "‫يمكنك الاطلاع على المزيد من المعلومات عبر الصفحة ‎‪{{domain}}/about‬."
 
-#: src/gettext_strings.rs:74
 msgid "Verify {{userid}} for your key on {{domain}}"
 msgstr "‫تحققْ من {userid} لأجل مفتاحك في {domain}‬"
 
-#: src/gettext_strings.rs:80
 msgid ""
 "To let others find this key from your email address \"<a rel=\"nofollow\" "
 "href=\"#\" style=\"text-decoration:none; color: #333\">{{userid}}</a>\", "
@@ -427,7 +361,6 @@ msgstr ""
 "<a rel=\"nofollow\" href=\"#\" style=\"text-decoration:none; color : "
 "#333\">{userid}}</a> »، يُرجى الضغط على الوصلة أسفله :‬"
 
-#: src/gettext_strings.rs:88
 msgid ""
 "To let others find this key from your email address \"{{userid}}\",\n"
 "please follow the link below:"
@@ -436,42 +369,34 @@ msgstr ""
 "« {userid}} »،‬\n"
 "‫يُرجى اتباع الوصلة أسفله :‬"
 
-#: src/web/manage.rs:103
 msgid "This link is invalid or expired"
 msgstr "هذه الوصلة باطلة أو انتهت صلاحيتها"
 
-#: src/web/manage.rs:129
-msgid "Malformed address: {address}"
+#, fuzzy
+msgid "Malformed address: {}"
 msgstr "‫العنوان غير صحيح : {address}‬"
 
-#: src/web/manage.rs:136
-msgid "No key for address: {address}"
+#, fuzzy
+msgid "No key for address: {}"
 msgstr "‫لا يوجد مفتاح لهذا العنوان : {address}‬"
 
-#: src/web/manage.rs:152
 msgid "A request has already been sent for this address recently."
 msgstr "لقد سبق إرسال الطلب إلى هذا العنوان حديثا.‏"
 
-#: src/web/vks.rs:111
 msgid "Parsing of key data failed."
 msgstr "فشِل تحليل بيانات المفتاح.‏"
 
-#: src/web/vks.rs:120
 msgid "Whoops, please don't upload secret keys!"
 msgstr "‫تحذير : يُرجى عدم رفع مفاتيحك السرية !‬"
 
-#: src/web/vks.rs:133
 msgid "No key uploaded."
 msgstr "لم يُرفَع أي مفتاح.‏"
 
-#: src/web/vks.rs:177
 msgid "Error processing uploaded key."
 msgstr "حدث خطأ أثناء معالجة المفتاح المرفوع.‏"
 
-#: src/web/vks.rs:247
 msgid "Upload session expired. Please try again."
 msgstr "انتهت مهلة جلسة الرفع. يُرجى المحاولة مرة أخرى.‏"
 
-#: src/web/vks.rs:284
 msgid "Invalid verification link."
 msgstr "وصلة التحقُّق باطلة.‏"

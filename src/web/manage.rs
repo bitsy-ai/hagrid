@@ -126,14 +126,14 @@ pub fn vks_manage_post(
         Ok(email) => email,
         Err(_) => return MyResponse::not_found(
             Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "Malformed address: {address}"; address = request.search_term)))
+            Some(i18n!(i18n.catalog, "Malformed address: {}"; &request.search_term)))
     };
 
     let tpk = match db.lookup(&database::Query::ByEmail(email.clone())) {
         Ok(Some(tpk)) => tpk,
         Ok(None) => return MyResponse::not_found(
             Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "No key for address: {address}"; address = request.search_term))),
+            Some(i18n!(i18n.catalog, "No key for address: {}"; &request.search_term))),
         Err(e) => return MyResponse::ise(e),
     };
 

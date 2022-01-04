@@ -708,12 +708,20 @@ dependencies = [
 
 [[package]]
 name = "gettext-macros"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+version = "0.6.0"
+source = "git+https://github.com/Valodim/gettext-macros?rev=d15fa92ef6ac28269890557fe9c3767d01442633#d15fa92ef6ac28269890557fe9c3767d01442633"
 dependencies = [
  "gettext 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "runtime-fmt 0.4.1 (git+https://github.com/Valodim/runtime-fmt?rev=44c15d832cb327ef33f95548a9a964d98c006fe4)",
+ "gettext-utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.48 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "gettext-utils"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "ghash"
@@ -746,7 +754,8 @@ dependencies = [
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "gettext 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gettext-macros 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gettext-macros 0.6.0 (git+https://github.com/Valodim/gettext-macros?rev=d15fa92ef6ac28269890557fe9c3767d01442633)",
+ "gettext-utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glob 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hagrid-database 0.1.0",
  "handlebars 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -762,7 +771,6 @@ dependencies = [
  "rocket_contrib 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_i18n 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_prometheus 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "runtime-fmt 0.4.1 (git+https://github.com/Valodim/runtime-fmt?rev=44c15d832cb327ef33f95548a9a964d98c006fe4)",
  "sequoia-openpgp 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.117 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1925,14 +1933,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "runtime-fmt"
-version = "0.4.1"
-source = "git+https://github.com/Valodim/runtime-fmt?rev=44c15d832cb327ef33f95548a9a964d98c006fe4#44c15d832cb327ef33f95548a9a964d98c006fe4"
-dependencies = [
- "unicode-xid 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "rust-argon2"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2773,7 +2773,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum generic-array 0.14.4 (registry+https://github.com/rust-lang/crates.io-index)" = "501466ecc8a30d1d3b7fc9229b122b2ce8ed6e9d9223f1138d4babb253e51817"
 "checksum getrandom 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)" = "fc587bc0ec293155d5bfa6b9891ec18a1e330c234f896ea47fbada4cadbe47e6"
 "checksum gettext 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9ebb594e753d5997e4be036e5a8cf048ab9414352870fb45c779557bbc9ba971"
-"checksum gettext-macros 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "fbf88e9e6bba5ff64428ee2a32ea9872d94d4c87c42fb3f219bf87f63e4b9d51"
+"checksum gettext-macros 0.6.0 (git+https://github.com/Valodim/gettext-macros?rev=d15fa92ef6ac28269890557fe9c3767d01442633)" = "<none>"
+"checksum gettext-utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "46dd079379f756f6a1ae74b051813e242893f84fbf6ac898bce827fc77958d70"
 "checksum ghash 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "9f0930ed19a7184089ea46d2fedead2f6dc2b674c5db4276b7da336c7cd83252"
 "checksum gimli 0.23.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f6503fe142514ca4799d4c26297c4248239fe8838d827db6bd6065c6ed29a6ce"
 "checksum glob 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
@@ -2899,7 +2900,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rocket_http 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)" = "1aff5a5480175f2f553a876b251e9350c74196128806d176da3a51c82aab5428"
 "checksum rocket_i18n 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "dbf9f4c872b824ac0506557be9c66e0315d66d0e378d2ae02ee2e7b0fed2a338"
 "checksum rocket_prometheus 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8648f031a8cafb1c8dce50899d2080f475fa58e6643bccd92cf87d0e9993df37"
-"checksum runtime-fmt 0.4.1 (git+https://github.com/Valodim/runtime-fmt?rev=44c15d832cb327ef33f95548a9a964d98c006fe4)" = "<none>"
 "checksum rust-argon2 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9dab61250775933275e84053ac235621dfb739556d5c54a2f2e9313b7cf43a19"
 "checksum rustc-demangle 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)" = "6e3bad0ee36814ca07d7968269dd4b7ec89ec2da10c4bb613928d3077083c232"
 "checksum rustc-hash 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
