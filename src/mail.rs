@@ -308,7 +308,7 @@ mod test {
         if let Some((_, v)) = headers.iter().find(|(h, _)| *h == name) {
             assert!(pred(v));
         } else {
-            panic!(format!("Missing header: {}", name));
+            panic!("Missing header: {}", name);
         }
     }
 

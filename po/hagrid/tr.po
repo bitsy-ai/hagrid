@@ -17,27 +17,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#, fuzzy
 msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
 msgid "Verify {0} for your key on {1}"
-msgstr "{domain} üzerindeki anahtarınız için {userid} doğrulaması"
+msgstr "{1} üzerindeki anahtarınız için {0} doğrulaması"
 
-#, fuzzy
 msgctxt "Subject for manage email, {} = keyserver domain"
 msgid "Manage your key on {}"
-msgstr "{domain} sunucusundaki anahtarınızı yönetin"
+msgstr "{} sunucusundaki anahtarınızı yönetin"
 
-#, fuzzy
 msgid "No key found for fingerprint {}"
-msgstr "Parmak izi {fingerprint} için anahtar bulunamadı"
+msgstr "Parmak izi {} için anahtar bulunamadı"
 
-#, fuzzy
 msgid "No key found for key id {}"
-msgstr "Anahtar kimliği {key_id} için anahtar bulunamadı"
+msgstr "Anahtar kimliği {} için anahtar bulunamadı"
 
-#, fuzzy
 msgid "No key found for email address {}"
-msgstr "E-posta adresi {email} için anahtar bulunamadı"
+msgstr "E-posta adresi {} için anahtar bulunamadı"
 
 msgid "Search by Short Key ID is not supported."
 msgstr "Kısa Anahtar Kimliği ile arama desteklenmiyor."

@@ -18,27 +18,22 @@ msgstr ""
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
 "%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#, fuzzy
 msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
 msgid "Verify {0} for your key on {1}"
-msgstr "Подтверди {userid} для твоего ключа на {domain}"
+msgstr "Подтверди {0} для твоего ключа на {1}"
 
-#, fuzzy
 msgctxt "Subject for manage email, {} = keyserver domain"
 msgid "Manage your key on {}"
-msgstr "Натрой свой ключ на {domain}"
+msgstr "Натрой свой ключ на {}"
 
-#, fuzzy
 msgid "No key found for fingerprint {}"
-msgstr "Нет ключа для адреса: {address}"
+msgstr "Нет ключа для адреса: {}"
 
-#, fuzzy
 msgid "No key found for key id {}"
-msgstr "Нет ключа для адреса: {address}"
+msgstr "Нет ключа для адреса: {}"
 
-#, fuzzy
 msgid "No key found for email address {}"
-msgstr "Нет ключа для адреса: {address}"
+msgstr "Нет ключа для адреса: {}"
 
 msgid "Search by Short Key ID is not supported."
 msgstr ""

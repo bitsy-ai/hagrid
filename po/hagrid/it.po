@@ -15,27 +15,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#, fuzzy
 msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
 msgid "Verify {0} for your key on {1}"
-msgstr "Verifica {userid} per la tua chiave su {domain}"
+msgstr "Verifica {0} per la tua chiave su {1}"
 
-#, fuzzy
 msgctxt "Subject for manage email, {} = keyserver domain"
 msgid "Manage your key on {}"
-msgstr "Gestisci la tua chiave su {domain}"
+msgstr "Gestisci la tua chiave su {}"
 
-#, fuzzy
 msgid "No key found for fingerprint {}"
-msgstr "Nessuna chiave per l'indirizzo: {address}"
+msgstr "Nessuna chiave per l'indirizzo: {}"
 
-#, fuzzy
 msgid "No key found for key id {}"
-msgstr "Nessuna chiave per l'indirizzo: {address}"
+msgstr "Nessuna chiave per l'indirizzo: {}"
 
-#, fuzzy
 msgid "No key found for email address {}"
-msgstr "Nessuna chiave per l'indirizzo: {address}"
+msgstr "Nessuna chiave per l'indirizzo: {}"
 
 msgid "Search by Short Key ID is not supported."
 msgstr ""

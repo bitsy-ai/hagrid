@@ -526,6 +526,7 @@ pub mod tests {
     use rocket::local::{Client, LocalResponse};
     use rocket::http::Status;
     use rocket::http::ContentType;
+    use rocket::http::Header;
 
     use sequoia_openpgp::Cert;
     use sequoia_openpgp::cert::CertBuilder;

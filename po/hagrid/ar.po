@@ -17,27 +17,22 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
-#, fuzzy
 msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
 msgid "Verify {0} for your key on {1}"
-msgstr "‫تحققْ من {userid} لأجل مفتاحك في {domain}‬"
+msgstr "‫تحققْ من {0} لأجل مفتاحك في {1}‬"
 
-#, fuzzy
 msgctxt "Subject for manage email, {} = keyserver domain"
 msgid "Manage your key on {}"
-msgstr "‫أدرْ مفتاحك في {domain}‬"
+msgstr "‫أدرْ مفتاحك في {}‬"
 
-#, fuzzy
 msgid "No key found for fingerprint {}"
-msgstr "‫لم يعثر على المفتاح ذي البصمة {fingerprint}"
+msgstr "‫لم يعثر على المفتاح ذي البصمة {}"
 
-#, fuzzy
 msgid "No key found for key id {}"
-msgstr "‫لم يعثر على المفتاح ذي المُعرِّف {key_id}"
+msgstr "‫لم يعثر على المفتاح ذي المُعرِّف {}"
 
-#, fuzzy
 msgid "No key found for email address {}"
-msgstr "‫لم يعثر على المفتاح ذي العنوان الإلكتروني {email}"
+msgstr "‫لم يعثر على المفتاح ذي العنوان الإلكتروني {}"
 
 msgid "Search by Short Key ID is not supported."
 msgstr "‫إن البحث بالمُعرِّف المختصر للمفتاح ليس مدعوما."

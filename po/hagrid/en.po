@@ -12,12 +12,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#, fuzzy
 msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
 msgid "Verify {0} for your key on {1}"
-msgstr "Verify {} for your key on {}"
+msgstr "Verify {0} for your key on {1}"
 
-#, fuzzy
 msgctxt "Subject for manage email, {} = keyserver domain"
 msgid "Manage your key on {}"
 msgstr "Manage your key on {}"
@@ -28,7 +26,6 @@ msgstr ""
 msgid "No key found for key id {}"
 msgstr ""
 
-#, fuzzy
 msgid "No key found for email address {}"
 msgstr "Verifying your email address…"
 

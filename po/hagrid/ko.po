@@ -17,27 +17,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#, fuzzy
 msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
 msgid "Verify {0} for your key on {1}"
-msgstr "{domain}에 {userid} 명의로 올린 키 인증"
+msgstr "{1}에 {0} 명의로 올린 키 인증"
 
-#, fuzzy
 msgctxt "Subject for manage email, {} = keyserver domain"
 msgid "Manage your key on {}"
-msgstr "{domain}에 올린 내 키 관리"
+msgstr "{}에 올린 내 키 관리"
 
-#, fuzzy
 msgid "No key found for fingerprint {}"
-msgstr "지문 {fingerprint}에 해당하는 키를 찾지 못했습니다."
+msgstr "지문 {}에 해당하는 키를 찾지 못했습니다."
 
-#, fuzzy
 msgid "No key found for key id {}"
-msgstr "키 ID {key_id}에 해당하는 키를 찾지 못했습니다."
+msgstr "키 ID {}에 해당하는 키를 찾지 못했습니다."
 
-#, fuzzy
 msgid "No key found for email address {}"
-msgstr "전자 메일 주소 {email}에 해당하는 키를 찾지 못했습니다."
+msgstr "전자 메일 주소 {}에 해당하는 키를 찾지 못했습니다."
 
 msgid "Search by Short Key ID is not supported."
 msgstr "'짧은 키 ID' 형식은 지원하지 않습니다."

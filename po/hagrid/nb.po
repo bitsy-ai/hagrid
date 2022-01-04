@@ -18,27 +18,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#, fuzzy
 msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
 msgid "Verify {0} for your key on {1}"
-msgstr "Bekreft {userid} for nøkkelen din på {domain}"
+msgstr "Bekreft {0} for nøkkelen din på {1}"
 
-#, fuzzy
 msgctxt "Subject for manage email, {} = keyserver domain"
 msgid "Manage your key on {}"
-msgstr "Administrer nøkkelen din på {domain}"
+msgstr "Administrer nøkkelen din på {}"
 
-#, fuzzy
 msgid "No key found for fingerprint {}"
-msgstr "Fant ingen nøkkel for fingeravtrykk {fingerprint}"
+msgstr "Fant ingen nøkkel for fingeravtrykk {}"
 
-#, fuzzy
 msgid "No key found for key id {}"
-msgstr "Fant ingen nøkkel for nøkkel-ID {key_id}"
+msgstr "Fant ingen nøkkel for nøkkel-ID {}"
 
-#, fuzzy
 msgid "No key found for email address {}"
-msgstr "Fant ingen nøkkel for e-postadresse {email}"
+msgstr "Fant ingen nøkkel for e-postadresse {}"
 
 msgid "Search by Short Key ID is not supported."
 msgstr "Tjenesten støtter ikke søk etter forkortet nøkkel-ID."
