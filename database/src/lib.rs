@@ -142,6 +142,35 @@ pub trait Database: Sync + Send {
     fn lock(&self) -> Result<Self::MutexGuard>;
 
     /// Queries the database using Fingerprint, KeyID, or
+    /// email-address, returning the primary fingerprint.
+    fn lookup_primary_fingerprint(&self, term: &Query) -> Option<Fingerprint>;
+
+    fn link_email(&self, email: &Email, fpr: &Fingerprint) -> Result<()>;
+    fn unlink_email(&self, email: &Email, fpr: &Fingerprint) -> Result<()>;
+
+    fn link_fpr(&self, from: &Fingerprint, to: &Fingerprint) -> Result<()>;
+    fn unlink_fpr(&self, from: &Fingerprint, to: &Fingerprint) -> Result<()>;
+
+    fn by_fpr(&self, fpr: &Fingerprint) -> Option<String>;
+    fn by_kid(&self, kid: &KeyID) -> Option<String>;
+    fn by_email(&self, email: &Email) -> Option<String>;
+    fn by_email_wkd(&self, email: &Email) -> Option<Vec<u8>>;
+
+    fn check_link_fpr(&self, fpr: &Fingerprint, target: &Fingerprint) -> Result<Option<Fingerprint>>;
+
+    fn by_fpr_full(&self, fpr: &Fingerprint) -> Option<String>;
+    fn by_primary_fpr(&self, fpr: &Fingerprint) -> Option<String>;
+
+    fn write_to_temp(&self, content: &[u8]) -> Result<NamedTempFile>;
+    fn move_tmp_to_full(&self, content: NamedTempFile, fpr: &Fingerprint) -> Result<()>;
+    fn move_tmp_to_published(&self, content: NamedTempFile, fpr: &Fingerprint) -> Result<()>;
+    fn move_tmp_to_published_wkd(&self, content: Option<NamedTempFile>, fpr: &Fingerprint) -> Result<()>;
+    fn write_to_quarantine(&self, fpr: &Fingerprint, content: &[u8]) -> Result<()>;
+    fn write_log_append(&self, filename: &str, fpr_primary: &Fingerprint) -> Result<()>;
+
+    fn check_consistency(&self) -> Result<()>;
+
+    /// Queries the database using Fingerprint, KeyID, or
     /// email-address.
     fn lookup(&self, term: &Query) -> Result<Option<Cert>> {
         use self::Query::*;
@@ -158,26 +187,11 @@ pub trait Database: Sync + Send {
         }
     }
 
-    /// Queries the database using Fingerprint, KeyID, or
-    /// email-address, returning the primary fingerprint.
-    fn lookup_primary_fingerprint(&self, term: &Query) -> Option<Fingerprint>;
-
     /// Gets the path to the underlying file, if any.
     fn lookup_path(&self, term: &Query) -> Option<PathBuf> {
         let _ = term;
         None
     }
-
-    fn link_email(&self, email: &Email, fpr: &Fingerprint) -> Result<()>;
-    fn unlink_email(&self, email: &Email, fpr: &Fingerprint) -> Result<()>;
-
-    fn link_fpr(&self, from: &Fingerprint, to: &Fingerprint) -> Result<()>;
-    fn unlink_fpr(&self, from: &Fingerprint, to: &Fingerprint) -> Result<()>;
-
-    fn by_fpr(&self, fpr: &Fingerprint) -> Option<String>;
-    fn by_kid(&self, kid: &KeyID) -> Option<String>;
-    fn by_email(&self, email: &Email) -> Option<String>;
-    fn by_email_wkd(&self, email: &Email) -> Option<Vec<u8>>;
 
     /// Complex operation that updates a Cert in the database.
     ///
@@ -630,20 +644,6 @@ pub trait Database: Sync + Send {
 
         Ok(())
     }
-
-    fn check_link_fpr(&self, fpr: &Fingerprint, target: &Fingerprint) -> Result<Option<Fingerprint>>;
-
-    fn by_fpr_full(&self, fpr: &Fingerprint) -> Option<String>;
-    fn by_primary_fpr(&self, fpr: &Fingerprint) -> Option<String>;
-
-    fn write_to_temp(&self, content: &[u8]) -> Result<NamedTempFile>;
-    fn move_tmp_to_full(&self, content: NamedTempFile, fpr: &Fingerprint) -> Result<()>;
-    fn move_tmp_to_published(&self, content: NamedTempFile, fpr: &Fingerprint) -> Result<()>;
-    fn move_tmp_to_published_wkd(&self, content: Option<NamedTempFile>, fpr: &Fingerprint) -> Result<()>;
-    fn write_to_quarantine(&self, fpr: &Fingerprint, content: &[u8]) -> Result<()>;
-    fn write_log_append(&self, filename: &str, fpr_primary: &Fingerprint) -> Result<()>;
-
-    fn check_consistency(&self) -> Result<()>;
 }
 
 fn tpk_get_emails(cert: &Cert) -> Vec<Email> {
