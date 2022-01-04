@@ -27,8 +27,6 @@ extern crate walkdir;
 extern crate chrono;
 extern crate zbase32;
 
-use tempfile::NamedTempFile;
-
 extern crate sequoia_openpgp as openpgp;
 use openpgp::{
     Cert,
@@ -134,6 +132,7 @@ pub enum RegenerateResult {
 
 pub trait Database: Sync + Send {
     type MutexGuard;
+    type TempCert;
 
     /// Lock the DB for a complex update.
     ///
@@ -161,10 +160,10 @@ pub trait Database: Sync + Send {
     fn by_fpr_full(&self, fpr: &Fingerprint) -> Option<String>;
     fn by_primary_fpr(&self, fpr: &Fingerprint) -> Option<String>;
 
-    fn write_to_temp(&self, content: &[u8]) -> Result<NamedTempFile>;
-    fn move_tmp_to_full(&self, content: NamedTempFile, fpr: &Fingerprint) -> Result<()>;
-    fn move_tmp_to_published(&self, content: NamedTempFile, fpr: &Fingerprint) -> Result<()>;
-    fn move_tmp_to_published_wkd(&self, content: Option<NamedTempFile>, fpr: &Fingerprint) -> Result<()>;
+    fn write_to_temp(&self, content: &[u8]) -> Result<Self::TempCert>;
+    fn move_tmp_to_full(&self, content: Self::TempCert, fpr: &Fingerprint) -> Result<()>;
+    fn move_tmp_to_published(&self, content: Self::TempCert, fpr: &Fingerprint) -> Result<()>;
+    fn move_tmp_to_published_wkd(&self, content: Option<Self::TempCert>, fpr: &Fingerprint) -> Result<()>;
     fn write_to_quarantine(&self, fpr: &Fingerprint, content: &[u8]) -> Result<()>;
     fn write_log_append(&self, filename: &str, fpr_primary: &Fingerprint) -> Result<()>;
 

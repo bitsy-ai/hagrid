@@ -348,7 +348,7 @@ impl Filesystem {
 // Like `symlink`, but instead of failing if `symlink_name` already
 // exists, atomically update `symlink_name` to have `symlink_content`.
 fn symlink(symlink_content: &Path, symlink_name: &Path) -> Result<()> {
-    use std::os::unix::fs::{symlink};
+    use std::os::unix::fs::symlink;
 
     let symlink_dir = ensure_parent(symlink_name)?.parent().unwrap();
     let tmp_dir = tempfile::Builder::new()
@@ -374,12 +374,13 @@ fn symlink_unlink_with_check(link: &Path, expected: &Path) -> Result<()> {
 
 impl Database for Filesystem {
     type MutexGuard = FlockMutexGuard;
+    type TempCert = NamedTempFile;
 
     fn lock(&self) -> Result<Self::MutexGuard> {
         FlockMutexGuard::lock(&self.keys_internal_dir)
     }
 
-    fn write_to_temp(&self, content: &[u8]) -> Result<NamedTempFile> {
+    fn write_to_temp(&self, content: &[u8]) -> Result<Self::TempCert> {
         let mut tempfile = tempfile::Builder::new()
             .prefix("key")
             .rand_bytes(16)
@@ -401,7 +402,7 @@ impl Database for Filesystem {
         Ok(())
     }
 
-    fn move_tmp_to_full(&self, file: NamedTempFile, fpr: &Fingerprint) -> Result<()> {
+    fn move_tmp_to_full(&self, file: Self::TempCert, fpr: &Fingerprint) -> Result<()> {
         if self.dry_run {
             return Ok(());
         }
@@ -411,7 +412,7 @@ impl Database for Filesystem {
         Ok(())
     }
 
-    fn move_tmp_to_published(&self, file: NamedTempFile, fpr: &Fingerprint) -> Result<()> {
+    fn move_tmp_to_published(&self, file: Self::TempCert, fpr: &Fingerprint) -> Result<()> {
         if self.dry_run {
             return Ok(());
         }
@@ -421,7 +422,7 @@ impl Database for Filesystem {
         Ok(())
     }
 
-    fn move_tmp_to_published_wkd(&self, file: Option<NamedTempFile>, fpr: &Fingerprint) -> Result<()> {
+    fn move_tmp_to_published_wkd(&self, file: Option<Self::TempCert>, fpr: &Fingerprint) -> Result<()> {
         if self.dry_run {
             return Ok(());
         }
