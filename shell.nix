@@ -1,21 +1,23 @@
-with import <nixpkgs> {};
 let
-  src = fetchFromGitHub {
-      owner = "mozilla";
-      repo = "nixpkgs-mozilla";
-      # commit from: 2019-07-15
-      rev = "8c007b60731c07dd7a052cce508de3bb1ae849b4";
-      sha256 = "sha256-RsNPnEKd7BcogwkqhaV5kI/HuNC4flH/OQCC/4W5y/8=";
-   };
-  rustOverlay = import "${src.out}/rust-overlay.nix" pkgs pkgs;
-  rustChannel = (rustOverlay.rustChannelOf { rustToolchain = ./rust-toolchain; });
+  oxalica_overlay = import (builtins.fetchTarball
+    "https://github.com/oxalica/rust-overlay/archive/master.tar.gz");
+
+  pkgs = import <nixpkgs> { overlays = [ oxalica_overlay ]; };
+  rust_channel = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
+  #rust_channel = pkgs.rust-bin.stable.latest.default;
 in
-stdenv.mkDerivation {
-  name = "rust-env";
-  buildInputs = [
-    rustChannel.rust
-    # latest.rustChannels.nightly.rust
-    # latest.rustChannels.stable.rust
+pkgs.mkShell {
+  nativeBuildInputs = [
+    (rust_channel.override {
+      extensions = [ "rust-src" "rust-std" "clippy" ];
+      targets = [
+        "x86_64-unknown-linux-gnu"
+      ];
+    })
+  ];
+
+  buildInputs = with pkgs; [
+    openssl
 
     clang
     nettle
@@ -30,6 +32,7 @@ stdenv.mkDerivation {
 
   # compilation of -sys packages requires manually setting this :(
   shellHook = ''
-    export LIBCLANG_PATH="${pkgs.llvmPackages.libclang}/lib";
+    export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib";
   '';
 }
+
