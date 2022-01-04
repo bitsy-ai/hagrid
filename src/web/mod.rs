@@ -1,11 +1,10 @@
 use rocket;
-use rocket::http::{Header, Status};
+use rocket::http::Status;
 use rocket::request;
 use rocket::outcome::Outcome;
 use rocket::response::{NamedFile, Responder, Response};
 use rocket::config::Config;
 use rocket_contrib::templates::{Template, Engines};
-use rocket::http::uri::Uri;
 use rocket_contrib::json::JsonValue;
 use rocket::response::status::Custom;
 use rocket_i18n::I18n;
@@ -73,8 +72,6 @@ pub enum MyResponse {
     Xml(HagridTemplate),
     #[response(status = 200, content_type = "application/pgp-keys")]
     Key(String, ContentDisposition),
-    #[response(status = 200, content_type = "application/pgp-keys")]
-    XAccelRedirect(&'static str, Header<'static>, ContentDisposition),
     #[response(status = 500, content_type = "html")]
     ServerError(Template),
     #[response(status = 404, content_type = "html")]
@@ -117,23 +114,6 @@ impl MyResponse {
         use rocket::http::hyper::header::{DispositionType, DispositionParam, Charset};
         MyResponse::Key(
             armored_key,
-            ContentDisposition {
-                disposition: DispositionType::Attachment,
-                parameters: vec![
-                    DispositionParam::Filename(
-                        Charset::Us_Ascii, None,
-                        (fp.to_string() + ".asc").into_bytes()),
-                ],
-            })
-    }
-
-    pub fn x_accel_redirect(x_accel_path: String, fp: &Fingerprint) -> Self {
-        use rocket::http::hyper::header::{DispositionType, DispositionParam, Charset};
-        // nginx expects percent-encoded URIs
-        let x_accel_path = Uri::percent_encode(&x_accel_path).into_owned();
-        MyResponse::XAccelRedirect(
-            "",
-            Header::new("X-Accel-Redirect", x_accel_path),
             ContentDisposition {
                 disposition: DispositionType::Attachment,
                 parameters: vec![
@@ -235,16 +215,9 @@ pub struct HagridState {
     /// Assets directory, mounted to /assets, served by hagrid or nginx
     assets_dir: PathBuf,
 
-    /// The keys directory, where keys are located, served by hagrid or nginx
-    keys_external_dir: PathBuf,
-
     /// XXX
     base_uri: String,
     base_uri_onion: String,
-
-    /// 
-    x_accel_redirect: bool,
-    x_accel_prefix: Option<PathBuf>,
 }
 
 #[derive(Debug)]
@@ -276,7 +249,6 @@ impl RequestOrigin {
 }
 
 pub fn key_to_response_plain(
-    state: rocket::State<HagridState>,
     db: rocket::State<KeyDatabase>,
     i18n: I18n,
     query: Query,
@@ -290,18 +262,6 @@ pub fn key_to_response_plain(
     } else {
         return MyResponse::not_found_plain(describe_query_error(&i18n, &query));
     };
-
-    if state.x_accel_redirect {
-        if let Some(key_path) = db.lookup_path(&query) {
-            let mut x_accel_path = state.keys_external_dir.join(&key_path);
-            if let Some(prefix) = state.x_accel_prefix.as_ref() {
-                x_accel_path = x_accel_path.strip_prefix(&prefix).unwrap().to_path_buf();
-            }
-            // prepend a / to make path relative to nginx root
-            let x_accel_path = format!("/{}", x_accel_path.to_string_lossy());
-            return MyResponse::x_accel_redirect(x_accel_path, &fp);
-        }
-    }
 
     return match db.by_fpr(&fp) {
         Some(armored) => MyResponse::key(armored, &fp.into()),
@@ -493,9 +453,6 @@ fn configure_db_service(config: &Config) -> Result<KeyDatabase> {
 
 fn configure_hagrid_state(config: &Config) -> Result<HagridState> {
     let assets_dir: PathBuf = config.get_str("assets_dir")?.into();
-    let keys_external_dir: PathBuf = config.get_str("keys_external_dir")?.into();
-    let x_accel_prefix: Option<PathBuf> =
-        config.get_string("x_accel_prefix").map(|prefix| prefix.into()).ok();
 
     // State
     let base_uri = config.get_str("base-URI")?.to_string();
@@ -504,11 +461,8 @@ fn configure_hagrid_state(config: &Config) -> Result<HagridState> {
         .unwrap_or(base_uri.clone());
     Ok(HagridState {
         assets_dir,
-        keys_external_dir: keys_external_dir,
         base_uri,
         base_uri_onion,
-        x_accel_redirect: config.get_bool("x-accel-redirect")?,
-        x_accel_prefix,
     })
 }
 
@@ -636,7 +590,6 @@ pub mod tests {
             .extra("token_validity", 3600)
             .extra("filemail_into", filemail.into_os_string().into_string()
                    .expect("path is valid UTF8"))
-            .extra("x-accel-redirect", false)
             .finalize()?;
         Ok((root, config))
     }

@@ -492,24 +492,6 @@ impl Database for Filesystem {
             .and_then(|link_path| Filesystem::path_to_fingerprint(&link_path))
     }
 
-    /// Gets the path to the underlying file, if any.
-    fn lookup_path(&self, term: &Query) -> Option<PathBuf> {
-        use super::Query::*;
-        let path = match term {
-            ByFingerprint(ref fp) => self.link_by_fingerprint(fp),
-            ByKeyID(ref keyid) => self.link_by_keyid(keyid),
-            ByEmail(ref email) => self.link_by_email(email),
-            _ => return None
-        };
-
-        if path.exists() {
-            let x = diff_paths(&path, &self.keys_external_dir).expect("related paths");
-            Some(x)
-        } else {
-            None
-        }
-    }
-
     fn link_email(&self, email: &Email, fpr: &Fingerprint) -> Result<()> {
         if self.dry_run {
             return Ok(());

@@ -20,7 +20,7 @@ use crate::tokens;
 
 use crate::web;
 use crate::mail;
-use crate::web::{HagridState, RequestOrigin, MyResponse, vks_web};
+use crate::web::{RequestOrigin, MyResponse, vks_web};
 use crate::web::vks::response::UploadResponse;
 use crate::web::vks::response::EmailStatus;
 
@@ -198,7 +198,6 @@ fn send_welcome_mail(
 
 #[get("/pks/lookup")]
 pub fn pks_lookup(
-    state: rocket::State<HagridState>,
     db: rocket::State<KeyDatabase>,
     i18n: I18n,
     key: Hkp
@@ -222,7 +221,7 @@ pub fn pks_lookup(
     if index {
         key_to_hkp_index(db, i18n, query)
     } else {
-        web::key_to_response_plain(state, db, i18n, query)
+        web::key_to_response_plain(db, i18n, query)
     }
 }
 

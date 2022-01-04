@@ -1,7 +1,6 @@
 #![recursion_limit = "1024"]
 
 use std::convert::TryFrom;
-use std::path::PathBuf;
 use std::str::FromStr;
 
 use openpgp::serialize::SerializeInto;
@@ -184,12 +183,6 @@ pub trait Database: Sync + Send {
             Some(armored) => Ok(Some(Cert::from_bytes(armored.as_bytes())?)),
             None => Ok(None),
         }
-    }
-
-    /// Gets the path to the underlying file, if any.
-    fn lookup_path(&self, term: &Query) -> Option<PathBuf> {
-        let _ = term;
-        None
     }
 
     /// Complex operation that updates a Cert in the database.

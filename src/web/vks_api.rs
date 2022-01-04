@@ -13,7 +13,7 @@ use crate::tokens;
 use crate::rate_limiter::RateLimiter;
 
 use crate::web;
-use crate::web::{HagridState, RequestOrigin, MyResponse};
+use crate::web::{RequestOrigin, MyResponse};
 use crate::web::vks;
 use crate::web::vks::response::*;
 
@@ -141,7 +141,6 @@ pub fn request_verify_fallback(
 
 #[get("/vks/v1/by-fingerprint/<fpr>")]
 pub fn vks_v1_by_fingerprint(
-    state: rocket::State<HagridState>,
     db: rocket::State<KeyDatabase>,
     i18n: I18n,
     fpr: String,
@@ -151,12 +150,11 @@ pub fn vks_v1_by_fingerprint(
         Err(_) => return MyResponse::bad_request_plain("malformed fingerprint"),
     };
 
-    web::key_to_response_plain(state, db, i18n, query)
+    web::key_to_response_plain(db, i18n, query)
 }
 
 #[get("/vks/v1/by-email/<email>")]
 pub fn vks_v1_by_email(
-    state: rocket::State<HagridState>,
     db: rocket::State<KeyDatabase>,
     i18n: I18n,
     email: String,
@@ -167,12 +165,11 @@ pub fn vks_v1_by_email(
         Err(_) => return MyResponse::bad_request_plain("malformed e-mail address"),
     };
 
-    web::key_to_response_plain(state, db, i18n, query)
+    web::key_to_response_plain(db, i18n, query)
 }
 
 #[get("/vks/v1/by-keyid/<kid>")]
 pub fn vks_v1_by_keyid(
-    state: rocket::State<HagridState>,
     db: rocket::State<KeyDatabase>,
     i18n: I18n,
     kid: String,
@@ -182,5 +179,5 @@ pub fn vks_v1_by_keyid(
         Err(_) => return MyResponse::bad_request_plain("malformed key id"),
     };
 
-    web::key_to_response_plain(state, db, i18n, query)
+    web::key_to_response_plain(db, i18n, query)
 }
