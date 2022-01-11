@@ -194,12 +194,12 @@ fn process_key_single(
 }
 
 pub fn request_verify(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     request_origin: RequestOrigin,
-    token_stateful: rocket::State<StatefulTokens>,
-    token_stateless: rocket::State<tokens::Service>,
-    mail_service: rocket::State<mail::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    token_stateful: &rocket::State<StatefulTokens>,
+    token_stateless: &rocket::State<tokens::Service>,
+    mail_service: &rocket::State<mail::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     token: String,
     addresses: Vec<String>,
@@ -273,9 +273,9 @@ fn send_verify_email(
 }
 
 pub fn verify_confirm(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: &I18n,
-    token_service: rocket::State<StatefulTokens>,
+    token_service: &rocket::State<StatefulTokens>,
     token: String,
 ) -> response::PublishResponse {
     let (fingerprint, email) = match check_publish_token(&db, &token_service, token) {

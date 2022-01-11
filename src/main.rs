@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene, plugin, decl_macro)]
 #![recursion_limit = "1024"]
 
 #[macro_use]
@@ -10,8 +9,6 @@ extern crate serde_derive;
 
 #[macro_use]
 extern crate rocket;
-#[macro_use]
-extern crate rocket_contrib;
 
 #[cfg(test)]
 extern crate regex;
@@ -39,16 +36,7 @@ mod gettext_strings;
 mod web;
 mod template_helpers;
 
-fn main() {
-    if let Err(e) = web::serve() {
-        eprint!("{}", e);
-        let mut cause = e.source();
-        while let Some(c) = cause {
-            eprint!(":\n  {}", c);
-            cause = c.source();
-        }
-        eprintln!();
-
-        ::std::process::exit(2);
-    }
+#[launch]
+fn rocket() -> _ {
+    web::serve().expect("Rocket config must succeed")
 }

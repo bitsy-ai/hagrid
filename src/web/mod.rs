@@ -1,15 +1,14 @@
 use rocket;
-use rocket::http::Status;
+use rocket::figment::Figment;
+use rocket::fs::NamedFile;
+use rocket::http::{Header, Status};
 use rocket::request;
 use rocket::outcome::Outcome;
-use rocket::response::{NamedFile, Responder, Response};
-use rocket::config::Config;
-use rocket_contrib::templates::{Template, Engines};
-use rocket_contrib::json::JsonValue;
+use rocket::response::{Responder, Response};
 use rocket::response::status::Custom;
+use rocket_dyn_templates::{Engines, Template};
 use rocket_i18n::I18n;
-
-use rocket_prometheus::PrometheusMetrics;
+use hyperx::header::{ContentDisposition, DispositionType, DispositionParam, Charset};
 
 use gettext_macros::{compile_i18n, include_i18n};
 
@@ -19,7 +18,6 @@ use std::path::PathBuf;
 
 use crate::mail;
 use crate::tokens;
-use crate::counters;
 use crate::i18n_helpers::describe_query_error;
 use crate::template_helpers::TemplateOverrides;
 use crate::i18n::I18NHelper;
@@ -41,17 +39,14 @@ mod debug_web;
 
 use crate::web::maintenance::MaintenanceMode;
 
-use rocket::http::hyper::header::ContentDisposition;
+pub struct HagridTemplate(&'static str, serde_json::Value, I18n, RequestOrigin);
 
-pub struct HagridTemplate(&'static str, serde_json::Value);
+impl<'r> Responder<'r, 'static> for HagridTemplate {
+    fn respond_to(self, req: &'r rocket::Request) -> std::result::Result<Response<'static>, Status> {
+        let HagridTemplate(tmpl, ctx, i18n, origin) = self;
 
-impl Responder<'static> for HagridTemplate {
-    fn respond_to(self, req: &rocket::Request) -> std::result::Result<Response<'static>, Status> {
-        let HagridTemplate(tmpl, ctx) = self;
-        let i18n: I18n = req.guard().expect("Error parsing language");
-        let template_overrides: rocket::State<TemplateOverrides> = req.guard().expect("TemplateOverrides must be in managed state");
+        let template_overrides: &TemplateOverrides = req.rocket().state().expect("TemplateOverrides must be in managed state");
         let template_override = template_overrides.get_template_override(i18n.lang, tmpl);
-        let origin: RequestOrigin = req.guard().expect("Error determining request origin");
         let layout_context = templates::HagridLayout::new(ctx, i18n, origin);
 
         if let Some(template_override) = template_override {
@@ -71,7 +66,7 @@ pub enum MyResponse {
     #[response(status = 200, content_type = "xml")]
     Xml(HagridTemplate),
     #[response(status = 200, content_type = "application/pgp-keys")]
-    Key(String, ContentDisposition),
+    Key(String, Header<'static>),
     #[response(status = 500, content_type = "html")]
     ServerError(Template),
     #[response(status = 404, content_type = "html")]
@@ -85,25 +80,25 @@ pub enum MyResponse {
     #[response(status = 503, content_type = "html")]
     Maintenance(Template),
     #[response(status = 503, content_type = "json")]
-    MaintenanceJson(JsonValue),
+    MaintenanceJson(serde_json::Value),
     #[response(status = 503, content_type = "plain")]
     MaintenancePlain(String),
 }
 
 impl MyResponse {
-    pub fn ok(tmpl: &'static str, ctx: impl Serialize) -> Self {
+    pub fn ok(tmpl: &'static str, ctx: impl Serialize, i18n: I18n, origin: RequestOrigin) -> Self {
         let context_json = serde_json::to_value(ctx).unwrap();
-        MyResponse::Success(HagridTemplate(tmpl, context_json))
+        MyResponse::Success(HagridTemplate(tmpl, context_json, i18n, origin))
     }
 
-    pub fn ok_bare(tmpl: &'static str) -> Self {
+    pub fn ok_bare(tmpl: &'static str, i18n: I18n, origin: RequestOrigin) -> Self {
         let context_json = serde_json::to_value(templates::Bare { dummy: () }).unwrap();
-        MyResponse::Success(HagridTemplate(tmpl, context_json))
+        MyResponse::Success(HagridTemplate(tmpl, context_json, i18n, origin))
     }
 
-    pub fn xml(tmpl: &'static str) -> Self {
+    pub fn xml(tmpl: &'static str, i18n: I18n, origin: RequestOrigin) -> Self {
         let context_json = serde_json::to_value(templates::Bare { dummy: () }).unwrap();
-        MyResponse::Xml(HagridTemplate(tmpl, context_json))
+        MyResponse::Xml(HagridTemplate(tmpl, context_json, i18n, origin))
     }
 
     pub fn plain(s: String) -> Self {
@@ -111,17 +106,15 @@ impl MyResponse {
     }
 
     pub fn key(armored_key: String, fp: &Fingerprint) -> Self {
-        use rocket::http::hyper::header::{DispositionType, DispositionParam, Charset};
-        MyResponse::Key(
-            armored_key,
-            ContentDisposition {
+        let content_disposition = Header::new(CONTENT_DISPOSITION.as_str(), ContentDisposition {
                 disposition: DispositionType::Attachment,
                 parameters: vec![
                     DispositionParam::Filename(
                         Charset::Us_Ascii, None,
                         (fp.to_string() + ".asc").into_bytes()),
                 ],
-            })
+            });
+        MyResponse::Key(armored_key, content_disposition)
     }
 
     pub fn ise(e: anyhow::Error) -> Self {
@@ -135,10 +128,10 @@ impl MyResponse {
         MyResponse::ServerError(Template::render("500", ctx))
     }
 
-    pub fn bad_request(template: &'static str, e: anyhow::Error) -> Self {
+    pub fn bad_request(template: &'static str, e: anyhow::Error, i18n: I18n, origin: RequestOrigin) -> Self {
         let ctx = templates::Error { error: format!("{}", e) };
         let context_json = serde_json::to_value(ctx).unwrap();
-        MyResponse::BadRequest(HagridTemplate(template, context_json))
+        MyResponse::BadRequest(HagridTemplate(template, context_json, i18n, origin))
     }
 
     pub fn bad_request_plain(message: impl Into<String>) -> Self {
@@ -152,11 +145,13 @@ impl MyResponse {
     pub fn not_found(
         tmpl: Option<&'static str>,
         message: impl Into<Option<String>>,
+        i18n: I18n,
+        origin: RequestOrigin,
     ) -> Self {
         let ctx = templates::Error { error: message.into()
                          .unwrap_or_else(|| "Key not found".to_owned()) };
         let context_json = serde_json::to_value(ctx).unwrap();
-        MyResponse::NotFound(HagridTemplate(tmpl.unwrap_or("index"), context_json))
+        MyResponse::NotFound(HagridTemplate(tmpl.unwrap_or("index"), context_json, i18n, origin))
     }
 }
 
@@ -202,7 +197,7 @@ mod templates {
                 version: env!("CARGO_PKG_VERSION").to_string(),
                 commit: env!("VERGEN_SHA_SHORT").to_string(),
                 base_uri: origin.get_base_uri().to_string(),
-                page: page,
+                page,
                 lang: i18n.lang.to_string(),
                 htmldir: if is_rtl { "rtl".to_owned() } else { "ltr".to_owned() },
                 htmlclass: if is_rtl { "rtl".to_owned() } else { "".to_owned() },
@@ -226,11 +221,12 @@ pub enum RequestOrigin {
     OnionService(String),
 }
 
-impl<'a, 'r> request::FromRequest<'a, 'r> for RequestOrigin {
+#[async_trait]
+impl<'r> request::FromRequest<'r> for RequestOrigin {
     type Error = ();
 
-    fn from_request(request: &'a request::Request<'r>) -> request::Outcome<Self, Self::Error> {
-        let hagrid_state = request.guard::<rocket::State<HagridState>>().unwrap();
+    async fn from_request(request: &'r request::Request<'_>) -> request::Outcome<Self, Self::Error> {
+        let hagrid_state = request.rocket().state::<HagridState>().unwrap();
         let result = match request.headers().get("x-is-onion").next() {
             Some(_) => RequestOrigin::OnionService(hagrid_state.base_uri_onion.clone()),
             None => RequestOrigin::Direct(hagrid_state.base_uri.clone()),
@@ -249,7 +245,7 @@ impl RequestOrigin {
 }
 
 pub fn key_to_response_plain(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     query: Query,
 ) -> MyResponse {
@@ -270,8 +266,8 @@ pub fn key_to_response_plain(
 }
 
 #[get("/assets/<file..>")]
-fn files(file: PathBuf, state: rocket::State<HagridState>) -> Option<NamedFile> {
-    NamedFile::open(state.assets_dir.join(file)).ok()
+async fn files(file: PathBuf, state: &rocket::State<HagridState>) -> Option<NamedFile> {
+    NamedFile::open(state.assets_dir.join(file)).await.ok()
 }
 
 #[get("/")]
@@ -338,13 +334,13 @@ fn errors(
     Ok(Custom(status_code, response_body))
 }
 
-pub fn serve() -> Result<()> {
-    Err(rocket_factory(rocket::ignite())?.launch().into())
+pub fn serve() -> Result<rocket::Rocket<rocket::Build>> {
+    Ok(rocket_factory(rocket::build())?)
 }
 
 compile_i18n!();
 
-fn rocket_factory(mut rocket: rocket::Rocket) -> Result<rocket::Rocket> {
+fn rocket_factory(mut rocket: rocket::Rocket<rocket::Build>) -> Result<rocket::Rocket<rocket::Build>> {
     let routes = routes![
         // infra
         root,
@@ -384,7 +380,7 @@ fn rocket_factory(mut rocket: rocket::Rocket) -> Result<rocket::Rocket> {
         hkp::pks_add_form,
         hkp::pks_add_form_data,
         hkp::pks_internal_index,
-        // EManage
+        // Manage
         manage::vks_manage,
         manage::vks_manage_key,
         manage::vks_manage_post,
@@ -395,17 +391,18 @@ fn rocket_factory(mut rocket: rocket::Rocket) -> Result<rocket::Rocket> {
         maintenance::maintenance_error_plain,
     ];
 
-    let db_service = configure_db_service(rocket.config())?;
-    let hagrid_state = configure_hagrid_state(rocket.config())?;
-    let stateful_token_service = configure_stateful_token_service(rocket.config())?;
-    let stateless_token_service = configure_stateless_token_service(rocket.config())?;
-    let mail_service = configure_mail_service(rocket.config())?;
-    let rate_limiter = configure_rate_limiter(rocket.config())?;
-    let maintenance_mode = configure_maintenance_mode(rocket.config())?;
-    let localized_template_list = configure_localized_template_list(rocket.config())?;
+    let figment = rocket.figment();
+    let db_service = configure_db_service(figment)?;
+    let hagrid_state = configure_hagrid_state(figment)?;
+    let stateful_token_service = configure_stateful_token_service(figment)?;
+    let stateless_token_service = configure_stateless_token_service(figment)?;
+    let mail_service = configure_mail_service(figment)?;
+    let rate_limiter = configure_rate_limiter(figment)?;
+    let maintenance_mode = configure_maintenance_mode(figment)?;
+    let localized_template_list = configure_localized_template_list(figment)?;
     println!("{:?}", localized_template_list);
 
-    let prometheus = configure_prometheus(rocket.config());
+    // let prometheus = configure_prometheus(rocket.config());
 
     rocket = rocket
        .attach(Template::custom(|engines: &mut Engines| {
@@ -424,39 +421,43 @@ fn rocket_factory(mut rocket: rocket::Rocket) -> Result<rocket::Rocket> {
        .manage(localized_template_list)
        .mount("/", routes);
 
+    /*
     if let Some(prometheus) = prometheus {
         rocket = rocket
             .attach(prometheus.clone())
             .mount("/metrics", prometheus);
     }
+    */
 
     Ok(rocket)
 }
 
-fn configure_prometheus(config: &Config) -> Option<PrometheusMetrics> {
-    if !config.get_bool("enable_prometheus").unwrap_or(false) {
+/*
+fn configure_prometheus(config: &Figment) -> Option<PrometheusMetrics> {
+    if !config.extract_inner("enable_prometheus").unwrap_or(false) {
         return None;
     }
     let prometheus = PrometheusMetrics::new();
     counters::register_counters(&prometheus.registry());
     return Some(prometheus);
 }
+*/
 
-fn configure_db_service(config: &Config) -> Result<KeyDatabase> {
-    let keys_internal_dir: PathBuf = config.get_str("keys_internal_dir")?.into();
-    let keys_external_dir: PathBuf = config.get_str("keys_external_dir")?.into();
-    let tmp_dir: PathBuf = config.get_str("tmp_dir")?.into();
+fn configure_db_service(config: &Figment) -> Result<KeyDatabase> {
+    let keys_internal_dir: PathBuf = config.extract_inner("keys_internal_dir")?;
+    let keys_external_dir: PathBuf = config.extract_inner("keys_external_dir")?;
+    let tmp_dir: PathBuf = config.extract_inner("tmp_dir")?;
 
     let fs_db = KeyDatabase::new(keys_internal_dir, keys_external_dir, tmp_dir)?;
     Ok(fs_db)
 }
 
-fn configure_hagrid_state(config: &Config) -> Result<HagridState> {
-    let assets_dir: PathBuf = config.get_str("assets_dir")?.into();
+fn configure_hagrid_state(config: &Figment) -> Result<HagridState> {
+    let assets_dir: PathBuf = config.extract_inner("assets_dir")?;
 
     // State
-    let base_uri = config.get_str("base-URI")?.to_string();
-    let base_uri_onion = config.get_str("base-URI-Onion")
+    let base_uri: String = config.extract_inner("base-URI")?;
+    let base_uri_onion = config.extract_inner::<String>("base-URI-Onion")
         .map(|c| c.to_string())
         .unwrap_or(base_uri.clone());
     Ok(HagridState {
@@ -466,29 +467,25 @@ fn configure_hagrid_state(config: &Config) -> Result<HagridState> {
     })
 }
 
-fn configure_stateful_token_service(config: &Config) -> Result<database::StatefulTokens> {
-    let token_dir: PathBuf = config.get_str("token_dir")?.into();
+fn configure_stateful_token_service(config: &Figment) -> Result<database::StatefulTokens> {
+    let token_dir: PathBuf = config.extract_inner("token_dir")?;
     database::StatefulTokens::new(token_dir)
 }
 
-fn configure_stateless_token_service(config: &Config) -> Result<tokens::Service> {
-    use std::convert::TryFrom;
-
-    let secret = config.get_str("token_secret")?.to_string();
-    let validity = config.get_int("token_validity")?;
-    let validity = u64::try_from(validity)?;
+fn configure_stateless_token_service(config: &Figment) -> Result<tokens::Service> {
+    let secret: String = config.extract_inner("token_secret")?;
+    let validity: u64 = config.extract_inner("token_validity")?;
     Ok(tokens::Service::init(&secret, validity))
 }
 
-fn configure_mail_service(config: &Config) -> Result<mail::Service> {
+fn configure_mail_service(config: &Figment) -> Result<mail::Service> {
     // Mail service
-    let email_template_dir: PathBuf = config.get_str("email_template_dir")?.into();
+    let email_template_dir: PathBuf = config.extract_inner("email_template_dir")?;
 
-    let base_uri = config.get_str("base-URI")?;
-    let from = config.get_str("from")?;
+    let base_uri = config.extract_inner("base-URI")?;
+    let from = config.extract_inner("from")?;
 
-    let filemail_into = config.get_str("filemail_into")
-        .ok().map(|p| PathBuf::from(p));
+    let filemail_into: Option<PathBuf> = config.extract_inner::<PathBuf>("filemail_into").ok();
 
     if let Some(path) = filemail_into {
         mail::Service::filemail(from, base_uri, &email_template_dir, &path)
@@ -497,33 +494,33 @@ fn configure_mail_service(config: &Config) -> Result<mail::Service> {
     }
 }
 
-fn configure_rate_limiter(config: &Config) -> Result<RateLimiter> {
-    let timeout_secs = config.get_int("mail_rate_limit").unwrap_or(60);
+fn configure_rate_limiter(config: &Figment) -> Result<RateLimiter> {
+    let timeout_secs: i32 = config.extract_inner("mail_rate_limit").unwrap_or(60);
     let timeout_secs = timeout_secs.try_into()?;
     Ok(RateLimiter::new(timeout_secs))
 }
 
-fn configure_localized_template_list(config: &Config) -> Result<TemplateOverrides> {
-    let template_dir: PathBuf = config.get_str("template_dir")?.into();
+fn configure_localized_template_list(config: &Figment) -> Result<TemplateOverrides> {
+    let template_dir: PathBuf = config.extract_inner("template_dir")?;
     TemplateOverrides::load(&template_dir, "localized")
 }
 
-fn configure_maintenance_mode(config: &Config) -> Result<MaintenanceMode> {
-    let maintenance_file: PathBuf = config.get_str("maintenance_file")
-        .unwrap_or("maintenance").into();
+fn configure_maintenance_mode(config: &Figment) -> Result<MaintenanceMode> {
+    let maintenance_file: PathBuf = config.extract_inner("maintenance_file")
+        .unwrap_or_else(|_| PathBuf::from("maintenance"));
     Ok(MaintenanceMode::new(maintenance_file))
 }
 
 #[cfg(test)]
 pub mod tests {
     use regex;
+    use rocket::local::blocking::{Client, LocalResponse};
     use std::fs;
     use std::fs::File;
     use std::io::Write;
     use std::path::Path;
     use tempfile::{tempdir, TempDir};
     use super::rocket;
-    use rocket::local::{Client, LocalResponse};
     use rocket::http::Status;
     use rocket::http::ContentType;
     use rocket::http::Header;
@@ -559,49 +556,47 @@ pub mod tests {
     /// Note that you need to keep the returned TempDir alive for the
     /// duration of your test.  To debug the test, mem::forget it to
     /// prevent cleanup.
-    pub fn configuration() -> Result<(TempDir, rocket::Config)> {
-        use rocket::config::Environment;
-
+    pub fn configuration() -> Result<(TempDir, rocket::figment::Figment)> {
         let root = tempdir()?;
         let filemail = root.path().join("filemail");
         ::std::fs::create_dir_all(&filemail)?;
 
         let base_dir: PathBuf = root.path().into();
 
-        let config = Config::build(Environment::Staging)
-            .root(root.path().to_path_buf())
-            .extra("template_dir",
+        let config = Figment::new()
+            .select("staging")
+            .merge(("root", root.path()))
+            .merge(("template_dir",
                    ::std::env::current_dir().unwrap().join("dist/templates")
-                   .to_str().unwrap())
-            .extra("email_template_dir",
+                   .to_str().unwrap()))
+            .merge(("email_template_dir",
                    ::std::env::current_dir().unwrap().join("dist/email-templates")
-                   .to_str().unwrap())
-            .extra("assets_dir",
+                   .to_str().unwrap()))
+            .merge(("assets_dir",
                    ::std::env::current_dir().unwrap().join("dist/assets")
-                   .to_str().unwrap())
-            .extra("keys_internal_dir", base_dir.join("keys_internal").to_str().unwrap())
-            .extra("keys_external_dir", base_dir.join("keys_external").to_str().unwrap())
-            .extra("tmp_dir", base_dir.join("tmp").to_str().unwrap())
-            .extra("token_dir", base_dir.join("tokens").to_str().unwrap())
-            .extra("maintenance_file", base_dir.join("maintenance").to_str().unwrap())
-            .extra("base-URI", BASE_URI)
-            .extra("base-URI-Onion", BASE_URI_ONION)
-            .extra("from", "from@example.com")
-            .extra("token_secret", "hagrid")
-            .extra("token_validity", 3600)
-            .extra("filemail_into", filemail.into_os_string().into_string()
-                   .expect("path is valid UTF8"))
-            .finalize()?;
+                   .to_str().unwrap()))
+            .merge(("keys_internal_dir", base_dir.join("keys_internal").to_str().unwrap()))
+            .merge(("keys_external_dir", base_dir.join("keys_external").to_str().unwrap()))
+            .merge(("tmp_dir", base_dir.join("tmp").to_str().unwrap()))
+            .merge(("token_dir", base_dir.join("tokens").to_str().unwrap()))
+            .merge(("maintenance_file", base_dir.join("maintenance").to_str().unwrap()))
+            .merge(("base-URI", BASE_URI))
+            .merge(("base-URI-Onion", BASE_URI_ONION))
+            .merge(("from", "from@example.com"))
+            .merge(("token_secret", "hagrid"))
+            .merge(("token_validity", 3600u64))
+            .merge(("filemail_into", filemail.into_os_string().into_string()
+                   .expect("path is valid UTF8")));
         Ok((root, config))
     }
 
     pub fn client() -> Result<(TempDir, Client)> {
         let (tmpdir, config) = configuration()?;
         let rocket = rocket_factory(rocket::custom(config))?;
-        Ok((tmpdir, Client::new(rocket)?))
+        Ok((tmpdir, Client::untracked(rocket)?))
     }
 
-    pub fn assert_consistency(rocket: &rocket::Rocket) {
+    pub fn assert_consistency(rocket: &rocket::Rocket<rocket::Orbit>) {
         let db = rocket.state::<KeyDatabase>().unwrap();
         db.check_consistency().unwrap();
     }
@@ -610,7 +605,7 @@ pub mod tests {
     fn about_translation() {
         let (_tmpdir, config) = configuration().unwrap();
         let rocket = rocket_factory(rocket::custom(config)).unwrap();
-        let client = Client::new(rocket).expect("valid rocket instance");
+        let client = Client::untracked(rocket).expect("valid rocket instance");
 
         // Check that we see the landing page.
         let mut response = client.get("/about")
@@ -619,50 +614,50 @@ pub mod tests {
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         // TODO check translation
-        assert!(response.body_string().unwrap().contains("Hagrid"));
+        assert!(response.into_string().unwrap().contains("Hagrid"));
     }
 
     #[test]
     fn basics() {
         let (_tmpdir, config) = configuration().unwrap();
         let rocket = rocket_factory(rocket::custom(config)).unwrap();
-        let client = Client::new(rocket).expect("valid rocket instance");
+        let client = Client::untracked(rocket).expect("valid rocket instance");
 
         // Check that we see the landing page.
         let mut response = client.get("/").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(response.body_string().unwrap().contains("Hagrid"));
+        assert!(response.into_string().unwrap().contains("Hagrid"));
 
         // Check that we see the privacy policy.
         let mut response = client.get("/about").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(response.body_string().unwrap().contains("distribution and discovery"));
+        assert!(response.into_string().unwrap().contains("distribution and discovery"));
 
         // Check that we see the privacy policy.
         let mut response = client.get("/about/privacy").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(response.body_string().unwrap().contains("Public Key Data"));
+        assert!(response.into_string().unwrap().contains("Public Key Data"));
 
         // Check that we see the API docs.
         let mut response = client.get("/about/api").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(response.body_string().unwrap().contains("/vks/v1/by-keyid"));
+        assert!(response.into_string().unwrap().contains("/vks/v1/by-keyid"));
 
         // Check that we see the upload form.
         let mut response = client.get("/upload").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(response.body_string().unwrap().contains("upload"));
+        assert!(response.into_string().unwrap().contains("upload"));
 
         // Check that we see the deletion form.
         let mut response = client.get("/manage").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(response.body_string().unwrap().contains("any verified email address"));
+        assert!(response.into_string().unwrap().contains("any verified email address"));
 
         assert_consistency(client.rocket());
     }
@@ -687,21 +682,21 @@ pub mod tests {
         let mut response = client.put("/").dispatch();
         assert_eq!(response.status(), Status::ServiceUnavailable);
         assert_eq!(response.content_type(), Some(ContentType::Plain));
-        assert!(response.body_string().unwrap().contains("maintenance-message"));
+        assert!(response.into_string().unwrap().contains("maintenance-message"));
 
         fs::remove_file(&maintenance_path).unwrap();
         // Check that we see the upload form.
         let mut response = client.get("/upload").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(!response.body_string().unwrap().contains("maintenance-message"));
+        assert!(!response.into_string().unwrap().contains("maintenance-message"));
     }
 
     fn check_maintenance(client: &Client, uri: &str, content_type: ContentType) {
         let mut response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::ServiceUnavailable);
         assert_eq!(response.content_type(), Some(content_type));
-        assert!(response.body_string().unwrap().contains("maintenance-message"));
+        assert!(response.into_string().unwrap().contains("maintenance-message"));
     }
 
     #[test]
@@ -781,7 +776,7 @@ pub mod tests {
         let (_tmpdir, config) = configuration().unwrap();
 
         let rocket = rocket_factory(rocket::custom(config)).unwrap();
-        let client = Client::new(rocket).expect("valid rocket instance");
+        let client = Client::untracked(rocket).expect("valid rocket instance");
 
         // Generate two keys and upload them.
         let tpk_0 = build_cert("foo@invalid.example.com");
@@ -813,7 +808,7 @@ pub mod tests {
         let filemail_into = tmpdir.path().join("filemail");
 
         let rocket = rocket_factory(rocket::custom(config)).unwrap();
-        let client = Client::new(rocket).expect("valid rocket instance");
+        let client = Client::untracked(rocket).expect("valid rocket instance");
 
         // Generate two keys and upload them.
         let tpk_1 = build_cert("foo@invalid.example.com");
@@ -997,7 +992,7 @@ pub mod tests {
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(),
                    Some(ContentType::new("application", "pgp-keys")));
-        let body = response.body_string().unwrap();
+        let body = response.into_string().unwrap();
         assert!(body.contains("END PGP PUBLIC KEY BLOCK"));
         let tpk_ = Cert::from_bytes(body.as_bytes()).unwrap();
         assert_eq!(tpk.fingerprint(), tpk_.fingerprint());
@@ -1016,7 +1011,7 @@ pub mod tests {
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(),
                    Some(ContentType::new("text", "plain")));
-        let body = response.body_string().unwrap();
+        let body = response.into_string().unwrap();
 
         assert!(body.contains("info:1:1"));
         let primary_fpr = tpk.fingerprint().to_hex();
@@ -1069,7 +1064,7 @@ pub mod tests {
     pub fn check_response(client: &Client, uri: &str, status: Status, needle: &str) {
         let mut response = client.get(uri).dispatch();
         assert_eq!(response.status(), status);
-        let body = response.body_string().unwrap();
+        let body = response.into_string().unwrap();
         println!("{}", body);
         assert!(body.contains(needle));
     }
@@ -1081,7 +1076,7 @@ pub mod tests {
         let mut response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        let body = response.body_string().unwrap();
+        let body = response.into_string().unwrap();
         assert!(body.contains("found"));
         assert!(body.contains(&tpk.fingerprint().to_hex()));
 
@@ -1106,7 +1101,7 @@ pub mod tests {
             .header(Header::new("X-Is-Onion", "true"))
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
-        let body = response.body_string().unwrap();
+        let body = response.into_string().unwrap();
         assert!(body.contains("found"));
         assert!(body.contains(&tpk.fingerprint().to_hex()));
 
@@ -1164,7 +1159,7 @@ pub mod tests {
             .body(json.as_bytes())
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
-        assert!(response.body_string().unwrap().contains("pending"));
+        assert!(response.into_string().unwrap().contains("pending"));
     }
 
     fn check_mails_and_verify_email(client: &Client, filemail_path: &Path) {
@@ -1176,7 +1171,7 @@ pub mod tests {
 
         let mut response_second = client.post(&confirm_uri).dispatch();
         assert_eq!(response_second.status(), Status::BadRequest);
-        assert!(response_second.body_string().unwrap().contains("already been verified"));
+        assert!(response_second.into_string().unwrap().contains("already been verified"));
     }
 
     fn check_mails_and_confirm_deletion(client: &Client, filemail_path: &Path, address: &str) {
@@ -1196,7 +1191,7 @@ pub mod tests {
 
     fn vks_publish_submit_multiple<'a>(client: &'a Client, data: &[u8]) {
         let mut response = vks_publish_submit_response(client, data);
-        let response_body = response.body_string().unwrap();
+        let response_body = response.into_string().unwrap();
 
         assert_eq!(response.status(), Status::Ok);
         assert!(response_body.contains("you must upload them individually"));
@@ -1204,7 +1199,7 @@ pub mod tests {
 
     fn vks_publish_submit_get_token<'a>(client: &'a Client, data: &[u8]) -> String {
         let mut response = vks_publish_submit_response(client, data);
-        let response_body = response.body_string().unwrap();
+        let response_body = response.into_string().unwrap();
 
         let pattern = "name=\"token\" value=\"([^\"]*)\"";
         let capture_re = regex::bytes::Regex::new(pattern).unwrap();
@@ -1247,8 +1242,8 @@ pub mod tests {
         let mut response = client.put("/")
             .body(data)
             .dispatch();
-        let response_body = response.body_string().unwrap();
         assert_eq!(response.status(), Status::Ok);
+        let response_body = response.into_string().unwrap();
         assert!(response_body.contains("Key successfully uploaded"));
 
         let pattern = format!("{}/upload/([^ \t\n]*)", BASE_URI);
@@ -1263,7 +1258,7 @@ pub mod tests {
             .header(ContentType::JSON)
             .body(format!(r#"{{ "keytext": "{}" }}"#, base64::encode(data)))
             .dispatch();
-        let response_body = response.body_string().unwrap();
+        let response_body = response.into_string().unwrap();
         let result: vks_api::json::UploadResult  = serde_json::from_str(&response_body).unwrap();
 
         assert_eq!(response.status(), Status::Ok);

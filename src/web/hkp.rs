@@ -4,11 +4,12 @@ use std::time::SystemTime;
 use std::collections::HashMap;
 
 use rocket::Data;
-use rocket::Outcome;
+use rocket::form::{Form, ValueField};
+use rocket::outcome::Outcome;
 use rocket::http::{ContentType, Status};
 use rocket::request::{self, Request, FromRequest};
-use rocket::http::uri::Uri;
 use rocket_i18n::I18n;
+use url::percent_encoding::{DEFAULT_ENCODE_SET, utf8_percent_encode};
 
 use crate::database::{Database, Query, KeyDatabase};
 use crate::database::types::{Email, Fingerprint, KeyID};
@@ -45,21 +46,17 @@ impl fmt::Display for Hkp {
     }
 }
 
-impl<'a, 'r> FromRequest<'a, 'r> for Hkp {
+#[async_trait]
+impl<'r> FromRequest<'r> for Hkp {
     type Error = ();
 
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<Hkp, ()> {
+    async fn from_request(request: &'r Request<'_>) -> request::Outcome<Hkp, ()> {
         use std::str::FromStr;
-        use rocket::request::FormItems;
 
-        let query = request.uri().query().unwrap_or("");
-        let fields = FormItems::from(query)
-            .map(|item| {
-                let (k, v) = item.key_value();
-
-                let key = k.url_decode().unwrap_or_default();
-                let value = v.url_decode().unwrap_or_default();
-                (key, value)
+        let query = request.uri().query().map(|q| q.as_str()).unwrap_or_default();
+        let fields = Form::values(query)
+            .map(|ValueField { name, value }| {
+                (name.to_string(), value.to_string())
             })
             .collect::<HashMap<_, _>>();
 
@@ -78,30 +75,30 @@ impl<'a, 'r> FromRequest<'a, 'r> for Hkp {
                 (search.starts_with("0x") && search.len() < 16 || search.len() == 8);
             if looks_like_short_key_id {
                 Outcome::Success(Hkp::ShortKeyID {
-                    query: search,
-                    index: index,
+                    query: search.to_string(),
+                    index,
                 })
             } else if let Ok(fpr) = maybe_fpr {
                 Outcome::Success(Hkp::Fingerprint {
-                    fpr: fpr,
-                    index: index,
+                    fpr,
+                    index,
                 })
             } else if let Ok(keyid) = maybe_keyid {
                 Outcome::Success(Hkp::KeyID {
-                    keyid: keyid,
-                    index: index,
+                    keyid,
+                    index,
                 })
             } else {
                 match Email::from_str(&search) {
                     Ok(email) => {
                         Outcome::Success(Hkp::Email {
-                            email: email,
-                            index: index,
+                            email,
+                            index,
                         })
                     }
                     Err(_) => {
                         Outcome::Success(Hkp::Invalid{
-                            query: search
+                            query: search.to_string(),
                         })
                     }
                 }
@@ -119,9 +116,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for Hkp {
 
 #[post("/pks/add", format = "multipart/form-data", data = "<data>")]
 pub fn pks_add_form_data(
-    db: rocket::State<KeyDatabase>,
-    tokens_stateless: rocket::State<tokens::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    db: &rocket::State<KeyDatabase>,
+    tokens_stateless: &rocket::State<tokens::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     cont_type: &ContentType,
     data: Data,
@@ -133,16 +130,16 @@ pub fn pks_add_form_data(
 }
 
 #[post("/pks/add", format = "application/x-www-form-urlencoded", data = "<data>")]
-pub fn pks_add_form(
+pub async fn pks_add_form(
     request_origin: RequestOrigin,
-    db: rocket::State<KeyDatabase>,
-    tokens_stateless: rocket::State<tokens::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
-    mail_service: rocket::State<mail::Service>,
+    db: &rocket::State<KeyDatabase>,
+    tokens_stateless: &rocket::State<tokens::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
+    mail_service: &rocket::State<mail::Service>,
     i18n: I18n,
-    data: Data,
+    data: Data<'_>,
 ) -> MyResponse {
-    match vks_web::process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data) {
+    match vks_web::process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data).await {
         Ok(UploadResponse::Ok { is_new_key, key_fpr, primary_uid, token, status, .. }) => {
             let msg = pks_add_ok(&request_origin, &mail_service, &rate_limiter, token, status, is_new_key, key_fpr, primary_uid);
             MyResponse::plain(msg)
@@ -198,7 +195,7 @@ fn send_welcome_mail(
 
 #[get("/pks/lookup")]
 pub fn pks_lookup(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     key: Hkp
 ) -> MyResponse {
@@ -227,7 +224,7 @@ pub fn pks_lookup(
 
 #[get("/pks/internal/index/<query_string>")]
 pub fn pks_internal_index(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     query_string: String,
 ) -> MyResponse {
@@ -238,7 +235,7 @@ pub fn pks_internal_index(
 }
 
 fn key_to_hkp_index(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     query: Query,
 ) -> MyResponse {
@@ -278,7 +275,7 @@ fn key_to_hkp_index(
 
     for uid in tpk.userids() {
         let uidstr = uid.userid().to_string();
-        let u = Uri::percent_encode(&uidstr);
+        let u = utf8_percent_encode(&uidstr, DEFAULT_ENCODE_SET).to_string();
         let ctime = uid
             .binding_signature(policy, None)
             .ok()
@@ -344,7 +341,7 @@ mod tests {
             .header(ContentType::Form)
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
-        let body = response.body_string().unwrap();
+        let body = response.into_string().unwrap();
         eprintln!("response: {}", body);
 
         // Check that we get a welcome mail
@@ -357,7 +354,7 @@ mod tests {
             .header(ContentType::Form)
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
-        let body = response.body_string().unwrap();
+        let body = response.into_string().unwrap();
         eprintln!("response: {}", body);
 
         // No second email right after the welcome one!

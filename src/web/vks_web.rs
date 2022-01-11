@@ -4,11 +4,14 @@ use multipart::server::save::Entries;
 use multipart::server::save::SaveResult::*;
 use multipart::server::Multipart;
 
+use rocket::data::ByteUnit;
+use rocket::form::Form;
+use rocket::form::ValueField;
 use rocket::http::ContentType;
-use rocket::request::Form;
 use rocket::Data;
 use rocket_i18n::I18n;
 use gettext_macros::i18n;
+use url::percent_encoding::percent_decode;
 
 use crate::database::{KeyDatabase, StatefulTokens, Query, Database};
 use crate::mail;
@@ -17,13 +20,13 @@ use crate::web::{RequestOrigin, MyResponse};
 use crate::rate_limiter::RateLimiter;
 use crate::i18n_helpers::describe_query_error;
 
-use std::io::Read;
 use std::collections::HashMap;
+use std::io::Cursor;
 
 use crate::web::vks;
 use crate::web::vks::response::*;
 
-const UPLOAD_LIMIT: u64 = 1024 * 1024; // 1 MiB.
+const UPLOAD_LIMIT: ByteUnit = ByteUnit::Mebibyte(1);
 
 mod forms {
     #[derive(FromForm,Deserialize)]
@@ -94,7 +97,7 @@ impl MyResponse {
     fn upload_response_quick(response: UploadResponse, base_uri: &str) -> Self {
         match response {
             UploadResponse::Ok { token, .. } => {
-                let uri = uri!(quick_upload_proceed: token);
+                let uri = uri!(quick_upload_proceed(token));
                 let text = format!(
                     "Key successfully uploaded. Proceed with verification here:\n{}{}\n",
                     base_uri,
@@ -127,7 +130,7 @@ impl MyResponse {
         count_unparsed: usize,
         uid_status: HashMap<String,EmailStatus>,
     ) -> Self {
-        let key_link = uri!(search: &key_fpr).to_string();
+        let key_link = uri!(search(q = &key_fpr)).to_string();
 
         let count_revoked = uid_status.iter()
             .filter(|(_,status)| **status == EmailStatus::Revoked)
@@ -169,7 +172,7 @@ impl MyResponse {
     fn upload_ok_multi(key_fprs: Vec<String>) -> Self {
         let keys = key_fprs.into_iter()
             .map(|fpr| {
-                let key_link = uri!(search: &fpr).to_string();
+                let key_link = uri!(search(q = &fpr)).to_string();
                 template::UploadOkKey {
                     key_fpr: fpr.to_owned(),
                     key_link,
@@ -192,9 +195,9 @@ pub fn upload() -> MyResponse {
 
 #[post("/upload/submit", format = "multipart/form-data", data = "<data>")]
 pub fn upload_post_form_data(
-    db: rocket::State<KeyDatabase>,
-    tokens_stateless: rocket::State<tokens::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    db: &rocket::State<KeyDatabase>,
+    tokens_stateless: &rocket::State<tokens::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     cont_type: &ContentType,
     data: Data,
@@ -206,9 +209,9 @@ pub fn upload_post_form_data(
 }
 
 pub fn process_post_form_data(
-    db: rocket::State<KeyDatabase>,
-    tokens_stateless: rocket::State<tokens::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    db: &rocket::State<KeyDatabase>,
+    tokens_stateless: &rocket::State<tokens::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     cont_type: &ContentType,
     data: Data,
@@ -225,7 +228,7 @@ pub fn process_post_form_data(
 
 #[get("/search?<q>")]
 pub fn search(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     q: String,
 ) -> MyResponse {
@@ -236,7 +239,7 @@ pub fn search(
 }
 
 fn key_to_response(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     query_string: String,
     query: Query,
@@ -259,20 +262,18 @@ fn key_to_response(
 
 
 #[put("/", data = "<data>")]
-pub fn quick_upload(
-    db: rocket::State<KeyDatabase>,
-    tokens_stateless: rocket::State<tokens::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+pub async fn quick_upload(
+    db: &rocket::State<KeyDatabase>,
+    tokens_stateless: &rocket::State<tokens::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     request_origin: RequestOrigin,
-    data: Data,
+    data: Data<'_>,
 ) -> MyResponse {
-    use std::io::Cursor;
-
-    let mut buf = Vec::default();
-    if let Err(error) = std::io::copy(&mut data.open().take(UPLOAD_LIMIT), &mut buf) {
-        return MyResponse::bad_request("400-plain", anyhow!(error));
-    }
+    let buf = match data.open(UPLOAD_LIMIT).into_bytes().await {
+        Ok(buf) => buf.into_inner(),
+        Err(error) => return MyResponse::bad_request("400-plain", anyhow!(error)),
+    };
 
     MyResponse::upload_response_quick(
         vks::process_key(
@@ -286,12 +287,12 @@ pub fn quick_upload(
 
 #[get("/upload/<token>", rank = 2)]
 pub fn quick_upload_proceed(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     request_origin: RequestOrigin,
-    token_stateful: rocket::State<StatefulTokens>,
-    token_stateless: rocket::State<tokens::Service>,
-    mail_service: rocket::State<mail::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    token_stateful: &rocket::State<StatefulTokens>,
+    token_stateless: &rocket::State<tokens::Service>,
+    mail_service: &rocket::State<mail::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     token: String,
 ) -> MyResponse {
@@ -303,43 +304,37 @@ pub fn quick_upload_proceed(
 
 
 #[post("/upload/submit", format = "application/x-www-form-urlencoded", data = "<data>")]
-pub fn upload_post_form(
-    db: rocket::State<KeyDatabase>,
-    tokens_stateless: rocket::State<tokens::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+pub async fn upload_post_form(
+    db: &rocket::State<KeyDatabase>,
+    tokens_stateless: &rocket::State<tokens::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
-    data: Data,
+    data: Data<'_>,
 ) -> MyResponse {
-    match process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data) {
+    match process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data).await {
         Ok(response) => MyResponse::upload_response(response),
         Err(err) => MyResponse::bad_request("upload/upload", err),
     }
 }
 
-pub fn process_post_form(
+pub async fn process_post_form(
     db: &KeyDatabase,
     tokens_stateless: &tokens::Service,
     rate_limiter: &RateLimiter,
     i18n: &I18n,
-    data: Data,
+    data: Data<'_>,
 ) -> Result<UploadResponse> {
-    use rocket::request::FormItems;
-    use std::io::Cursor;
-
     // application/x-www-form-urlencoded
-    let mut buf = Vec::default();
+    let buf = data.open(UPLOAD_LIMIT).into_bytes().await?;
 
-    std::io::copy(&mut data.open().take(UPLOAD_LIMIT), &mut buf)?;
-
-    for item in FormItems::from(&*String::from_utf8_lossy(&buf)) {
-        let (key, value) = item.key_value();
-        let decoded_value = value.url_decode().or_else(|_| {
+    for ValueField { name, value } in Form::values(&*String::from_utf8_lossy(&buf)) {
+        let decoded_value = percent_decode(value.as_bytes()).decode_utf8().or_else(|_| {
             Err(anyhow!(
                 "`Content-Type: application/x-www-form-urlencoded` \
                     not valid"))
         })?;
 
-        match key.as_str() {
+        match name.to_string().as_str() {
             "keytext" => {
                 return Ok(vks::process_key(
                     &db,
@@ -368,7 +363,7 @@ fn process_upload(
     // saves all fields, any field longer than 10kB goes to a temporary directory
     // Entries could implement FromData though that would give zero control over
     // how the files are saved; Multipart would be a good impl candidate though
-    match Multipart::with_body(data.open().take(UPLOAD_LIMIT), boundary).save().temp() {
+    match Multipart::with_body(data.open(UPLOAD_LIMIT), boundary).save().temp() {
         Full(entries) => {
             process_multipart(db, tokens_stateless, rate_limiter, i18n, entries)
         }
@@ -398,12 +393,12 @@ fn process_multipart(
 
 #[post("/upload/request-verify", format = "application/x-www-form-urlencoded", data="<request>")]
 pub fn request_verify_form(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     request_origin: RequestOrigin,
-    token_stateful: rocket::State<StatefulTokens>,
-    token_stateless: rocket::State<tokens::Service>,
-    mail_service: rocket::State<mail::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    token_stateful: &rocket::State<StatefulTokens>,
+    token_stateless: &rocket::State<tokens::Service>,
+    mail_service: &rocket::State<mail::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     request: Form<forms::VerifyRequest>,
 ) -> MyResponse {
@@ -416,12 +411,12 @@ pub fn request_verify_form(
 
 #[post("/upload/request-verify", format = "multipart/form-data", data="<request>")]
 pub fn request_verify_form_data(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     request_origin: RequestOrigin,
-    token_stateful: rocket::State<StatefulTokens>,
-    token_stateless: rocket::State<tokens::Service>,
-    mail_service: rocket::State<mail::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    token_stateful: &rocket::State<StatefulTokens>,
+    token_stateless: &rocket::State<tokens::Service>,
+    mail_service: &rocket::State<mail::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     request: Form<forms::VerifyRequest>,
 ) -> MyResponse {
@@ -434,9 +429,9 @@ pub fn request_verify_form_data(
 
 #[post("/verify/<token>")]
 pub fn verify_confirm(
-    db: rocket::State<KeyDatabase>,
-    token_service: rocket::State<StatefulTokens>,
-    rate_limiter: rocket::State<RateLimiter>,
+    db: &rocket::State<KeyDatabase>,
+    token_service: &rocket::State<StatefulTokens>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     token: String,
 ) -> MyResponse {
@@ -444,7 +439,7 @@ pub fn verify_confirm(
     match vks::verify_confirm(db, &i18n, token_service, token) {
         PublishResponse::Ok { fingerprint, email } => {
             rate_limiter.action_perform(rate_limit_id);
-            let userid_link = uri!(search: &email).to_string();
+            let userid_link = uri!(search(q = &email)).to_string();
             let context = template::Verify {
                 userid: email,
                 key_fpr: fingerprint,

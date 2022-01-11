@@ -1,9 +1,8 @@
-use rocket_contrib::json::{Json,JsonValue,JsonError};
-use rocket::request::Request;
-use rocket::response::{self, Response, Responder};
+use rocket::request::Request; use rocket::response::{self, Response, Responder};
 use rocket::http::{ContentType,Status};
-use rocket::State;
+use rocket::serde::json::Json;
 use rocket_i18n::{I18n, Translations};
+use serde_json::json;
 use std::io::Cursor;
 
 use crate::database::{KeyDatabase, StatefulTokens, Query};
@@ -16,6 +15,8 @@ use crate::web;
 use crate::web::{RequestOrigin, MyResponse};
 use crate::web::vks;
 use crate::web::vks::response::*;
+
+use rocket::serde::json::Error as JsonError;
 
 pub mod json {
     use crate::web::vks::response::EmailStatus;
@@ -41,17 +42,17 @@ pub mod json {
     }
 }
 
-type JsonResult = Result<JsonValue, JsonErrorResponse>;
+type JsonResult = Result<serde_json::Value, JsonErrorResponse>;
 
 #[derive(Debug)]
 pub struct JsonErrorResponse(Status,String);
 
-impl<'r> Responder<'r> for JsonErrorResponse {
-    fn respond_to(self, _: &Request) -> response::Result<'r> {
+impl<'r> Responder<'r, 'static> for JsonErrorResponse {
+    fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
         let error_json = json!({"error": self.1});
         Response::build()
             .status(self.0)
-            .sized_body(Cursor::new(error_json.to_string()))
+            .sized_body(None, Cursor::new(error_json.to_string()))
             .header(ContentType::JSON)
             .ok()
     }
@@ -65,7 +66,7 @@ fn json_or_error<T>(data: Result<Json<T>, JsonError>) -> Result<Json<T>, JsonErr
     }
 }
 
-fn upload_ok_json(response: UploadResponse) -> Result<JsonValue,JsonErrorResponse> {
+fn upload_ok_json(response: UploadResponse) -> Result<serde_json::Value, JsonErrorResponse> {
     match response {
         UploadResponse::Ok { token, key_fpr, status, .. } =>
             Ok(json!(json::UploadResult { token, key_fpr, status })),
@@ -76,9 +77,9 @@ fn upload_ok_json(response: UploadResponse) -> Result<JsonValue,JsonErrorRespons
 
 #[post("/vks/v1/upload", format = "json", data = "<data>")]
 pub fn upload_json(
-    db: rocket::State<KeyDatabase>,
-    tokens_stateless: rocket::State<tokens::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    db: &rocket::State<KeyDatabase>,
+    tokens_stateless: &rocket::State<tokens::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     data: Result<Json<json::UploadRequest>, JsonError>,
 ) -> JsonResult {
@@ -98,7 +99,7 @@ pub fn upload_fallback(
 }
 
 fn get_locale(
-    langs: State<Translations>,
+    langs: &rocket::State<Translations>,
     locales: Vec<String>,
 ) -> I18n {
     locales
@@ -113,13 +114,13 @@ fn get_locale(
 
 #[post("/vks/v1/request-verify", format = "json", data="<data>")]
 pub fn request_verify_json(
-    db: rocket::State<KeyDatabase>,
-    langs: State<Translations>,
+    db: &rocket::State<KeyDatabase>,
+    langs: &rocket::State<Translations>,
     request_origin: RequestOrigin,
-    token_stateful: rocket::State<StatefulTokens>,
-    token_stateless: rocket::State<tokens::Service>,
-    mail_service: rocket::State<mail::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    token_stateful: &rocket::State<StatefulTokens>,
+    token_stateless: &rocket::State<tokens::Service>,
+    mail_service: &rocket::State<mail::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     data: Result<Json<json::VerifyRequest>, JsonError>,
 ) -> JsonResult {
     let data = json_or_error(data)?;
@@ -141,7 +142,7 @@ pub fn request_verify_fallback(
 
 #[get("/vks/v1/by-fingerprint/<fpr>")]
 pub fn vks_v1_by_fingerprint(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     fpr: String,
 ) -> MyResponse {
@@ -155,7 +156,7 @@ pub fn vks_v1_by_fingerprint(
 
 #[get("/vks/v1/by-email/<email>")]
 pub fn vks_v1_by_email(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     email: String,
 ) -> MyResponse {
@@ -170,7 +171,7 @@ pub fn vks_v1_by_email(
 
 #[get("/vks/v1/by-keyid/<kid>")]
 pub fn vks_v1_by_keyid(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     kid: String,
 ) -> MyResponse {

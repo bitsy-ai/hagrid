@@ -1,9 +1,11 @@
 use lazy_static::lazy_static;
-use rocket_prometheus::prometheus;
+// use rocket_prometheus::prometheus;
 
 use crate::anonymize_utils;
 
 use crate::database::types::Email;
+
+// TODO this module is a stub at the moment for rocket 0.5 migration. reintroduce later on?
 
 lazy_static! {
     static ref KEY_UPLOAD: LabelCounter =
@@ -18,6 +20,7 @@ lazy_static! {
         LabelCounter::new("hagrid_key_address_unpublished", "Unpublished email addresses", &["domain"]);
 }
 
+/*
 pub fn register_counters(registry: &prometheus::Registry) {
     KEY_UPLOAD.register(registry);
 
@@ -26,6 +29,7 @@ pub fn register_counters(registry: &prometheus::Registry) {
     KEY_ADDRESS_PUBLISHED.register(registry);
     KEY_ADDRESS_UNPUBLISHED.register(registry);
 }
+*/
 
 pub fn inc_key_upload(upload_result: &str) {
     KEY_UPLOAD.inc(&[upload_result]);
@@ -47,21 +51,24 @@ pub fn inc_address_unpublished(email: &Email) {
 }
 
 struct LabelCounter {
-    prometheus_counter: prometheus::IntCounterVec,
+    // prometheus_counter: prometheus::IntCounterVec,
 }
 
 impl LabelCounter {
     fn new(name: &str, help: &str, labels: &[&str]) -> Self {
-        let opts = prometheus::Opts::new(name, help);
-        let prometheus_counter = prometheus::IntCounterVec::new(opts, labels).unwrap();
-        Self { prometheus_counter }
+        // let opts = prometheus::Opts::new(name, help);
+        // let prometheus_counter = prometheus::IntCounterVec::new(opts, labels).unwrap();
+        // Self { prometheus_counter }
+        Self { }
     }
 
+    /*
     fn register(&self, registry: &prometheus::Registry) {
         registry.register(Box::new(self.prometheus_counter.clone())).unwrap();
     }
+    */
 
     fn inc(&self, values: &[&str]) {
-        self.prometheus_counter.with_label_values(values).inc();
+        // self.prometheus_counter.with_label_values(values).inc();
     }
 }

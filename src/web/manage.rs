@@ -1,6 +1,5 @@
 use rocket;
-use rocket::State;
-use rocket::request::Form;
+use rocket::form::Form;
 use rocket_i18n::I18n;
 
 use crate::Result;
@@ -65,10 +64,10 @@ pub fn vks_manage() -> Result<MyResponse> {
 #[get("/manage/<token>")]
 pub fn vks_manage_key(
    request_origin: RequestOrigin,
-   db: State<KeyDatabase>,
+   db: &rocket::State<KeyDatabase>,
    i18n: I18n,
    token: String,
-   token_service: rocket::State<tokens::Service>,
+   token_service: &rocket::State<tokens::Service>,
 ) -> MyResponse {
     use crate::database::types::Fingerprint;
     use std::convert::TryFrom;
@@ -88,7 +87,7 @@ pub fn vks_manage_key(
                         published: true,
                     }
                 ).collect();
-               let key_link = uri!(vks_web::search: fp.to_string()).to_string();
+               let key_link = uri!(vks_web::search(q = fp.to_string())).to_string();
                 let context = templates::ManageKey {
                     key_fpr: fp.to_string(),
                     key_link,
@@ -100,7 +99,10 @@ pub fn vks_manage_key(
             },
             Ok(None) => MyResponse::not_found(
                 Some("manage/manage"),
-                Some(i18n!(i18n.catalog, "This link is invalid or expired"))),
+                Some(i18n!(i18n.catalog, "This link is invalid or expired")),
+                i18n,
+                request_origin,
+            ),
             Err(e) => MyResponse::ise(e),
         }
     } else {
@@ -112,13 +114,13 @@ pub fn vks_manage_key(
 
 #[post("/manage", data="<request>")]
 pub fn vks_manage_post(
-    db: State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     request_origin: RequestOrigin,
-    mail_service: rocket::State<mail::Service>,
-    rate_limiter: rocket::State<RateLimiter>,
+    mail_service: &rocket::State<mail::Service>,
+    rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     request: Form<forms::ManageRequest>,
-    token_service: rocket::State<tokens::Service>,
+    token_service: &rocket::State<tokens::Service>,
 ) -> MyResponse {
     use std::convert::TryInto;
 
@@ -155,7 +157,7 @@ pub fn vks_manage_post(
     let fpr: Fingerprint = tpk.fingerprint().try_into().unwrap();
     let fpr_text = fpr.to_string();
     let token = token_service.create(&StatelessVerifyToken { fpr });
-    let link_path = uri!(vks_manage_key: token).to_string();
+    let link_path = uri!(vks_manage_key(token)).to_string();
 
     let base_uri = request_origin.get_base_uri();
     if let Err(e) = mail_service.send_manage_token(&i18n, base_uri, fpr_text, &email, &link_path) {
@@ -171,9 +173,9 @@ pub fn vks_manage_post(
 #[post("/manage/unpublish", data="<request>")]
 pub fn vks_manage_unpublish(
     request_origin: RequestOrigin,
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
-    token_service: rocket::State<tokens::Service>,
+    token_service: &rocket::State<tokens::Service>,
     request: Form<forms::ManageDelete>,
 ) -> MyResponse {
     match vks_manage_unpublish_or_fail(request_origin, db, token_service, i18n, request) {
@@ -184,8 +186,8 @@ pub fn vks_manage_unpublish(
 
 pub fn vks_manage_unpublish_or_fail(
     request_origin: RequestOrigin,
-    db: rocket::State<KeyDatabase>,
-    token_service: rocket::State<tokens::Service>,
+    db: &rocket::State<KeyDatabase>,
+    token_service: &rocket::State<tokens::Service>,
     i18n: I18n,
     request: Form<forms::ManageDelete>,
 ) -> Result<MyResponse> {

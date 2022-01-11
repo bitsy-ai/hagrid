@@ -1,8 +1,9 @@
 use rocket::{Request, Data};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Method;
-use rocket_contrib::templates::Template;
+use rocket_dyn_templates::Template;
 use rocket_i18n::I18n;
+use serde_json::json;
 
 use std::fs;
 use std::path::PathBuf;
@@ -23,6 +24,7 @@ mod templates {
     }
 }
 
+#[async_trait]
 impl Fairing for MaintenanceMode {
     fn info(&self) -> Info {
         Info {
@@ -31,21 +33,21 @@ impl Fairing for MaintenanceMode {
         }
     }
 
-    fn on_request(&self, request: &mut Request, _: &Data) {
+    async fn on_request(&self, request: &mut Request<'_>, _: &mut Data<'_>) {
         let message = match self.get_maintenance_message() {
             Some(message) => message,
             None => return,
         };
 
-        let path = request.uri().path();
+        let path = request.uri().path().as_str();
         if self.is_request_json(path) {
-            request.set_uri(uri!(maintenance_error_json: message));
+            request.set_uri(uri!(maintenance_error_json(message)));
             request.set_method(Method::Get);
         } else if self.is_request_plain(path, request.method()) {
-            request.set_uri(uri!(maintenance_error_plain: message));
+            request.set_uri(uri!(maintenance_error_plain(message)));
             request.set_method(Method::Get);
         } else if self.is_request_web(path) {
-            request.set_uri(uri!(maintenance_error_web: message));
+            request.set_uri(uri!(maintenance_error_web(message)));
             request.set_method(Method::Get);
         }
     }

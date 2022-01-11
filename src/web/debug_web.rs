@@ -10,7 +10,7 @@ use crate::database::{Database, KeyDatabase, Query};
 
 #[get("/debug?<q>")]
 pub fn debug_info(
-    db: rocket::State<KeyDatabase>,
+    db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     q: String,
 ) -> MyResponse {
