@@ -1191,14 +1191,16 @@ pub mod tests {
 
     fn vks_publish_submit_multiple<'a>(client: &'a Client, data: &[u8]) {
         let mut response = vks_publish_submit_response(client, data);
+        let status = response.status();
         let response_body = response.into_string().unwrap();
 
-        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(status, Status::Ok);
         assert!(response_body.contains("you must upload them individually"));
     }
 
     fn vks_publish_submit_get_token<'a>(client: &'a Client, data: &[u8]) -> String {
         let mut response = vks_publish_submit_response(client, data);
+        let status = response.status();
         let response_body = response.into_string().unwrap();
 
         let pattern = "name=\"token\" value=\"([^\"]*)\"";
@@ -1207,7 +1209,7 @@ pub mod tests {
             .get(1).unwrap().as_bytes();
         let token = String::from_utf8_lossy(capture_content).to_string();
 
-        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(status, Status::Ok);
         token
     }
 
@@ -1258,10 +1260,11 @@ pub mod tests {
             .header(ContentType::JSON)
             .body(format!(r#"{{ "keytext": "{}" }}"#, base64::encode(data)))
             .dispatch();
+        let status = response.status();
         let response_body = response.into_string().unwrap();
         let result: vks_api::json::UploadResult  = serde_json::from_str(&response_body).unwrap();
 
-        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(status, Status::Ok);
         result.token
     }
 
