@@ -563,7 +563,7 @@ pub mod tests {
 
         let base_dir: PathBuf = root.path().into();
 
-        let config = Figment::new()
+        let config = rocket::Config::figment()
             .select("staging")
             .merge(("root", root.path()))
             .merge(("template_dir",
