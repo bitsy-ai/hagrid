@@ -2,7 +2,7 @@
 address = "0.0.0.0"
 port = 8080
 
-[development]
+[debug]
 base-URI = "http://localhost:8080"
 from = "noreply@localhost"
 x-accel-redirect = false
@@ -36,7 +36,7 @@ maintenance_file = "maintenance"
 enable_prometheus = false
 email_template_dir = "email-templates"
 
-[production]
+[release]
 base-URI = "https://keys.openpgp.org"
 base-URI-Onion = "https://keys.openpgp.org"
 from = "noreply@keys.openpgp.org"
