@@ -482,15 +482,15 @@ fn configure_mail_service(config: &Figment) -> Result<mail::Service> {
     // Mail service
     let email_template_dir: PathBuf = config.extract_inner("email_template_dir")?;
 
-    let base_uri = config.extract_inner("base-URI")?;
-    let from = config.extract_inner("from")?;
+    let base_uri: String = config.extract_inner("base-URI")?;
+    let from: String = config.extract_inner("from")?;
 
     let filemail_into: Option<PathBuf> = config.extract_inner::<PathBuf>("filemail_into").ok();
 
     if let Some(path) = filemail_into {
-        mail::Service::filemail(from, base_uri, &email_template_dir, &path)
+        mail::Service::filemail(&from, &base_uri, &email_template_dir, &path)
     } else {
-        mail::Service::sendmail(from, base_uri, &email_template_dir)
+        mail::Service::sendmail(&from, &base_uri, &email_template_dir)
     }
 }
 
