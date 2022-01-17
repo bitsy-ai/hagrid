@@ -338,7 +338,7 @@ mod tests {
         }
 
         // Add!
-        let mut response = client.post("/pks/add")
+        let response = client.post("/pks/add")
             .body(post_data.as_bytes())
             .header(ContentType::Form)
             .dispatch();
@@ -351,7 +351,7 @@ mod tests {
         assert!(welcome_mail.is_some());
 
         // Add!
-        let mut response = client.post("/pks/add")
+        let response = client.post("/pks/add")
             .body(post_data.as_bytes())
             .header(ContentType::Form)
             .dispatch();

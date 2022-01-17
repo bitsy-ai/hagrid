@@ -608,7 +608,7 @@ pub mod tests {
         let client = Client::untracked(rocket).expect("valid rocket instance");
 
         // Check that we see the landing page.
-        let mut response = client.get("/about")
+        let response = client.get("/about")
             .header(Header::new("Accept-Language", "de"))
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
@@ -624,37 +624,37 @@ pub mod tests {
         let client = Client::untracked(rocket).expect("valid rocket instance");
 
         // Check that we see the landing page.
-        let mut response = client.get("/").dispatch();
+        let response = client.get("/").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         assert!(response.into_string().unwrap().contains("Hagrid"));
 
         // Check that we see the privacy policy.
-        let mut response = client.get("/about").dispatch();
+        let response = client.get("/about").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         assert!(response.into_string().unwrap().contains("distribution and discovery"));
 
         // Check that we see the privacy policy.
-        let mut response = client.get("/about/privacy").dispatch();
+        let response = client.get("/about/privacy").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         assert!(response.into_string().unwrap().contains("Public Key Data"));
 
         // Check that we see the API docs.
-        let mut response = client.get("/about/api").dispatch();
+        let response = client.get("/about/api").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         assert!(response.into_string().unwrap().contains("/vks/v1/by-keyid"));
 
         // Check that we see the upload form.
-        let mut response = client.get("/upload").dispatch();
+        let response = client.get("/upload").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         assert!(response.into_string().unwrap().contains("upload"));
 
         // Check that we see the deletion form.
-        let mut response = client.get("/manage").dispatch();
+        let response = client.get("/manage").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         assert!(response.into_string().unwrap().contains("any verified email address"));
@@ -679,21 +679,21 @@ pub mod tests {
         check_maintenance(&client, "/vks/v1/request-verify", ContentType::JSON);
 
         // Extra check for the shortcut "PUT" endpoint
-        let mut response = client.put("/").dispatch();
+        let response = client.put("/").dispatch();
         assert_eq!(response.status(), Status::ServiceUnavailable);
         assert_eq!(response.content_type(), Some(ContentType::Plain));
         assert!(response.into_string().unwrap().contains("maintenance-message"));
 
         fs::remove_file(&maintenance_path).unwrap();
         // Check that we see the upload form.
-        let mut response = client.get("/upload").dispatch();
+        let response = client.get("/upload").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         assert!(!response.into_string().unwrap().contains("maintenance-message"));
     }
 
     fn check_maintenance(client: &Client, uri: &str, content_type: ContentType) {
-        let mut response = client.get(uri).dispatch();
+        let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::ServiceUnavailable);
         assert_eq!(response.content_type(), Some(content_type));
         assert!(response.into_string().unwrap().contains("maintenance-message"));
@@ -988,7 +988,7 @@ pub mod tests {
     /// one, with the given number of userids.
     pub fn check_mr_response(client: &Client, uri: &str, tpk: &Cert,
                              nr_uids: usize) {
-        let mut response = client.get(uri).dispatch();
+        let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(),
                    Some(ContentType::new("application", "pgp-keys")));
@@ -1007,7 +1007,7 @@ pub mod tests {
     /// Asserts that the given URI returns a correct hkp "index"
     /// response for the given Cert.
     pub fn check_index_response(client: &Client, uri: &str, tpk: &Cert) {
-        let mut response = client.get(uri).dispatch();
+        let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(),
                    Some(ContentType::new("text", "plain")));
@@ -1062,7 +1062,7 @@ pub mod tests {
 
     /// Asserts that the given URI contains the search string.
     pub fn check_response(client: &Client, uri: &str, status: Status, needle: &str) {
-        let mut response = client.get(uri).dispatch();
+        let response = client.get(uri).dispatch();
         assert_eq!(response.status(), status);
         let body = response.into_string().unwrap();
         println!("{}", body);
@@ -1073,7 +1073,7 @@ pub mod tests {
     /// page that contains a URI pointing to the Cert.
     pub fn check_hr_response(client: &Client, uri: &str, tpk: &Cert,
                              nr_uids: usize) {
-        let mut response = client.get(uri).dispatch();
+        let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
         let body = response.into_string().unwrap();
@@ -1096,7 +1096,7 @@ pub mod tests {
     /// page that contains an onion URI pointing to the Cert.
     pub fn check_hr_response_onion(client: &Client, uri: &str, tpk: &Cert,
                              _nr_uids: usize) {
-        let mut response = client
+        let response = client
             .get(uri)
             .header(Header::new("X-Is-Onion", "true"))
             .dispatch();
@@ -1154,7 +1154,7 @@ pub mod tests {
     fn check_verify_link_json(client: &Client, token: &str, address: &str) {
         let json = format!(r#"{{"token":"{}","addresses":["{}"]}}"#, token, address);
 
-        let mut response = client.post("/vks/v1/request-verify")
+        let response = client.post("/vks/v1/request-verify")
             .header(ContentType::JSON)
             .body(json.as_bytes())
             .dispatch();
@@ -1169,7 +1169,7 @@ pub mod tests {
         let response = client.post(&confirm_uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
 
-        let mut response_second = client.post(&confirm_uri).dispatch();
+        let response_second = client.post(&confirm_uri).dispatch();
         assert_eq!(response_second.status(), Status::BadRequest);
         assert!(response_second.into_string().unwrap().contains("already been verified"));
     }
@@ -1190,7 +1190,7 @@ pub mod tests {
     }
 
     fn vks_publish_submit_multiple<'a>(client: &'a Client, data: &[u8]) {
-        let mut response = vks_publish_submit_response(client, data);
+        let response = vks_publish_submit_response(client, data);
         let status = response.status();
         let response_body = response.into_string().unwrap();
 
@@ -1199,7 +1199,7 @@ pub mod tests {
     }
 
     fn vks_publish_submit_get_token<'a>(client: &'a Client, data: &[u8]) -> String {
-        let mut response = vks_publish_submit_response(client, data);
+        let response = vks_publish_submit_response(client, data);
         let status = response.status();
         let response_body = response.into_string().unwrap();
 
@@ -1241,7 +1241,7 @@ pub mod tests {
     }
 
     fn vks_publish_shortcut_get_token<'a>(client: &'a Client, data: &[u8]) -> String {
-        let mut response = client.put("/")
+        let response = client.put("/")
             .body(data)
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
@@ -1256,7 +1256,7 @@ pub mod tests {
     }
 
     fn vks_publish_json_get_token<'a>(client: &'a Client, data: &[u8]) -> String {
-        let mut response = client.post("/vks/v1/upload")
+        let response = client.post("/vks/v1/upload")
             .header(ContentType::JSON)
             .body(format!(r#"{{ "keytext": "{}" }}"#, base64::encode(data)))
             .dispatch();
