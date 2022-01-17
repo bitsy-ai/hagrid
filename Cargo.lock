@@ -949,6 +949,7 @@ dependencies = [
  "rocket_codegen",
  "rocket_dyn_templates",
  "rocket_i18n",
+ "rocket_prometheus",
  "sequoia-openpgp",
  "serde",
  "serde_derive",
@@ -2068,6 +2069,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "prometheus"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7f64969ffd5dd8f39bd57a68ac53c163a095ed9d0fb707146da1b27025a3504"
+dependencies = [
+ "cfg-if 1.0.0",
+ "fnv",
+ "lazy_static",
+ "memchr",
+ "parking_lot",
+ "thiserror",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2502,6 +2517,15 @@ version = "0.5.0"
 source = "git+https://github.com/Plume-org/rocket_i18n?branch=go-async#e81b6f1d49db11ab0296f1bffd3ce444d81806a4"
 dependencies = [
  "gettext",
+ "rocket",
+]
+
+[[package]]
+name = "rocket_prometheus"
+version = "0.9.0"
+source = "git+https://github.com/sd2k/rocket_prometheus?branch=async#a913a451555ba1344e88c9e730c4164b20032c40"
+dependencies = [
+ "prometheus",
  "rocket",
 ]
 

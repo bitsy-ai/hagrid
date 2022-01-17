@@ -8,6 +8,7 @@ use rocket::response::{Responder, Response};
 use rocket::response::status::Custom;
 use rocket_dyn_templates::{Engines, Template};
 use rocket_i18n::I18n;
+use rocket_prometheus::PrometheusMetrics;
 use hyperx::header::{ContentDisposition, DispositionType, DispositionParam, Charset};
 
 use gettext_macros::{compile_i18n, include_i18n};
@@ -18,6 +19,7 @@ use std::path::PathBuf;
 
 use crate::mail;
 use crate::tokens;
+use crate::counters;
 use crate::i18n_helpers::describe_query_error;
 use crate::template_helpers::TemplateOverrides;
 use crate::i18n::I18NHelper;
@@ -404,7 +406,7 @@ fn rocket_factory(mut rocket: rocket::Rocket<rocket::Build>) -> Result<rocket::R
     let localized_template_list = configure_localized_template_list(figment)?;
     println!("{:?}", localized_template_list);
 
-    // let prometheus = configure_prometheus(rocket.config());
+    let prometheus = configure_prometheus(figment);
 
     rocket = rocket
        .attach(Template::custom(|engines: &mut Engines| {
@@ -423,18 +425,15 @@ fn rocket_factory(mut rocket: rocket::Rocket<rocket::Build>) -> Result<rocket::R
        .manage(localized_template_list)
        .mount("/", routes);
 
-    /*
     if let Some(prometheus) = prometheus {
         rocket = rocket
             .attach(prometheus.clone())
             .mount("/metrics", prometheus);
     }
-    */
 
     Ok(rocket)
 }
 
-/*
 fn configure_prometheus(config: &Figment) -> Option<PrometheusMetrics> {
     if !config.extract_inner("enable_prometheus").unwrap_or(false) {
         return None;
@@ -443,7 +442,6 @@ fn configure_prometheus(config: &Figment) -> Option<PrometheusMetrics> {
     counters::register_counters(&prometheus.registry());
     return Some(prometheus);
 }
-*/
 
 fn configure_db_service(config: &Figment) -> Result<KeyDatabase> {
     let keys_internal_dir: PathBuf = config.extract_inner("keys_internal_dir")?;
