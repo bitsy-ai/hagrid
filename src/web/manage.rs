@@ -57,8 +57,8 @@ pub mod forms {
 }
 
 #[get("/manage")]
-pub fn vks_manage() -> Result<MyResponse> {
-    Ok(MyResponse::ok_bare("manage/manage"))
+pub fn vks_manage(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("manage/manage", i18n, origin)
 }
 
 #[get("/manage/<token>")]
@@ -95,20 +95,20 @@ pub fn vks_manage_key(
                     token,
                     base_uri: request_origin.get_base_uri().to_owned(),
                 };
-                MyResponse::ok("manage/manage_key", context)
+                MyResponse::ok("manage/manage_key", context, i18n, request_origin)
             },
             Ok(None) => MyResponse::not_found(
                 Some("manage/manage"),
                 Some(i18n!(i18n.catalog, "This link is invalid or expired")),
-                i18n,
-                request_origin,
+                i18n, request_origin,
             ),
             Err(e) => MyResponse::ise(e),
         }
     } else {
         MyResponse::not_found(
             Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "This link is invalid or expired")))
+            Some(i18n!(i18n.catalog, "This link is invalid or expired")),
+            i18n, request_origin)
     }
 }
 
@@ -128,14 +128,16 @@ pub fn vks_manage_post(
         Ok(email) => email,
         Err(_) => return MyResponse::not_found(
             Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "Malformed address: {}"; &request.search_term)))
+            Some(i18n!(i18n.catalog, "Malformed address: {}"; &request.search_term)),
+            i18n, request_origin)
     };
 
     let tpk = match db.lookup(&database::Query::ByEmail(email.clone())) {
         Ok(Some(tpk)) => tpk,
         Ok(None) => return MyResponse::not_found(
             Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "No key for address: {}"; &request.search_term))),
+            Some(i18n!(i18n.catalog, "No key for address: {}"; &request.search_term)),
+            i18n, request_origin),
         Err(e) => return MyResponse::ise(e),
     };
 
@@ -151,7 +153,8 @@ pub fn vks_manage_post(
     if !rate_limiter.action_perform(format!("manage-{}", &email)) {
         return MyResponse::not_found(
             Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "A request has already been sent for this address recently.")));
+            Some(i18n!(i18n.catalog, "A request has already been sent for this address recently.")),
+            i18n, request_origin);
     }
 
     let fpr: Fingerprint = tpk.fingerprint().try_into().unwrap();
@@ -167,7 +170,7 @@ pub fn vks_manage_post(
     let ctx = templates::ManageLinkSent {
         address: email.to_string(),
     };
-    MyResponse::ok("manage/manage_link_sent", ctx)
+    MyResponse::ok("manage/manage_link_sent", ctx, i18n, request_origin)
 }
 
 #[post("/manage/unpublish", data="<request>")]

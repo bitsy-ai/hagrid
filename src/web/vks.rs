@@ -195,16 +195,16 @@ fn process_key_single(
 
 pub fn request_verify(
     db: &rocket::State<KeyDatabase>,
-    request_origin: RequestOrigin,
+    request_origin: &RequestOrigin,
     token_stateful: &rocket::State<StatefulTokens>,
     token_stateless: &rocket::State<tokens::Service>,
     mail_service: &rocket::State<mail::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
-    i18n: I18n,
+    i18n: &I18n,
     token: String,
     addresses: Vec<String>,
 ) -> response::UploadResponse {
-    let (verify_state, tpk_status) = match check_tpk_state(&db, &token_stateless, &i18n, &token) {
+    let (verify_state, tpk_status) = match check_tpk_state(&db, &token_stateless, i18n, &token) {
         Ok(ok) => ok,
         Err(e) => return UploadResponse::err(&e.to_string()),
     };
@@ -227,7 +227,7 @@ pub fn request_verify(
     for email in emails_requested {
         let rate_limit_ok = rate_limiter.action_perform(format!("verify-{}", &email));
         if rate_limit_ok {
-            if send_verify_email(&request_origin, &mail_service, &token_stateful, &i18n, &verify_state.fpr, &email).is_err() {
+            if send_verify_email(request_origin, &mail_service, &token_stateful, i18n, &verify_state.fpr, &email).is_err() {
                 return UploadResponse::err(&format!("error sending email to {}", &email));
             }
         }

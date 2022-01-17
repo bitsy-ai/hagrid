@@ -273,48 +273,48 @@ async fn files(file: PathBuf, state: &rocket::State<HagridState>) -> Option<Name
 }
 
 #[get("/")]
-fn root() -> MyResponse {
-    MyResponse::ok_bare("index")
+fn root(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("index", i18n, origin)
 }
 
 #[get("/about")]
-fn about() -> MyResponse {
-    MyResponse::ok_bare("about/about")
+fn about(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("about/about", i18n, origin)
 }
 
 #[get("/about/news")]
-fn news() -> MyResponse {
-    MyResponse::ok_bare("about/news")
+fn news(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("about/news", i18n, origin)
 }
 
 #[get("/atom.xml")]
-fn news_atom() -> MyResponse {
-    MyResponse::xml("atom")
+fn news_atom(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::xml("atom", i18n, origin)
 }
 
 #[get("/about/faq")]
-fn faq() -> MyResponse {
-    MyResponse::ok_bare("about/faq")
+fn faq(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("about/faq", i18n, origin)
 }
 
 #[get("/about/usage")]
-fn usage() -> MyResponse {
-    MyResponse::ok_bare("about/usage")
+fn usage(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("about/usage", i18n, origin)
 }
 
 #[get("/about/privacy")]
-fn privacy() -> MyResponse {
-    MyResponse::ok_bare("about/privacy")
+fn privacy(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("about/privacy", i18n, origin)
 }
 
 #[get("/about/api")]
-fn apidoc() -> MyResponse {
-    MyResponse::ok_bare("about/api")
+fn apidoc(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("about/api", i18n, origin)
 }
 
 #[get("/about/stats")]
-fn stats() -> MyResponse {
-    MyResponse::ok_bare("about/stats")
+fn stats(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("about/stats", i18n, origin)
 }
 
 #[get("/errors/<code>/<template>")]

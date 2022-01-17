@@ -115,15 +115,17 @@ impl<'r> FromRequest<'r> for Hkp {
 }
 
 #[post("/pks/add", format = "multipart/form-data", data = "<data>")]
-pub fn pks_add_form_data(
+pub async fn pks_add_form_data(
     db: &rocket::State<KeyDatabase>,
     tokens_stateless: &rocket::State<tokens::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     cont_type: &ContentType,
-    data: Data,
+    data: Data<'_>,
 ) -> MyResponse {
-    match vks_web::process_post_form_data(db, tokens_stateless, rate_limiter, i18n, cont_type, data) {
+    match vks_web::process_post_form_data(db, tokens_stateless, rate_limiter, i18n, cont_type, data)
+        .await
+    {
         Ok(_) => MyResponse::plain("Ok".into()),
         Err(err) => MyResponse::ise(err),
     }

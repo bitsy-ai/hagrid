@@ -94,13 +94,14 @@ mod template {
 }
 
 impl MyResponse {
-    fn upload_response_quick(response: UploadResponse, base_uri: &str) -> Self {
+    fn upload_response_quick(response: UploadResponse,
+                             i18n: I18n, origin: RequestOrigin) -> Self {
         match response {
             UploadResponse::Ok { token, .. } => {
                 let uri = uri!(quick_upload_proceed(token));
                 let text = format!(
                     "Key successfully uploaded. Proceed with verification here:\n{}{}\n",
-                    base_uri,
+                    origin.get_base_uri(),
                     uri
                 );
                 MyResponse::plain(text)
@@ -108,18 +109,19 @@ impl MyResponse {
             UploadResponse::OkMulti { key_fprs } =>
                 MyResponse::plain(format!("Uploaded {} keys. For verification, please upload keys individually.\n", key_fprs.len())),
             UploadResponse::Error(error) => MyResponse::bad_request(
-                "400-plain", anyhow!(error)),
+                "400-plain", anyhow!(error), i18n, origin),
         }
     }
 
-    fn upload_response(response: UploadResponse) -> Self {
+    fn upload_response(response: UploadResponse,
+                       i18n: I18n, origin: RequestOrigin) -> Self {
         match response {
             UploadResponse::Ok { token, key_fpr, is_revoked, count_unparsed, status, .. } =>
-                Self::upload_ok(token, key_fpr, is_revoked, count_unparsed, status),
+                Self::upload_ok(token, key_fpr, is_revoked, count_unparsed, status, i18n, origin),
             UploadResponse::OkMulti { key_fprs } =>
-                Self::upload_ok_multi(key_fprs),
+                Self::upload_ok_multi(key_fprs, i18n, origin),
             UploadResponse::Error(error) => MyResponse::bad_request(
-                "upload/upload", anyhow!(error)),
+                "upload/upload", anyhow!(error), i18n, origin),
         }
     }
 
@@ -129,6 +131,8 @@ impl MyResponse {
         is_revoked: bool,
         count_unparsed: usize,
         uid_status: HashMap<String,EmailStatus>,
+        i18n: I18n,
+        origin: RequestOrigin,
     ) -> Self {
         let key_link = uri!(search(q = &key_fpr)).to_string();
 
@@ -166,10 +170,11 @@ impl MyResponse {
             count_unparsed_one: count_unparsed == 1,
             count_unparsed,
         };
-        MyResponse::ok("upload/upload-ok", context)
+        MyResponse::ok("upload/upload-ok", context, i18n, origin)
     }
 
-    fn upload_ok_multi(key_fprs: Vec<String>) -> Self {
+    fn upload_ok_multi(key_fprs: Vec<String>,
+                       i18n: I18n, origin: RequestOrigin) -> Self {
         let keys = key_fprs.into_iter()
             .map(|fpr| {
                 let key_link = uri!(search(q = &fpr)).to_string();
@@ -184,62 +189,61 @@ impl MyResponse {
             keys,
         };
 
-        MyResponse::ok("upload/upload-ok-multiple", context)
+        MyResponse::ok("upload/upload-ok-multiple", context, i18n, origin)
     }
 }
 
 #[get("/upload")]
-pub fn upload() -> MyResponse {
-    MyResponse::ok_bare("upload/upload")
+pub fn upload(origin: RequestOrigin, i18n: I18n) -> MyResponse {
+    MyResponse::ok_bare("upload/upload", i18n, origin)
 }
 
 #[post("/upload/submit", format = "multipart/form-data", data = "<data>")]
-pub fn upload_post_form_data(
+pub async fn upload_post_form_data(
     db: &rocket::State<KeyDatabase>,
+    origin: RequestOrigin,
     tokens_stateless: &rocket::State<tokens::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     cont_type: &ContentType,
-    data: Data,
+    data: Data<'_>,
 ) -> MyResponse {
-    match process_post_form_data(db, tokens_stateless, rate_limiter, i18n, cont_type, data) {
-        Ok(response) => MyResponse::upload_response(response),
-        Err(err) => MyResponse::bad_request("upload/upload", err),
+    match process_upload(db, tokens_stateless, rate_limiter, &i18n, data, cont_type)
+        .await
+    {
+        Ok(response) => MyResponse::upload_response(response, i18n, origin),
+        Err(err) => MyResponse::bad_request("upload/upload", err, i18n, origin),
     }
 }
 
-pub fn process_post_form_data(
+pub async fn process_post_form_data(
     db: &rocket::State<KeyDatabase>,
     tokens_stateless: &rocket::State<tokens::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     cont_type: &ContentType,
-    data: Data,
+    data: Data<'_>,
 ) -> Result<UploadResponse> {
-    // multipart/form-data
-    let (_, boundary) = cont_type
-        .params()
-        .find(|&(k, _)| k == "boundary")
-        .ok_or_else(|| anyhow!("`Content-Type: multipart/form-data` \
-                                      boundary param not provided"))?;
-
-    process_upload(&db, &tokens_stateless, &rate_limiter, &i18n, data, boundary)
+    process_upload(&db, &tokens_stateless, &rate_limiter, &i18n, data, cont_type)
+        .await
 }
 
 #[get("/search?<q>")]
 pub fn search(
     db: &rocket::State<KeyDatabase>,
+    origin: RequestOrigin,
     i18n: I18n,
     q: String,
 ) -> MyResponse {
     match q.parse::<Query>() {
-        Ok(query) => key_to_response(db, i18n, q, query),
-        Err(e) => MyResponse::bad_request("index", e),
+        Ok(query) => key_to_response(db, origin, i18n, q, query),
+        Err(e) => MyResponse::bad_request("index", e, i18n, origin),
     }
 }
 
 fn key_to_response(
     db: &rocket::State<KeyDatabase>,
+    origin: RequestOrigin,
     i18n: I18n,
     query_string: String,
     query: Query,
@@ -247,9 +251,11 @@ fn key_to_response(
     let fp = if let Some(fp) = db.lookup_primary_fingerprint(&query) {
         fp
     } else if query.is_invalid() {
-        return MyResponse::bad_request("index", anyhow!(describe_query_error(&i18n, &query)));
+        return MyResponse::bad_request("index", anyhow!(describe_query_error(&i18n, &query)),
+                                       i18n, origin);
     } else {
-        return MyResponse::not_found(None, describe_query_error(&i18n, &query));
+        return MyResponse::not_found(None, describe_query_error(&i18n, &query),
+                                     i18n, origin);
     };
 
     let context = template::Search{
@@ -257,7 +263,7 @@ fn key_to_response(
         fpr: fp.to_string(),
     };
 
-    MyResponse::ok("found", context)
+    MyResponse::ok("found", context, i18n, origin)
 }
 
 
@@ -272,7 +278,9 @@ pub async fn quick_upload(
 ) -> MyResponse {
     let buf = match data.open(UPLOAD_LIMIT).into_bytes().await {
         Ok(buf) => buf.into_inner(),
-        Err(error) => return MyResponse::bad_request("400-plain", anyhow!(error)),
+        Err(error) =>
+            return MyResponse::bad_request("400-plain", anyhow!(error),
+                                           i18n, request_origin),
     };
 
     MyResponse::upload_response_quick(
@@ -282,7 +290,8 @@ pub async fn quick_upload(
             &tokens_stateless,
             &rate_limiter,
             Cursor::new(buf)
-        ), request_origin.get_base_uri())
+        ),
+        i18n, request_origin)
 }
 
 #[get("/upload/<token>", rank = 2)]
@@ -297,23 +306,26 @@ pub fn quick_upload_proceed(
     token: String,
 ) -> MyResponse {
     let result = vks::request_verify(
-        db, request_origin, token_stateful, token_stateless, mail_service,
-        rate_limiter, i18n, token, vec!());
-    MyResponse::upload_response(result)
+        db, &request_origin, token_stateful, token_stateless, mail_service,
+        rate_limiter, &i18n, token, vec!());
+    MyResponse::upload_response(result, i18n, request_origin)
 }
 
 
 #[post("/upload/submit", format = "application/x-www-form-urlencoded", data = "<data>")]
 pub async fn upload_post_form(
     db: &rocket::State<KeyDatabase>,
+    request_origin: RequestOrigin,
     tokens_stateless: &rocket::State<tokens::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
     data: Data<'_>,
 ) -> MyResponse {
     match process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data).await {
-        Ok(response) => MyResponse::upload_response(response),
-        Err(err) => MyResponse::bad_request("upload/upload", err),
+        Ok(response) => MyResponse::upload_response(response,
+                                                    i18n, request_origin),
+        Err(err) => MyResponse::bad_request("upload/upload", err,
+                                            i18n, request_origin),
     }
 }
 
@@ -352,18 +364,26 @@ pub async fn process_post_form(
 }
 
 
-fn process_upload(
+async fn process_upload(
     db: &KeyDatabase,
     tokens_stateless: &tokens::Service,
     rate_limiter: &RateLimiter,
     i18n: &I18n,
-    data: Data,
-    boundary: &str,
+    data: Data<'_>,
+    cont_type: &ContentType,
 ) -> Result<UploadResponse> {
+    // multipart/form-data
+    let (_, boundary) = cont_type
+        .params()
+        .find(|&(k, _)| k == "boundary")
+        .ok_or_else(|| anyhow!("`Content-Type: multipart/form-data` \
+                                      boundary param not provided"))?;
+
     // saves all fields, any field longer than 10kB goes to a temporary directory
     // Entries could implement FromData though that would give zero control over
     // how the files are saved; Multipart would be a good impl candidate though
-    match Multipart::with_body(data.open(UPLOAD_LIMIT), boundary).save().temp() {
+    let data = Cursor::new(data.open(UPLOAD_LIMIT).into_bytes().await?.value);
+    match Multipart::with_body(data, boundary).save().temp() {
         Full(entries) => {
             process_multipart(db, tokens_stateless, rate_limiter, i18n, entries)
         }
@@ -404,9 +424,9 @@ pub fn request_verify_form(
 ) -> MyResponse {
     let forms::VerifyRequest { token, address } = request.into_inner();
     let result = vks::request_verify(
-        db, request_origin, token_stateful, token_stateless, mail_service,
-        rate_limiter, i18n, token, vec!(address));
-    MyResponse::upload_response(result)
+        db, &request_origin, token_stateful, token_stateless, mail_service,
+        rate_limiter, &i18n, token, vec!(address));
+    MyResponse::upload_response(result, i18n, request_origin)
 }
 
 #[post("/upload/request-verify", format = "multipart/form-data", data="<request>")]
@@ -422,14 +442,15 @@ pub fn request_verify_form_data(
 ) -> MyResponse {
     let forms::VerifyRequest { token, address } = request.into_inner();
     let result = vks::request_verify(
-        db, request_origin, token_stateful, token_stateless, mail_service,
-        rate_limiter, i18n, token, vec!(address));
-    MyResponse::upload_response(result)
+        db, &request_origin, token_stateful, token_stateless, mail_service,
+        rate_limiter, &i18n, token, vec!(address));
+    MyResponse::upload_response(result, i18n, request_origin)
 }
 
 #[post("/verify/<token>")]
 pub fn verify_confirm(
     db: &rocket::State<KeyDatabase>,
+    origin: RequestOrigin,
     token_service: &rocket::State<StatefulTokens>,
     rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
@@ -446,7 +467,7 @@ pub fn verify_confirm(
                 userid_link,
             };
 
-            MyResponse::ok("upload/publish-result", context)
+            MyResponse::ok("upload/publish-result", context, i18n, origin)
         },
         PublishResponse::Error(error) => {
             let error_msg = if rate_limiter.action_check(rate_limit_id) {
@@ -454,16 +475,18 @@ pub fn verify_confirm(
             } else {
                 anyhow!(i18n!(i18n.catalog, "This address has already been verified."))
             };
-            MyResponse::bad_request("400", error_msg)
+            MyResponse::bad_request("400", error_msg, i18n, origin)
         }
     }
 }
 
 #[get("/verify/<token>")]
 pub fn verify_confirm_form(
+    origin: RequestOrigin,
+    i18n: I18n,
     token: String,
 ) -> MyResponse {
     MyResponse::ok("upload/verification-form", template::VerifyForm {
         token
-    })
+    }, i18n, origin)
 }

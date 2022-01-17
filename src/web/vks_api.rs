@@ -127,8 +127,8 @@ pub fn request_verify_json(
     let json::VerifyRequest { token, addresses, locale } = data.into_inner();
     let i18n = get_locale(langs, locale.unwrap_or_default());
     let result = vks::request_verify(
-        db, request_origin, token_stateful, token_stateless, mail_service,
-        rate_limiter, i18n, token, addresses);
+        db, &request_origin, token_stateful, token_stateless, mail_service,
+        rate_limiter, &i18n, token, addresses);
     upload_ok_json(result)
 }
 
