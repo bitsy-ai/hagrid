@@ -52,7 +52,7 @@ mod context {
 pub struct Service {
     from: Mailbox,
     domain: String,
-    templates: Handlebars,
+    templates: Handlebars<'static>,
     transport: Transport,
 }
 

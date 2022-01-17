@@ -936,7 +936,7 @@ dependencies = [
  "gettext-utils",
  "glob",
  "hagrid-database",
- "handlebars 1.1.0",
+ "handlebars",
  "hyperx",
  "lazy_static",
  "lettre",
@@ -1011,23 +1011,6 @@ dependencies = [
  "time 0.1.43",
  "toml",
  "url",
- "walkdir",
-]
-
-[[package]]
-name = "handlebars"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d82e5750d8027a97b9640e3fefa66bbaf852a35228e1c90790efd13c4b09c166"
-dependencies = [
- "lazy_static",
- "log 0.4.14",
- "pest",
- "pest_derive",
- "quick-error 1.2.3",
- "regex",
- "serde",
- "serde_json",
  "walkdir",
 ]
 
@@ -2475,7 +2458,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c83f1287ad8fa034410928297a91db37518d5c46d7cc7e1e1b4a77aec0cd8807"
 dependencies = [
  "glob",
- "handlebars 3.5.5",
+ "handlebars",
  "normpath",
  "notify",
  "rocket",

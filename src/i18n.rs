@@ -56,7 +56,7 @@ impl HelperDef for I18NHelper {
         h: &Helper<'reg, 'rc>,
         reg: &'reg Handlebars,
         context: &'rc Context,
-        rcx: &mut RenderContext<'reg>,
+        rcx: &mut RenderContext<'reg, '_>,
         out: &mut dyn Output,
     ) -> HelperResult {
         let id = if let Some(id) = h.param(0) {
@@ -76,7 +76,7 @@ impl HelperDef for I18NHelper {
         let rerender = h
             .param(1)
             .and_then(|p| p
-                      .path()
+                      .relative_path()
                       .map(|v| v == "rerender")
                     ).unwrap_or(false);
 
@@ -87,14 +87,20 @@ impl HelperDef for I18NHelper {
             .as_str()
             .expect("Language must be string");
 
+        fn render_error_with<E>(e: E) -> RenderError
+        where
+            E: std::error::Error + Send + Sync + 'static
+        {
+            RenderError::from_error("Failed to render", e)
+        }
         let response = self.lookup(lang, &id);
         if rerender {
-            let data = rcx.evaluate(context, ".", false).unwrap();
-            let response = reg.render_template(&response, data)
-                .map_err(RenderError::with)?;
-            out.write(&response).map_err(RenderError::with)?;
+            let data = rcx.evaluate(context, "this").unwrap();
+            let response = reg.render_template(&response, data.as_json())
+                .map_err(render_error_with)?;
+            out.write(&response).map_err(render_error_with)?;
         } else {
-            out.write(&response).map_err(RenderError::with)?;
+            out.write(&response).map_err(render_error_with)?;
         }
         Ok(())
     }

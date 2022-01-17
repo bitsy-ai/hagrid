@@ -48,7 +48,7 @@ fn load_localized_template_names(template_path: &Path, localized_dir: &str) -> R
     .collect()
 }
 
-pub fn load_handlebars(template_dir: &Path) -> Result<Handlebars> {
+pub fn load_handlebars(template_dir: &Path) -> Result<Handlebars<'static>> {
     let mut handlebars = Handlebars::new();
 
     let i18ns = include_i18n!();
