@@ -106,14 +106,16 @@ impl MyResponse {
     }
 
     pub fn key(armored_key: String, fp: &Fingerprint) -> Self {
-        let content_disposition = Header::new(CONTENT_DISPOSITION.as_str(), ContentDisposition {
+        let content_disposition = Header::new(
+            rocket::http::hyper::header::CONTENT_DISPOSITION.as_str(),
+            ContentDisposition {
                 disposition: DispositionType::Attachment,
                 parameters: vec![
                     DispositionParam::Filename(
                         Charset::Us_Ascii, None,
                         (fp.to_string() + ".asc").into_bytes()),
                 ],
-            });
+            }.to_string());
         MyResponse::Key(armored_key, content_disposition)
     }
 
