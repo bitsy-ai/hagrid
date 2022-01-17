@@ -273,14 +273,14 @@ pub async fn quick_upload(
     tokens_stateless: &rocket::State<tokens::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     data: Data<'_>,
 ) -> MyResponse {
     let buf = match data.open(UPLOAD_LIMIT).into_bytes().await {
         Ok(buf) => buf.into_inner(),
         Err(error) =>
             return MyResponse::bad_request("400-plain", anyhow!(error),
-                                           i18n, request_origin),
+                                           i18n, origin),
     };
 
     MyResponse::upload_response_quick(
@@ -291,13 +291,13 @@ pub async fn quick_upload(
             &rate_limiter,
             Cursor::new(buf)
         ),
-        i18n, request_origin)
+        i18n, origin)
 }
 
 #[get("/upload/<token>", rank = 2)]
 pub fn quick_upload_proceed(
     db: &rocket::State<KeyDatabase>,
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     token_stateful: &rocket::State<StatefulTokens>,
     token_stateless: &rocket::State<tokens::Service>,
     mail_service: &rocket::State<mail::Service>,
@@ -306,16 +306,16 @@ pub fn quick_upload_proceed(
     token: String,
 ) -> MyResponse {
     let result = vks::request_verify(
-        db, &request_origin, token_stateful, token_stateless, mail_service,
+        db, &origin, token_stateful, token_stateless, mail_service,
         rate_limiter, &i18n, token, vec!());
-    MyResponse::upload_response(result, i18n, request_origin)
+    MyResponse::upload_response(result, i18n, origin)
 }
 
 
 #[post("/upload/submit", format = "application/x-www-form-urlencoded", data = "<data>")]
 pub async fn upload_post_form(
     db: &rocket::State<KeyDatabase>,
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     tokens_stateless: &rocket::State<tokens::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
@@ -323,9 +323,9 @@ pub async fn upload_post_form(
 ) -> MyResponse {
     match process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data).await {
         Ok(response) => MyResponse::upload_response(response,
-                                                    i18n, request_origin),
+                                                    i18n, origin),
         Err(err) => MyResponse::bad_request("upload/upload", err,
-                                            i18n, request_origin),
+                                            i18n, origin),
     }
 }
 
@@ -414,7 +414,7 @@ fn process_multipart(
 #[post("/upload/request-verify", format = "application/x-www-form-urlencoded", data="<request>")]
 pub fn request_verify_form(
     db: &rocket::State<KeyDatabase>,
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     token_stateful: &rocket::State<StatefulTokens>,
     token_stateless: &rocket::State<tokens::Service>,
     mail_service: &rocket::State<mail::Service>,
@@ -424,15 +424,15 @@ pub fn request_verify_form(
 ) -> MyResponse {
     let forms::VerifyRequest { token, address } = request.into_inner();
     let result = vks::request_verify(
-        db, &request_origin, token_stateful, token_stateless, mail_service,
+        db, &origin, token_stateful, token_stateless, mail_service,
         rate_limiter, &i18n, token, vec!(address));
-    MyResponse::upload_response(result, i18n, request_origin)
+    MyResponse::upload_response(result, i18n, origin)
 }
 
 #[post("/upload/request-verify", format = "multipart/form-data", data="<request>")]
 pub fn request_verify_form_data(
     db: &rocket::State<KeyDatabase>,
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     token_stateful: &rocket::State<StatefulTokens>,
     token_stateless: &rocket::State<tokens::Service>,
     mail_service: &rocket::State<mail::Service>,
@@ -442,9 +442,9 @@ pub fn request_verify_form_data(
 ) -> MyResponse {
     let forms::VerifyRequest { token, address } = request.into_inner();
     let result = vks::request_verify(
-        db, &request_origin, token_stateful, token_stateless, mail_service,
+        db, &origin, token_stateful, token_stateless, mail_service,
         rate_limiter, &i18n, token, vec!(address));
-    MyResponse::upload_response(result, i18n, request_origin)
+    MyResponse::upload_response(result, i18n, origin)
 }
 
 #[post("/verify/<token>")]

@@ -133,7 +133,7 @@ pub async fn pks_add_form_data(
 
 #[post("/pks/add", format = "application/x-www-form-urlencoded", data = "<data>")]
 pub async fn pks_add_form(
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     db: &rocket::State<KeyDatabase>,
     tokens_stateless: &rocket::State<tokens::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
@@ -143,11 +143,11 @@ pub async fn pks_add_form(
 ) -> MyResponse {
     match vks_web::process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data).await {
         Ok(UploadResponse::Ok { is_new_key, key_fpr, primary_uid, token, status, .. }) => {
-            let msg = pks_add_ok(&request_origin, &mail_service, &rate_limiter, token, status, is_new_key, key_fpr, primary_uid);
+            let msg = pks_add_ok(&origin, &mail_service, &rate_limiter, token, status, is_new_key, key_fpr, primary_uid);
             MyResponse::plain(msg)
         }
         Ok(_) => {
-            let msg = format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = request_origin.get_base_uri());
+            let msg = format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri());
             MyResponse::plain(msg)
         }
         Err(err) => MyResponse::ise(err),
@@ -155,7 +155,7 @@ pub async fn pks_add_form(
 }
 
 fn pks_add_ok(
-    request_origin: &RequestOrigin,
+    origin: &RequestOrigin,
     mail_service: &mail::Service,
     rate_limiter: &RateLimiter,
     token: String,
@@ -165,16 +165,16 @@ fn pks_add_ok(
     primary_uid: Option<Email>,
 ) -> String {
     if primary_uid.is_none() {
-        return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = request_origin.get_base_uri())
+        return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri())
     }
     let primary_uid = primary_uid.unwrap();
 
     if is_new_key {
-        if send_welcome_mail(&request_origin, &mail_service, key_fpr, &primary_uid, token) {
+        if send_welcome_mail(&origin, &mail_service, key_fpr, &primary_uid, token) {
             rate_limiter.action_perform(format!("hkp-sent-{}", &primary_uid));
             return format!("Upload successful. This is a new key, a welcome email has been sent.");
         }
-        return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = request_origin.get_base_uri())
+        return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri())
     }
 
     let has_unverified = status.iter().any(|(_, v)| *v == EmailStatus::Unpublished);
@@ -182,17 +182,17 @@ fn pks_add_ok(
         return format!("Upload successful.");
     }
 
-    return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = request_origin.get_base_uri())
+    return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri())
 }
 
 fn send_welcome_mail(
-    request_origin: &RequestOrigin,
+    origin: &RequestOrigin,
     mail_service: &mail::Service,
     fpr: String,
     primary_uid: &Email,
     token: String,
 ) -> bool {
-    mail_service.send_welcome(request_origin.get_base_uri(), fpr, primary_uid, &token).is_ok()
+    mail_service.send_welcome(origin.get_base_uri(), fpr, primary_uid, &token).is_ok()
 }
 
 #[get("/pks/lookup")]

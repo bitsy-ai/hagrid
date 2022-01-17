@@ -63,7 +63,7 @@ pub fn vks_manage(origin: RequestOrigin, i18n: I18n) -> MyResponse {
 
 #[get("/manage/<token>")]
 pub fn vks_manage_key(
-   request_origin: RequestOrigin,
+   origin: RequestOrigin,
    db: &rocket::State<KeyDatabase>,
    i18n: I18n,
    token: String,
@@ -93,14 +93,14 @@ pub fn vks_manage_key(
                     key_link,
                     uid_status,
                     token,
-                    base_uri: request_origin.get_base_uri().to_owned(),
+                    base_uri: origin.get_base_uri().to_owned(),
                 };
-                MyResponse::ok("manage/manage_key", context, i18n, request_origin)
+                MyResponse::ok("manage/manage_key", context, i18n, origin)
             },
             Ok(None) => MyResponse::not_found(
                 Some("manage/manage"),
                 Some(i18n!(i18n.catalog, "This link is invalid or expired")),
-                i18n, request_origin,
+                i18n, origin,
             ),
             Err(e) => MyResponse::ise(e),
         }
@@ -108,14 +108,14 @@ pub fn vks_manage_key(
         MyResponse::not_found(
             Some("manage/manage"),
             Some(i18n!(i18n.catalog, "This link is invalid or expired")),
-            i18n, request_origin)
+            i18n, origin)
     }
 }
 
 #[post("/manage", data="<request>")]
 pub fn vks_manage_post(
     db: &rocket::State<KeyDatabase>,
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     mail_service: &rocket::State<mail::Service>,
     rate_limiter: &rocket::State<RateLimiter>,
     i18n: I18n,
@@ -129,7 +129,7 @@ pub fn vks_manage_post(
         Err(_) => return MyResponse::not_found(
             Some("manage/manage"),
             Some(i18n!(i18n.catalog, "Malformed address: {}"; &request.search_term)),
-            i18n, request_origin)
+            i18n, origin)
     };
 
     let tpk = match db.lookup(&database::Query::ByEmail(email.clone())) {
@@ -137,7 +137,7 @@ pub fn vks_manage_post(
         Ok(None) => return MyResponse::not_found(
             Some("manage/manage"),
             Some(i18n!(i18n.catalog, "No key for address: {}"; &request.search_term)),
-            i18n, request_origin),
+            i18n, origin),
         Err(e) => return MyResponse::ise(e),
     };
 
@@ -154,7 +154,7 @@ pub fn vks_manage_post(
         return MyResponse::not_found(
             Some("manage/manage"),
             Some(i18n!(i18n.catalog, "A request has already been sent for this address recently.")),
-            i18n, request_origin);
+            i18n, origin);
     }
 
     let fpr: Fingerprint = tpk.fingerprint().try_into().unwrap();
@@ -162,7 +162,7 @@ pub fn vks_manage_post(
     let token = token_service.create(&StatelessVerifyToken { fpr });
     let link_path = uri!(vks_manage_key(token)).to_string();
 
-    let base_uri = request_origin.get_base_uri();
+    let base_uri = origin.get_base_uri();
     if let Err(e) = mail_service.send_manage_token(&i18n, base_uri, fpr_text, &email, &link_path) {
         return MyResponse::ise(e);
     }
@@ -170,25 +170,25 @@ pub fn vks_manage_post(
     let ctx = templates::ManageLinkSent {
         address: email.to_string(),
     };
-    MyResponse::ok("manage/manage_link_sent", ctx, i18n, request_origin)
+    MyResponse::ok("manage/manage_link_sent", ctx, i18n, origin)
 }
 
 #[post("/manage/unpublish", data="<request>")]
 pub fn vks_manage_unpublish(
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     db: &rocket::State<KeyDatabase>,
     i18n: I18n,
     token_service: &rocket::State<tokens::Service>,
     request: Form<forms::ManageDelete>,
 ) -> MyResponse {
-    match vks_manage_unpublish_or_fail(request_origin, db, token_service, i18n, request) {
+    match vks_manage_unpublish_or_fail(origin, db, token_service, i18n, request) {
         Ok(response) => response,
         Err(e) => MyResponse::ise(e),
     }
 }
 
 pub fn vks_manage_unpublish_or_fail(
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     db: &rocket::State<KeyDatabase>,
     token_service: &rocket::State<tokens::Service>,
     i18n: I18n,
@@ -200,5 +200,5 @@ pub fn vks_manage_unpublish_or_fail(
     db.set_email_unpublished(&verify_token.fpr, &email)?;
     counters::inc_address_unpublished(&email);
 
-    Ok(vks_manage_key(request_origin, db, i18n, request.token.to_owned(), token_service))
+    Ok(vks_manage_key(origin, db, i18n, request.token.to_owned(), token_service))
 }

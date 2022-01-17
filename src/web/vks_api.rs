@@ -92,9 +92,9 @@ pub fn upload_json(
 
 #[post("/vks/v1/upload", rank = 2)]
 pub fn upload_fallback(
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
 ) -> JsonErrorResponse {
-    let error_msg = format!("expected application/json data. see {}/about/api for api docs.", request_origin.get_base_uri());
+    let error_msg = format!("expected application/json data. see {}/about/api for api docs.", origin.get_base_uri());
     JsonErrorResponse(Status::BadRequest, error_msg)
 }
 
@@ -116,7 +116,7 @@ fn get_locale(
 pub fn request_verify_json(
     db: &rocket::State<KeyDatabase>,
     langs: &rocket::State<Translations>,
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
     token_stateful: &rocket::State<StatefulTokens>,
     token_stateless: &rocket::State<tokens::Service>,
     mail_service: &rocket::State<mail::Service>,
@@ -127,16 +127,16 @@ pub fn request_verify_json(
     let json::VerifyRequest { token, addresses, locale } = data.into_inner();
     let i18n = get_locale(langs, locale.unwrap_or_default());
     let result = vks::request_verify(
-        db, &request_origin, token_stateful, token_stateless, mail_service,
+        db, &origin, token_stateful, token_stateless, mail_service,
         rate_limiter, &i18n, token, addresses);
     upload_ok_json(result)
 }
 
 #[post("/vks/v1/request-verify", rank = 2)]
 pub fn request_verify_fallback(
-    request_origin: RequestOrigin,
+    origin: RequestOrigin,
 ) -> JsonErrorResponse {
-    let error_msg = format!("expected application/json data. see {}/about/api for api docs.", request_origin.get_base_uri());
+    let error_msg = format!("expected application/json data. see {}/about/api for api docs.", origin.get_base_uri());
     JsonErrorResponse(Status::BadRequest, error_msg)
 }
 
