@@ -323,12 +323,12 @@ fn errors(
     origin: RequestOrigin,
     code: u16,
     template: String,
-) -> Result<Custom<Template>> {
+) -> std::result::Result<Custom<Template>, &'static str> {
     if !template.chars().all(|x| x == '-' || char::is_ascii_alphabetic(&x)) {
-        return Err(anyhow!("bad request"));
+        return Err("bad request");
     }
     let status_code = Status::from_code(code)
-        .ok_or(anyhow!("bad request"))?;
+        .ok_or("bad request")?;
     let response_body = Template::render(
         format!("errors/{}-{}", code, template),
         templates::HagridLayout::new(templates::Bare{dummy: ()}, i18n, origin)
