@@ -156,8 +156,8 @@ fn import_from_file(db: &KeyDatabase, input: &Path, multi_progress: &MultiProgre
                 Packet::SecretKey(key) => key.fingerprint().to_hex(),
                 _ => "Unknown".to_owned(),
             };
-            let error = format!("{}:{:05}:{}: {}\n{}", filename, stats.count_total,
-                                key_fpr, e.to_string(), e.backtrace());
+            let error = format!("{}:{:05}:{}: {}", filename, stats.count_total,
+                                key_fpr, e.to_string());
             progress_bar.println(error);
         }
         stats.update(result);
