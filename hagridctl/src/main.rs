@@ -1,6 +1,3 @@
-#![feature(proc_macro_hygiene, plugin, decl_macro)]
-#![recursion_limit = "1024"]
-
 extern crate anyhow;
 extern crate clap;
 extern crate tempfile;
