@@ -25,9 +25,9 @@ mod regenerate;
 
 #[derive(Deserialize)]
 pub struct HagridConfigs {
-    development: HagridConfig,
+    debug: HagridConfig,
     staging: HagridConfig,
-    production: HagridConfig,
+    release: HagridConfig,
 }
 
 // this is not an exact match - Rocket config has more complicated semantics
@@ -79,10 +79,10 @@ fn main() -> Result<()> {
     let config_data = fs::read_to_string(config_file).unwrap();
     let configs: HagridConfigs = toml::from_str(&config_data).unwrap();
     let config = match matches.value_of("env").unwrap() {
-        "dev" => configs.development,
+        "dev" => configs.debug,
         "stage" => configs.staging,
-        "prod" => configs.production,
-        _ => configs.development,
+        "prod" => configs.release,
+        _ => configs.debug,
     };
 
     if let Some(matches) = matches.subcommand_matches("import") {
