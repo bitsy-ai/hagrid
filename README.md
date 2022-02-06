@@ -26,22 +26,20 @@ License along with Hagrid.  If not, see
 Quick Start
 -----------
 
-Building Hagrid requires a working nightly Rust toolchain. The
-easiest way to get the toolchain is to download [rustup](https://rustup.rs).
+Building Hagrid requires a working stable Rust toolchain.
+The easiest way to get the toolchain is to download [rustup](https://rustup.rs).
 
-Additionally, install external dependencies are required. Get them (on Debian or
-Ubuntu) with
+Additionally, some external dependencies are required.
+Get them (on Debian or Ubuntu) with
 
 ```bash
 sudo apt install gnutls-bin nettle-dev gcc llvm-dev libclang-dev build-essential pkg-config gettext
 ```
 
-After rustup and all other dependencies are installed, get the nightly compiler and tools, copy the
-config file, and simply compile and run:
+After Rust and the other dependencies are installed, copy the config file, then simply compile and run:
 
 ```bash
 cd hagrid
-rustup override set nightly-2020-06-01
 cp Rocket.toml.dist Rocket.toml
 cargo run
 ```
