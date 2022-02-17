@@ -37,6 +37,7 @@ mod vks;
 mod vks_web;
 mod vks_api;
 mod debug_web;
+mod wkd;
 
 use crate::web::maintenance::MaintenanceMode;
 
@@ -68,6 +69,8 @@ pub enum MyResponse {
     Xml(HagridTemplate),
     #[response(status = 200, content_type = "application/pgp-keys")]
     Key(String, Header<'static>),
+    #[response(status = 200, content_type = "application/octet-stream")]
+    WkdKey(Vec<u8>, Header<'static>),
     #[response(status = 500, content_type = "html")]
     ServerError(Template),
     #[response(status = 404, content_type = "html")]
@@ -118,6 +121,20 @@ impl MyResponse {
                 ],
             }.to_string());
         MyResponse::Key(armored_key, content_disposition)
+    }
+
+    pub fn wkd(binary_key: Vec<u8>, wkd_hash: &str) -> Self {
+        let content_disposition = Header::new(
+            rocket::http::hyper::header::CONTENT_DISPOSITION.as_str(),
+            ContentDisposition {
+                disposition: DispositionType::Attachment,
+                parameters: vec![
+                    DispositionParam::Filename(
+                        Charset::Us_Ascii, None,
+                        (wkd_hash.to_string() + ".pgp").into_bytes()),
+                ],
+            }.to_string());
+        MyResponse::WkdKey(binary_key, content_disposition)
     }
 
     pub fn ise(e: anyhow::Error) -> Self {
@@ -383,6 +400,9 @@ fn rocket_factory(mut rocket: rocket::Rocket<rocket::Build>) -> Result<rocket::R
         hkp::pks_add_form,
         hkp::pks_add_form_data,
         hkp::pks_internal_index,
+        // WKD
+        wkd::wkd_policy,
+        wkd::wkd_query,
         // Manage
         manage::vks_manage,
         manage::vks_manage_key,
@@ -938,6 +958,12 @@ pub mod tests {
                        Status::BadRequest, "not supported");
 
     }
+    #[test]
+    fn wkd_policy() {
+        let (_tmpdir, client) = client().unwrap();
+        check_response(&client, "/.well-known/openpgpkey/example.org/policy",
+                       Status::Ok, "");
+    }
 
     /// Asserts that the given URI 404s.
     pub fn check_null_response(client: &Client, uri: &str) {
@@ -954,6 +980,11 @@ pub mod tests {
         check_null_response(
             client, &format!("/pks/lookup?op=get&options=mr&search={}",
                               addr));
+
+        let (wkd_hash, domain) = crate::database::wkd::encode_wkd(addr).unwrap();
+        check_null_response(
+            &client,
+            &format!("/.well-known/openpgpkey/{}/hu/{}", domain, wkd_hash));
     }
 
     /// Asserts that lookups by the given email are successful.
@@ -979,6 +1010,12 @@ pub mod tests {
             client,
             &format!("/search?q={}", addr),
             tpk, nr_uids);
+
+        let (wkd_hash, domain) = crate::database::wkd::encode_wkd(addr).unwrap();
+        check_wkd_response(
+            &client,
+            &format!("/.well-known/openpgpkey/{}/hu/{}", domain, wkd_hash),
+            &tpk, nr_uids);
     }
 
     /// Asserts that the given URI returns a Cert matching the given
@@ -1133,6 +1170,25 @@ pub mod tests {
             &format!("/search?q=0x{}", keyid),
             tpk, nr_uids);
     }
+
+    /// Asserts that the given URI returns correct WKD response with a Cert
+    /// matching the given one, with the given number of userids.
+    pub fn check_wkd_response(client: &Client, uri: &str, tpk: &Cert,
+                             nr_uids: usize) {
+        let response = client.get(uri).dispatch();
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.content_type(),
+                   Some(ContentType::new("application", "octet-stream")));
+        let body = response.into_bytes().unwrap();
+        let tpk_ = Cert::from_bytes(&body).unwrap();
+        assert_eq!(tpk.fingerprint(), tpk_.fingerprint());
+        assert_eq!(tpk.keys().map(|skb| skb.key().fingerprint())
+                   .collect::<Vec<_>>(),
+                   tpk_.keys().map(|skb| skb.key().fingerprint())
+                   .collect::<Vec<_>>());
+        assert_eq!(tpk_.userids().count(), nr_uids);
+    }
+
 
     fn check_verify_link(client: &Client, token: &str, address: &str, lang: &'static str) {
         let encoded = ::url::form_urlencoded::Serializer::new(String::new())

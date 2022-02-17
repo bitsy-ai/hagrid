@@ -182,6 +182,15 @@ impl Filesystem {
         ].iter().collect()
     }
 
+    /// Returns the WKD path to the given url-encoded domain and wkd-encoded local part.
+    fn link_wkd_by_domain_and_hash(&self, domain: &str, hash: &str) -> PathBuf {
+        [
+            &self.links_dir_wkd_by_email,
+            Path::new(&domain),
+            &path_split(hash)
+        ].iter().collect()
+    }
+
     #[allow(clippy::nonminimal_bool)]
     fn read_from_path(&self, path: &Path, allow_internal: bool) -> Option<String> {
         use std::fs;
@@ -572,6 +581,12 @@ impl Database for Filesystem {
     // XXX: slow
     fn by_email_wkd(&self, email: &Email) -> Option<Vec<u8>> {
         let path = self.link_wkd_by_email(email);
+        self.read_from_path_bytes(&path, false)
+    }
+
+    // XXX: slow
+    fn by_domain_and_hash_wkd(&self, domain: &str, hash: &str) -> Option<Vec<u8>> {
+        let path = self.link_wkd_by_domain_and_hash(domain, hash);
         self.read_from_path_bytes(&path, false)
     }
 

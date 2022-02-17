@@ -149,6 +149,7 @@ pub trait Database: Sync + Send {
     fn by_kid(&self, kid: &KeyID) -> Option<String>;
     fn by_email(&self, email: &Email) -> Option<String>;
     fn by_email_wkd(&self, email: &Email) -> Option<Vec<u8>>;
+    fn by_domain_and_hash_wkd(&self, domain: &str, hash: &str) -> Option<Vec<u8>>;
 
     fn check_link_fpr(&self, fpr: &Fingerprint, target: &Fingerprint) -> Result<Option<Fingerprint>>;
 
