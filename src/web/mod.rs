@@ -458,7 +458,7 @@ fn configure_hagrid_state(config: &Figment) -> Result<HagridState> {
     // State
     let base_uri: String = config.extract_inner("base-URI")?;
     let base_uri_onion = config.extract_inner::<String>("base-URI-Onion")
-        .unwrap_or(base_uri.clone());
+        .unwrap_or_else(|_| base_uri.clone());
     Ok(HagridState {
         assets_dir,
         base_uri,
