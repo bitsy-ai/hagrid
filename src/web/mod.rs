@@ -1188,7 +1188,7 @@ pub mod tests {
         String::from_utf8_lossy(capture_content).to_string()
     }
 
-    fn vks_publish_submit_multiple<'a>(client: &'a Client, data: &[u8]) {
+    fn vks_publish_submit_multiple(client: &Client, data: &[u8]) {
         let response = vks_publish_submit_response(client, data);
         let status = response.status();
         let response_body = response.into_string().unwrap();
@@ -1197,7 +1197,7 @@ pub mod tests {
         assert!(response_body.contains("you must upload them individually"));
     }
 
-    fn vks_publish_submit_get_token<'a>(client: &'a Client, data: &[u8]) -> String {
+    fn vks_publish_submit_get_token(client: &Client, data: &[u8]) -> String {
         let response = vks_publish_submit_response(client, data);
         let status = response.status();
         let response_body = response.into_string().unwrap();
@@ -1239,7 +1239,7 @@ pub mod tests {
             .dispatch()
     }
 
-    fn vks_publish_shortcut_get_token<'a>(client: &'a Client, data: &[u8]) -> String {
+    fn vks_publish_shortcut_get_token(client: &Client, data: &[u8]) -> String {
         let response = client.put("/")
             .body(data)
             .dispatch();
@@ -1254,7 +1254,7 @@ pub mod tests {
         String::from_utf8_lossy(capture_content).to_string()
     }
 
-    fn vks_publish_json_get_token<'a>(client: &'a Client, data: &[u8]) -> String {
+    fn vks_publish_json_get_token(client: &Client, data: &[u8]) -> String {
         let response = client.post("/vks/v1/upload")
             .header(ContentType::JSON)
             .body(format!(r#"{{ "keytext": "{}" }}"#, base64::encode(data)))
@@ -1267,7 +1267,7 @@ pub mod tests {
         result.token
     }
 
-    fn vks_manage<'a>(client: &'a Client, search_term: &str) {
+    fn vks_manage(client: &Client, search_term: &str) {
         let encoded = ::url::form_urlencoded::Serializer::new(String::new())
             .append_pair("search_term", search_term)
             .finish();
