@@ -1,6 +1,17 @@
 stages:
     - build
 
+build:clippy:
+    stage: build
+    tags:
+        - docker
+    image: "rust:1-bullseye"
+    script:
+        - apt update -qy
+        - apt install -qy libclang-dev build-essential pkg-config clang nettle-dev gettext zsh
+        - rustup component add clippy
+        - RUST_BACKTRACE=full cargo clippy
+
 build:binary:
     stage: build
     tags:
