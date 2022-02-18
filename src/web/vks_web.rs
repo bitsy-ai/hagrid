@@ -346,17 +346,14 @@ pub async fn process_post_form(
                     not valid"))
         })?;
 
-        match name.to_string().as_str() {
-            "keytext" => {
-                return Ok(vks::process_key(
-                    db,
-                    i18n,
-                    tokens_stateless,
-                    rate_limiter,
-                    Cursor::new(decoded_value.as_bytes())
-                ));
-            }
-            _ => { /* skip */ }
+        if name.to_string().as_str() == "keytext" {
+            return Ok(vks::process_key(
+                db,
+                i18n,
+                tokens_stateless,
+                rate_limiter,
+                Cursor::new(decoded_value.as_bytes())
+            ));
         }
     }
 

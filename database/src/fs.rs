@@ -529,21 +529,15 @@ impl Database for Filesystem {
         let expected = diff_paths(&self.fingerprint_to_path_published(primary_fpr),
                                 link_fpr.parent().unwrap()).unwrap();
 
-        match read_link(&link_fpr) {
-            Ok(target) => {
-                if target == expected {
-                    remove_file(&link_fpr)?;
-                }
+        if let Ok(target) =  read_link(&link_fpr) {
+            if target == expected {
+                remove_file(&link_fpr)?;
             }
-            Err(_) => {}
         }
-        match read_link(&link_keyid) {
-            Ok(target) => {
-                if target == expected {
-                    remove_file(link_keyid)?;
-                }
+        if let Ok(target) = read_link(&link_keyid) {
+            if target == expected {
+                remove_file(link_keyid)?;
             }
-            Err(_) => {}
         }
 
         Ok(())
