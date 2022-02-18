@@ -340,11 +340,9 @@ pub async fn process_post_form(
     let buf = data.open(UPLOAD_LIMIT).into_bytes().await?;
 
     for ValueField { name, value } in Form::values(&*String::from_utf8_lossy(&buf)) {
-        let decoded_value = percent_decode(value.as_bytes()).decode_utf8().or_else(|_| {
-            Err(anyhow!(
-                "`Content-Type: application/x-www-form-urlencoded` \
-                    not valid"))
-        })?;
+        let decoded_value = percent_decode(value.as_bytes()).decode_utf8().map_err(|_|
+            anyhow!("`Content-Type: application/x-www-form-urlencoded` not valid")
+        )?;
 
         if name.to_string().as_str() == "keytext" {
             return Ok(vks::process_key(
