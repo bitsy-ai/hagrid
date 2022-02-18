@@ -48,7 +48,7 @@ impl Service {
 
         let elapsed = current_time() - token.creation;
         if elapsed > self.validity {
-            Err(anyhow!("Token has expired!"))?;
+            return Err(anyhow!("Token has expired!"));
         }
 
         let payload: T = serde_json::from_str(&token.payload)

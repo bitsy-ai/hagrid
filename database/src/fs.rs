@@ -248,7 +248,7 @@ impl Filesystem {
 
     fn link_email_vks(&self, email: &Email, fpr: &Fingerprint) -> Result<()> {
         let path = self.fingerprint_to_path_published(fpr);
-        let link = self.link_by_email(&email);
+        let link = self.link_by_email(email);
         let target = diff_paths(&path, link.parent().unwrap()).unwrap();
 
         if link == target {
@@ -260,7 +260,7 @@ impl Filesystem {
 
     fn link_email_wkd(&self, email: &Email, fpr: &Fingerprint) -> Result<()> {
         let path = self.fingerprint_to_path_published_wkd(fpr);
-        let link = self.link_wkd_by_email(&email);
+        let link = self.link_wkd_by_email(email);
         let target = diff_paths(&path, link.parent().unwrap()).unwrap();
 
         if link == target {
@@ -271,7 +271,7 @@ impl Filesystem {
     }
 
     fn unlink_email_vks(&self, email: &Email, fpr: &Fingerprint) -> Result<()> {
-        let link = self.link_by_email(&email);
+        let link = self.link_by_email(email);
 
         let expected = diff_paths(
             &self.fingerprint_to_path_published(fpr),
@@ -282,7 +282,7 @@ impl Filesystem {
     }
 
     fn unlink_email_wkd(&self, email: &Email, fpr: &Fingerprint) -> Result<()> {
-        let link = self.link_wkd_by_email(&email);
+        let link = self.link_wkd_by_email(email);
 
         let expected = diff_paths(
             &self.fingerprint_to_path_published_wkd(fpr),
@@ -338,7 +338,7 @@ impl Filesystem {
                     || format_err!("Broken symlink {:?}: No such Key {}",
                                     path, primary_fp))?;
 
-            check(&path, &tpk, &primary_fp)?;
+            check(path, tpk, &primary_fp)?;
         }
 
         Ok(())
@@ -394,7 +394,7 @@ impl Database for Filesystem {
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        let fingerprint_line = format!("{:010} {}\n", timestamp, fpr_primary.to_string());
+        let fingerprint_line = format!("{:010} {}\n", timestamp, fpr_primary);
 
         self.open_logfile(filename)?
             .write_all(fingerprint_line.as_bytes())?;
@@ -452,7 +452,7 @@ impl Database for Filesystem {
 
     fn check_link_fpr(&self, fpr: &Fingerprint, fpr_target: &Fingerprint) -> Result<Option<Fingerprint>> {
         let link_keyid = self.link_by_keyid(&fpr.into());
-        let link_fpr = self.link_by_fingerprint(&fpr);
+        let link_fpr = self.link_by_fingerprint(fpr);
 
         let path_published = self.fingerprint_to_path_published(fpr_target);
 
@@ -460,7 +460,7 @@ impl Database for Filesystem {
              if !link_fpr_target.ends_with(&path_published) {
                 info!("Fingerprint points to different key for {} (expected {:?} to be suffix of {:?})",
                     fpr, &path_published, &link_fpr_target);
-                Err(anyhow!(format!("Fingerprint collision for key {}", fpr)))?;
+                return Err(anyhow!(format!("Fingerprint collision for key {}", fpr)));
              }
         }
 
@@ -468,7 +468,7 @@ impl Database for Filesystem {
             if !link_keyid_target.ends_with(&path_published) {
                 info!("KeyID points to different key for {} (expected {:?} to be suffix of {:?})",
                     fpr, &path_published, &link_keyid_target);
-                Err(anyhow!(format!("KeyID collision for key {}", fpr)))?;
+                return Err(anyhow!(format!("KeyID collision for key {}", fpr)));
             }
         }
 
@@ -569,13 +569,13 @@ impl Database for Filesystem {
 
     // XXX: slow
     fn by_email(&self, email: &Email) -> Option<String> {
-        let path = self.link_by_email(&email);
+        let path = self.link_by_email(email);
         self.read_from_path(&path, false)
     }
 
     // XXX: slow
     fn by_email_wkd(&self, email: &Email) -> Option<Vec<u8>> {
-        let path = self.link_wkd_by_email(&email);
+        let path = self.link_wkd_by_email(email);
         self.read_from_path_bytes(&path, false)
     }
 
@@ -596,7 +596,7 @@ impl Database for Filesystem {
         self.perform_checks(&self.keys_dir_published, &mut tpks,
             |path, _, primary_fp| {
                 // The KeyID corresponding with this path.
-                let fp = Filesystem::path_to_fingerprint(&path)
+                let fp = Filesystem::path_to_fingerprint(path)
                     .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
 
                 if fp != *primary_fp {
@@ -612,7 +612,7 @@ impl Database for Filesystem {
         self.perform_checks(&self.keys_dir_published, &mut tpks,
             |_, tpk, primary_fp| {
                 // check that certificate exists in published wkd path
-                let path_wkd = self.fingerprint_to_path_published_wkd(&primary_fp);
+                let path_wkd = self.fingerprint_to_path_published_wkd(primary_fp);
                 let should_wkd_exist = tpk.userids().next().is_some();
 
                 if should_wkd_exist && !path_wkd.exists() {
@@ -639,7 +639,7 @@ impl Database for Filesystem {
                     .flatten();
 
                 for fpr in fingerprints {
-                    if let Some(missing_fpr) = self.check_link_fpr(&fpr, &primary_fp)? {
+                    if let Some(missing_fpr) = self.check_link_fpr(&fpr, primary_fp)? {
                         return Err(format_err!(
                             "Missing link to key {} for sub {}", primary_fp, missing_fpr));
                     }
@@ -676,7 +676,7 @@ impl Database for Filesystem {
         self.perform_checks(&self.links_dir_by_fingerprint, &mut tpks,
             |path, tpk, _| {
                 // The KeyID corresponding with this path.
-                let id = Filesystem::path_to_keyid(&path)
+                let id = Filesystem::path_to_keyid(path)
                     .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
 
                 let found = tpk.keys()
@@ -694,7 +694,7 @@ impl Database for Filesystem {
         self.perform_checks(&self.links_dir_by_keyid, &mut tpks,
             |path, tpk, _| {
                 // The KeyID corresponding with this path.
-                let id = Filesystem::path_to_keyid(&path)
+                let id = Filesystem::path_to_keyid(path)
                     .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
 
                 let found = tpk.keys()
@@ -712,7 +712,7 @@ impl Database for Filesystem {
         self.perform_checks(&self.links_dir_by_email, &mut tpks,
             |path, tpk, _| {
                 // The Email corresponding with this path.
-                let email = Filesystem::path_to_email(&path)
+                let email = Filesystem::path_to_email(path)
                     .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
                 let mut found = false;
                 for uidb in tpk.userids() {

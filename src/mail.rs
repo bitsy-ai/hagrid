@@ -102,7 +102,7 @@ impl Service {
         counters::inc_mail_sent("verify", userid);
 
         self.send(
-            &vec![userid],
+            &[userid],
             &i18n!(
                 i18n.catalog,
                 context = "Subject for verification email, {0} = userid, {1} = keyserver domain",
@@ -166,7 +166,7 @@ impl Service {
         counters::inc_mail_sent("welcome", userid);
 
         self.send(
-            &vec![userid],
+            &[userid],
             &format!("Your key upload on {domain}", domain = self.domain),
             "welcome",
             "en",
@@ -202,7 +202,7 @@ impl Service {
 
         if cfg!(debug_assertions) {
             for recipient in to.iter() {
-                println!("To: {}", recipient.to_string());
+                println!("To: {}", recipient);
             }
             println!("{}", &txt);
         }

@@ -86,7 +86,7 @@ pub fn upload_json(
     let data = json_or_error(data)?;
     use std::io::Cursor;
     let data_reader = Cursor::new(data.keytext.as_bytes());
-    let result = vks::process_key(&db, &i18n, &tokens_stateless, &rate_limiter, data_reader);
+    let result = vks::process_key(db, &i18n, tokens_stateless, rate_limiter, data_reader);
     upload_ok_json(result)
 }
 

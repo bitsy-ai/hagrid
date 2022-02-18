@@ -65,7 +65,7 @@ fn delete(db: &KeyDatabase, query: &Query, all_bindings: bool, mut all: bool)
         _ => (),
     }
 
-    let tpk = db.lookup(&query)?.ok_or_else(
+    let tpk = db.lookup(query)?.ok_or_else(
         || anyhow::format_err!("No TPK matching {:?}", query))?;
 
     let fp: database::types::Fingerprint = tpk.fingerprint().try_into()?;

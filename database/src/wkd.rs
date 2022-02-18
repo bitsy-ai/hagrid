@@ -17,7 +17,7 @@ fn split_address(email_address: impl AsRef<str>) -> Result<(String,String)> {
     let email_address = email_address.as_ref();
     let v: Vec<&str> = email_address.split('@').collect();
     if v.len() != 2 {
-        Err(anyhow!("Malformed email address".to_owned()))?;
+        return Err(anyhow!("Malformed email address".to_owned()));
     };
 
     // Convert to lowercase without tailoring, i.e. without taking any

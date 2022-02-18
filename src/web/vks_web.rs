@@ -151,7 +151,7 @@ impl MyResponse {
                     *status == EmailStatus::Pending)
              .map(|(email,status)|
                  template::UploadUidStatus {
-                     address: email.to_string(),
+                     address: email,
                      requested: status == EmailStatus::Pending,
                  })
             .collect();
@@ -179,7 +179,7 @@ impl MyResponse {
             .map(|fpr| {
                 let key_link = uri!(search(q = &fpr)).to_string();
                 template::UploadOkKey {
-                    key_fpr: fpr.to_owned(),
+                    key_fpr: fpr,
                     key_link,
                 }
             })
@@ -224,7 +224,7 @@ pub async fn process_post_form_data(
     cont_type: &ContentType,
     data: Data<'_>,
 ) -> Result<UploadResponse> {
-    process_upload(&db, &tokens_stateless, &rate_limiter, &i18n, data, cont_type)
+    process_upload(db, tokens_stateless, rate_limiter, &i18n, data, cont_type)
         .await
 }
 
@@ -285,10 +285,10 @@ pub async fn quick_upload(
 
     MyResponse::upload_response_quick(
         vks::process_key(
-            &db,
+            db,
             &i18n,
-            &tokens_stateless,
-            &rate_limiter,
+            tokens_stateless,
+            rate_limiter,
             Cursor::new(buf)
         ),
         i18n, origin)
@@ -321,7 +321,7 @@ pub async fn upload_post_form(
     i18n: I18n,
     data: Data<'_>,
 ) -> MyResponse {
-    match process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data).await {
+    match process_post_form(db, tokens_stateless, rate_limiter, &i18n, data).await {
         Ok(response) => MyResponse::upload_response(response,
                                                     i18n, origin),
         Err(err) => MyResponse::bad_request("upload/upload", err,
@@ -349,10 +349,10 @@ pub async fn process_post_form(
         match name.to_string().as_str() {
             "keytext" => {
                 return Ok(vks::process_key(
-                    &db,
-                    &i18n,
-                    &tokens_stateless,
-                    &rate_limiter,
+                    db,
+                    i18n,
+                    tokens_stateless,
+                    rate_limiter,
                     Cursor::new(decoded_value.as_bytes())
                 ));
             }

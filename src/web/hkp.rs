@@ -75,7 +75,7 @@ impl<'r> FromRequest<'r> for Hkp {
                 (search.starts_with("0x") && search.len() < 16 || search.len() == 8);
             if looks_like_short_key_id {
                 Outcome::Success(Hkp::ShortKeyID {
-                    query: search.to_string(),
+                    query: search,
                     index,
                 })
             } else if let Ok(fpr) = maybe_fpr {
@@ -141,9 +141,9 @@ pub async fn pks_add_form(
     i18n: I18n,
     data: Data<'_>,
 ) -> MyResponse {
-    match vks_web::process_post_form(&db, &tokens_stateless, &rate_limiter, &i18n, data).await {
+    match vks_web::process_post_form(db, tokens_stateless, rate_limiter, &i18n, data).await {
         Ok(UploadResponse::Ok { is_new_key, key_fpr, primary_uid, token, status, .. }) => {
-            let msg = pks_add_ok(&origin, &mail_service, &rate_limiter, token, status, is_new_key, key_fpr, primary_uid);
+            let msg = pks_add_ok(&origin, mail_service, rate_limiter, token, status, is_new_key, key_fpr, primary_uid);
             MyResponse::plain(msg)
         }
         Ok(_) => {
@@ -170,16 +170,16 @@ fn pks_add_ok(
     let primary_uid = primary_uid.unwrap();
 
     if is_new_key {
-        if send_welcome_mail(&origin, &mail_service, key_fpr, &primary_uid, token) {
+        if send_welcome_mail(origin, mail_service, key_fpr, &primary_uid, token) {
             rate_limiter.action_perform(format!("hkp-sent-{}", &primary_uid));
-            return format!("Upload successful. This is a new key, a welcome email has been sent.");
+            return "Upload successful. This is a new key, a welcome email has been sent.".to_string();
         }
         return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri())
     }
 
     let has_unverified = status.iter().any(|(_, v)| *v == EmailStatus::Unpublished);
     if !has_unverified {
-        return format!("Upload successful.");
+        return "Upload successful.".to_string();
     }
 
     return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri())
@@ -252,7 +252,7 @@ fn key_to_hkp_index(
     let mut out = String::default();
     let p = tpk.primary_key();
 
-    let ref policy = StandardPolicy::new();
+    let policy = &StandardPolicy::new();
 
     let ctime = format!("{}", p.creation_time().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs());
     let is_rev =

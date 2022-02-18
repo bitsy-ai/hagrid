@@ -41,7 +41,7 @@ impl TryFrom<&UserID> for Email {
                 .map_err(|e| anyhow!("punycode conversion failed: {:?}", e))?;
 
             // TODO this is a hotfix for a lettre vulnerability. remove once fixed upstream.
-            if localpart.starts_with("-") {
+            if localpart.starts_with('-') {
                 return Err(anyhow!("malformed email address: '{:?}'", uid.value()));
             }
 

@@ -182,7 +182,7 @@ fn process_key_single(
             .map(|(email,_)| email.clone())
             .collect();
         VerifyTpkState {
-            fpr: fp.clone(),
+            fpr: fp,
             addresses: emails,
             requested: vec!(),
         }
@@ -204,14 +204,14 @@ pub fn request_verify(
     token: String,
     addresses: Vec<String>,
 ) -> response::UploadResponse {
-    let (verify_state, tpk_status) = match check_tpk_state(&db, &token_stateless, i18n, &token) {
+    let (verify_state, tpk_status) = match check_tpk_state(db, token_stateless, i18n, &token) {
         Ok(ok) => ok,
         Err(e) => return UploadResponse::err(&e.to_string()),
     };
 
     if tpk_status.is_revoked {
         return show_upload_verify(
-                &rate_limiter, token, tpk_status, verify_state, false);
+                rate_limiter, token, tpk_status, verify_state, false);
     }
 
     let emails_requested: Vec<_> = addresses.into_iter()
@@ -227,13 +227,13 @@ pub fn request_verify(
     for email in emails_requested {
         let rate_limit_ok = rate_limiter.action_perform(format!("verify-{}", &email));
         if rate_limit_ok {
-            if send_verify_email(origin, &mail_service, &token_stateful, i18n, &verify_state.fpr, &email).is_err() {
+            if send_verify_email(origin, mail_service, token_stateful, i18n, &verify_state.fpr, &email).is_err() {
                 return UploadResponse::err(&format!("error sending email to {}", &email));
             }
         }
     }
 
-    show_upload_verify(&rate_limiter, token, tpk_status, verify_state, false)
+    show_upload_verify(rate_limiter, token, tpk_status, verify_state, false)
 }
 
 fn check_tpk_state(
@@ -267,7 +267,7 @@ fn send_verify_email(
         i18n,
         origin.get_base_uri(),
         fpr.to_string(),
-        &email,
+        email,
         &token_verify,
     )
 }
@@ -278,7 +278,7 @@ pub fn verify_confirm(
     token_service: &rocket::State<StatefulTokens>,
     token: String,
 ) -> response::PublishResponse {
-    let (fingerprint, email) = match check_publish_token(&db, &token_service, token) {
+    let (fingerprint, email) = match check_publish_token(db, token_service, token) {
         Ok(x) => x,
         Err(_) => return PublishResponse::err(
             i18n!(i18n.catalog, "Invalid verification link.")),

@@ -93,14 +93,14 @@ impl HelperDef for I18NHelper {
         {
             RenderError::from_error("Failed to render", e)
         }
-        let response = self.lookup(lang, &id);
+        let response = self.lookup(lang, id);
         if rerender {
             let data = rcx.evaluate(context, "this").unwrap();
-            let response = reg.render_template(&response, data.as_json())
+            let response = reg.render_template(response, data.as_json())
                 .map_err(render_error_with)?;
             out.write(&response).map_err(render_error_with)?;
         } else {
-            out.write(&response).map_err(render_error_with)?;
+            out.write(response).map_err(render_error_with)?;
         }
         Ok(())
     }

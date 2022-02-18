@@ -263,8 +263,8 @@ pub fn key_to_response_plain(
         return MyResponse::not_found_plain(describe_query_error(&i18n, &query));
     };
 
-    return match db.by_fpr(&fp) {
-        Some(armored) => MyResponse::key(armored, &fp.into()),
+    match db.by_fpr(&fp) {
+        Some(armored) => MyResponse::key(armored, &fp),
         None => MyResponse::not_found_plain(describe_query_error(&i18n, &query)),
     }
 }
@@ -339,7 +339,7 @@ fn errors(
 }
 
 pub fn serve() -> Result<rocket::Rocket<rocket::Build>> {
-    Ok(rocket_factory(rocket::build())?)
+    rocket_factory(rocket::build())
 }
 
 compile_i18n!();
@@ -439,8 +439,8 @@ fn configure_prometheus(config: &Figment) -> Option<PrometheusMetrics> {
         return None;
     }
     let prometheus = PrometheusMetrics::new();
-    counters::register_counters(&prometheus.registry());
-    return Some(prometheus);
+    counters::register_counters(prometheus.registry());
+    Some(prometheus)
 }
 
 fn configure_db_service(config: &Figment) -> Result<KeyDatabase> {
@@ -458,7 +458,6 @@ fn configure_hagrid_state(config: &Figment) -> Result<HagridState> {
     // State
     let base_uri: String = config.extract_inner("base-URI")?;
     let base_uri_onion = config.extract_inner::<String>("base-URI-Onion")
-        .map(|c| c.to_string())
         .unwrap_or(base_uri.clone());
     Ok(HagridState {
         assets_dir,
@@ -538,8 +537,8 @@ pub mod tests {
     use super::*;
 
     /// Fake base URI to use in tests.
-    const BASE_URI: &'static str = "http://local.connection";
-    const BASE_URI_ONION: &'static str = "http://local.connection.onion";
+    const BASE_URI: &str = "http://local.connection";
+    const BASE_URI_ONION: &str = "http://local.connection.onion";
 
     pub fn build_cert(name: &str) -> Cert {
         let (tpk, _) = CertBuilder::new()
@@ -548,7 +547,7 @@ pub mod tests {
             .add_userid(name)
             .generate()
             .unwrap();
-        return tpk;
+        tpk
     }
 
     /// Creates a configuration and empty state dir for testing purposes.
@@ -951,11 +950,11 @@ pub mod tests {
     /// Asserts that lookups by the given email 404.
     pub fn check_null_responses_by_email(client: &Client, addr: &str) {
         check_null_response(
-            &client, &format!("/vks/v1/by-email/{}", addr));
+            client, &format!("/vks/v1/by-email/{}", addr));
         check_null_response(
-            &client, &format!("/pks/lookup?op=get&search={}", addr));
+            client, &format!("/pks/lookup?op=get&search={}", addr));
         check_null_response(
-            &client, &format!("/pks/lookup?op=get&options=mr&search={}",
+            client, &format!("/pks/lookup?op=get&options=mr&search={}",
                               addr));
     }
 
@@ -963,25 +962,25 @@ pub mod tests {
     pub fn check_responses_by_email(client: &Client, addr: &str, tpk: &Cert,
                                     nr_uids: usize) {
         check_mr_response(
-            &client,
+            client,
             &format!("/vks/v1/by-email/{}", addr),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_mr_response(
-            &client,
+            client,
             &format!("/vks/v1/by-email/{}", addr.replace("@", "%40")),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_mr_response(
-            &client,
+            client,
             &format!("/pks/lookup?op=get&options=mr&search={}", addr),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_hr_response(
-            &client,
+            client,
             &format!("/search?q={}", addr),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_hr_response_onion(
-            &client,
+            client,
             &format!("/search?q={}", addr),
-            &tpk, nr_uids);
+            tpk, nr_uids);
     }
 
     /// Asserts that the given URI returns a Cert matching the given
@@ -1030,34 +1029,34 @@ pub mod tests {
         let keyid = sequoia_openpgp::KeyID::from(tpk.fingerprint()).to_hex();
 
         check_mr_response(
-            &client, &format!("/vks/v1/by-keyid/{}", keyid), &tpk, nr_uids);
+            client, &format!("/vks/v1/by-keyid/{}", keyid), tpk, nr_uids);
         check_mr_response(
-            &client, &format!("/vks/v1/by-fingerprint/{}", fp), &tpk, nr_uids);
+            client, &format!("/vks/v1/by-fingerprint/{}", fp), tpk, nr_uids);
         check_mr_response(
-            &client,
+            client,
             &format!("/pks/lookup?op=get&options=mr&search={}", fp),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_mr_response(
-            &client,
+            client,
             &format!("/pks/lookup?op=get&options=mr&search=0x{}", fp),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_mr_response(
-            &client,
+            client,
             &format!("/pks/lookup?op=get&options=mr&search={}", keyid),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_mr_response(
-            &client,
+            client,
             &format!("/pks/lookup?op=get&options=mr&search=0x{}", keyid),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_mr_response(
-            &client,
+            client,
             &format!("/pks/lookup?op=get&search=0x{}", keyid),
-            &tpk, nr_uids);
+            tpk, nr_uids);
 
         check_index_response(
-            &client,
+            client,
             &format!("/pks/lookup?op=index&search={}", fp),
-            &tpk);
+            tpk);
     }
 
     /// Asserts that the given URI contains the search string.
@@ -1120,21 +1119,21 @@ pub mod tests {
         let keyid = sequoia_openpgp::KeyID::from(tpk.fingerprint()).to_hex();
 
         check_hr_response(
-            &client,
+            client,
             &format!("/search?q={}", fp),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_hr_response(
-            &client,
+            client,
             &format!("/search?q=0x{}", fp),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_hr_response(
-            &client,
+            client,
             &format!("/search?q={}", keyid),
-            &tpk, nr_uids);
+            tpk, nr_uids);
         check_hr_response(
-            &client,
+            client,
             &format!("/search?q=0x{}", keyid),
-            &tpk, nr_uids);
+            tpk, nr_uids);
     }
 
     fn check_verify_link(client: &Client, token: &str, address: &str, lang: &'static str) {
