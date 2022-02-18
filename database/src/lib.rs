@@ -64,11 +64,7 @@ pub enum Query {
 
 impl Query {
     pub fn is_invalid(&self) -> bool {
-        match self {
-            Query::Invalid() => true,
-            Query::InvalidShort() => true,
-            _ => false,
-        }
+        matches!(self, Query::Invalid() | Query::InvalidShort())
     }
 }
 
