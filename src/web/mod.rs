@@ -1,4 +1,3 @@
-use rocket;
 use rocket::figment::Figment;
 use rocket::fs::NamedFile;
 use rocket::http::{Header, Status};
@@ -519,7 +518,6 @@ pub mod tests {
     use std::io::Write;
     use std::path::Path;
     use tempfile::{tempdir, TempDir};
-    use super::rocket;
     use rocket::http::Status;
     use rocket::http::ContentType;
     use rocket::http::Header;

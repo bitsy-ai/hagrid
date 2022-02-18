@@ -1,4 +1,3 @@
-use rocket;
 use rocket::form::Form;
 use rocket_i18n::I18n;
 

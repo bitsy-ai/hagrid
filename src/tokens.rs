@@ -1,6 +1,5 @@
 use crate::sealed_state::SealedState;
 
-use serde_json;
 use serde::{Serialize,de::DeserializeOwned};
 use crate::Result;
 

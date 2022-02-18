@@ -1,10 +1,8 @@
 use std::path::{PathBuf, Path};
 
-use anyhow;
 use handlebars::Handlebars;
 use lettre::{Transport as LettreTransport, SendmailTransport, file::FileTransport};
 use lettre::builder::{EmailBuilder, PartBuilder, Mailbox, MimeMultipartType};
-use url;
 use serde::Serialize;
 use uuid::Uuid;
 use crate::counters;
