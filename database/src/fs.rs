@@ -182,6 +182,7 @@ impl Filesystem {
         ].iter().collect()
     }
 
+    #[allow(clippy::nonminimal_bool)]
     fn read_from_path(&self, path: &Path, allow_internal: bool) -> Option<String> {
         use std::fs;
 
@@ -197,6 +198,7 @@ impl Filesystem {
         }
     }
 
+    #[allow(clippy::nonminimal_bool)]
     fn read_from_path_bytes(&self, path: &Path, allow_internal: bool) -> Option<Vec<u8>> {
         use std::fs;
 
