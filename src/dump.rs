@@ -773,7 +773,7 @@ impl PacketDumper {
                 write!(output, "{}    Signature expiration time: {} ({})",
                        i, t.convert(),
                        if let Some(creation) = sig.signature_creation_time() {
-                           (creation + std::time::Duration::from(t.clone()))
+                           (creation + std::time::Duration::from(*t))
                                .convert().to_string()
                        } else {
                            " (no Signature Creation Time subpacket)".into()
