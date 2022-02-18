@@ -76,14 +76,12 @@ fn delete(db: &KeyDatabase, query: &Query, all_bindings: bool, mut all: bool)
         results.push(
             ("all bindings".into(),
              db.set_email_unpublished_all(&fp)));
-    } else {
-        if let Query::ByEmail(ref email) = query {
+    } else if let Query::ByEmail(ref email) = query {
             results.push(
                 (email.to_string(),
                  db.set_email_unpublished(&fp, email)));
-        } else {
-            unreachable!()
-        }
+    } else {
+        unreachable!()
     }
 
     // Now delete the key(s) itself.

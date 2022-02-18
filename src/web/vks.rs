@@ -226,10 +226,21 @@ pub fn request_verify(
 
     for email in emails_requested {
         let rate_limit_ok = rate_limiter.action_perform(format!("verify-{}", &email));
-        if rate_limit_ok {
-            if send_verify_email(origin, mail_service, token_stateful, i18n, &verify_state.fpr, &email).is_err() {
-                return UploadResponse::err(&format!("error sending email to {}", &email));
-            }
+        if rate_limit_ok
+            && send_verify_email(
+                origin,
+                mail_service,
+                token_stateful,
+                i18n,
+                &verify_state.fpr,
+                &email,
+            )
+            .is_err()
+        {
+            return UploadResponse::err(&format!(
+                "error sending email to {}",
+                &email
+            ));
         }
     }
 
