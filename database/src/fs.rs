@@ -635,7 +635,7 @@ impl Database for Filesystem {
                     .for_certification()
                     .for_signing()
                     .map(|amalgamation| amalgamation.key().fingerprint())
-                    .map(|fpr| Fingerprint::try_from(fpr))
+                    .map(Fingerprint::try_from)
                     .flatten();
 
                 for fpr in fingerprints {

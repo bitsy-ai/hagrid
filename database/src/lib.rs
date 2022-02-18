@@ -227,7 +227,7 @@ pub trait Database: Sync + Send {
         let published_tpk_old = self
             .by_fpr(&fpr_primary)
             .and_then(|bytes| Cert::from_bytes(bytes.as_bytes()).ok());
-        let published_emails = published_tpk_old.as_ref().map(|cert| tpk_get_emails(cert)).unwrap_or_default();
+        let published_emails = published_tpk_old.as_ref().map(tpk_get_emails).unwrap_or_default();
 
         let unparsed_uids = full_tpk_new
             .userids()
