@@ -3,7 +3,6 @@ use std::fmt;
 use std::collections::HashMap;
 use std::time::SystemTime;
 
-use rocket::form::{Form, ValueField};
 use rocket::http::{ContentType, Status};
 use rocket::outcome::Outcome;
 use rocket::request::{self, FromRequest, Request};
@@ -53,22 +52,19 @@ impl<'r> FromRequest<'r> for Hkp {
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Hkp, ()> {
         use std::str::FromStr;
 
-        let query = request
+        let fields = request
             .uri()
             .query()
-            .map(|q| q.as_str())
+            .map(|q| q.segments().collect::<HashMap<_, _>>())
             .unwrap_or_default();
-        let fields = Form::values(query)
-            .map(|ValueField { name, value }| (name.to_string(), value.to_string()))
-            .collect::<HashMap<_, _>>();
 
         if fields.contains_key("search")
             && fields
                 .get("op")
-                .map(|x| x == "get" || x == "index")
+                .map(|&x| x == "get" || x == "index")
                 .unwrap_or(false)
         {
-            let index = fields.get("op").map(|x| x == "index").unwrap_or(false);
+            let index = fields.get("op").map(|&x| x == "index").unwrap_or(false);
             let search = fields.get("search").cloned().unwrap_or_default();
             let maybe_fpr = Fingerprint::from_str(&search);
             let maybe_keyid = KeyID::from_str(&search);
@@ -77,7 +73,7 @@ impl<'r> FromRequest<'r> for Hkp {
                 && (search.starts_with("0x") && search.len() < 16 || search.len() == 8);
             if looks_like_short_key_id {
                 Outcome::Success(Hkp::ShortKeyID {
-                    query: search,
+                    query: search.to_string(),
                     index,
                 })
             } else if let Ok(fpr) = maybe_fpr {
@@ -94,7 +90,7 @@ impl<'r> FromRequest<'r> for Hkp {
             }
         } else if fields
             .get("op")
-            .map(|x| x == "vindex" || x.starts_with("x-"))
+            .map(|&x| x == "vindex" || x.starts_with("x-"))
             .unwrap_or(false)
         {
             Outcome::Failure((Status::NotImplemented, ()))

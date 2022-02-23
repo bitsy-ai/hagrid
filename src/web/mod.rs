@@ -1117,6 +1117,15 @@ pub mod tests {
             tpk,
             nr_uids,
         );
+        check_mr_response(
+            client,
+            &format!(
+                "/pks/lookup?op=get&options=mr&search={}",
+                addr.replace("@", "%40")
+            ),
+            tpk,
+            nr_uids,
+        );
         check_hr_response(client, &format!("/search?q={}", addr), tpk, nr_uids);
         check_hr_response_onion(client, &format!("/search?q={}", addr), tpk, nr_uids);
 
