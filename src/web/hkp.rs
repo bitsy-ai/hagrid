@@ -1,11 +1,10 @@
 use std::fmt;
 
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::time::SystemTime;
 
-use rocket::http::{ContentType, Status};
-use rocket::outcome::Outcome;
-use rocket::request::{self, FromRequest, Request};
+use rocket::http::ContentType;
 use rocket::Data;
 use rocket_i18n::I18n;
 use url::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
@@ -26,11 +25,10 @@ use crate::web::{vks_web, MyResponse, RequestOrigin};
 
 #[derive(Debug)]
 pub enum Hkp {
-    Fingerprint { fpr: Fingerprint, index: bool },
-    KeyID { keyid: KeyID, index: bool },
-    ShortKeyID { query: String, index: bool },
-    Email { email: Email, index: bool },
-    Invalid { query: String },
+    Fingerprint { fpr: Fingerprint },
+    KeyID { keyid: KeyID },
+    ShortKeyID { query: String },
+    Email { email: Email },
 }
 
 impl fmt::Display for Hkp {
@@ -40,63 +38,33 @@ impl fmt::Display for Hkp {
             Hkp::KeyID { ref keyid, .. } => write!(f, "{}", keyid),
             Hkp::Email { ref email, .. } => write!(f, "{}", email),
             Hkp::ShortKeyID { ref query, .. } => write!(f, "{}", query),
-            Hkp::Invalid { ref query } => write!(f, "{}", query),
         }
     }
 }
 
-#[async_trait]
-impl<'r> FromRequest<'r> for Hkp {
-    type Error = ();
+impl std::str::FromStr for Hkp {
+    type Err = anyhow::Error;
+    fn from_str(search: &str) -> Result<Self, Self::Err> {
+        let maybe_fpr = Fingerprint::from_str(search);
+        let maybe_keyid = KeyID::from_str(search);
 
-    async fn from_request(request: &'r Request<'_>) -> request::Outcome<Hkp, ()> {
-        use std::str::FromStr;
-
-        let fields = request
-            .uri()
-            .query()
-            .map(|q| q.segments().collect::<HashMap<_, _>>())
-            .unwrap_or_default();
-
-        if fields.contains_key("search")
-            && fields
-                .get("op")
-                .map(|&x| x == "get" || x == "index")
-                .unwrap_or(false)
-        {
-            let index = fields.get("op").map(|&x| x == "index").unwrap_or(false);
-            let search = fields.get("search").cloned().unwrap_or_default();
-            let maybe_fpr = Fingerprint::from_str(&search);
-            let maybe_keyid = KeyID::from_str(&search);
-
-            let looks_like_short_key_id = !search.contains('@')
-                && (search.starts_with("0x") && search.len() < 16 || search.len() == 8);
-            if looks_like_short_key_id {
-                Outcome::Success(Hkp::ShortKeyID {
-                    query: search.to_string(),
-                    index,
-                })
-            } else if let Ok(fpr) = maybe_fpr {
-                Outcome::Success(Hkp::Fingerprint { fpr, index })
-            } else if let Ok(keyid) = maybe_keyid {
-                Outcome::Success(Hkp::KeyID { keyid, index })
-            } else {
-                match Email::from_str(&search) {
-                    Ok(email) => Outcome::Success(Hkp::Email { email, index }),
-                    Err(_) => Outcome::Success(Hkp::Invalid {
-                        query: search.to_string(),
-                    }),
-                }
+        let looks_like_short_key_id = !search.contains('@')
+            && (search.starts_with("0x") && search.len() < 16 || search.len() == 8);
+        let hkp = if looks_like_short_key_id {
+            Hkp::ShortKeyID {
+                query: search.to_string(),
             }
-        } else if fields
-            .get("op")
-            .map(|&x| x == "vindex" || x.starts_with("x-"))
-            .unwrap_or(false)
-        {
-            Outcome::Failure((Status::NotImplemented, ()))
+        } else if let Ok(fpr) = maybe_fpr {
+            Hkp::Fingerprint { fpr }
+        } else if let Ok(keyid) = maybe_keyid {
+            Hkp::KeyID { keyid }
         } else {
-            Outcome::Failure((Status::BadRequest, ()))
-        }
+            match Email::from_str(search) {
+                Ok(email) => Hkp::Email { email },
+                Err(_) => return Err(anyhow::anyhow!("Invalid search query!")),
+            }
+        };
+        Ok(hkp)
     }
 }
 
@@ -204,26 +172,41 @@ fn send_welcome_mail(
         .is_ok()
 }
 
-#[get("/pks/lookup")]
-pub fn pks_lookup(db: &rocket::State<KeyDatabase>, i18n: I18n, key: Hkp) -> MyResponse {
-    let (query, index) = match key {
-        Hkp::Fingerprint { fpr, index } => (Query::ByFingerprint(fpr), index),
-        Hkp::KeyID { keyid, index } => (Query::ByKeyID(keyid), index),
-        Hkp::Email { email, index } => (Query::ByEmail(email), index),
+#[get("/pks/lookup?<op>&<search>")]
+pub fn pks_lookup(
+    db: &rocket::State<KeyDatabase>,
+    i18n: I18n,
+    op: Option<String>,
+    search: Option<String>,
+) -> MyResponse {
+    let search = search.unwrap_or_default();
+    let key = match Hkp::from_str(&search) {
+        Ok(key) => key,
+        Err(_) => return MyResponse::bad_request_plain("Invalid search query!"),
+    };
+    let query = match key {
+        Hkp::Fingerprint { fpr } => Query::ByFingerprint(fpr),
+        Hkp::KeyID { keyid } => Query::ByKeyID(keyid),
+        Hkp::Email { email } => Query::ByEmail(email),
         Hkp::ShortKeyID { query: _, .. } => {
             return MyResponse::bad_request_plain(
                 "Search by short key ids is not supported, sorry!",
             );
         }
-        Hkp::Invalid { query: _ } => {
-            return MyResponse::bad_request_plain("Invalid search query!");
-        }
     };
 
-    if index {
-        key_to_hkp_index(db, i18n, query)
+    if let Some(op) = op {
+        match op.as_str() {
+            "index" => key_to_hkp_index(db, i18n, query),
+            "get" => web::key_to_response_plain(db, i18n, query),
+            "vindex" => MyResponse::not_implemented_plain("vindex not implemented"),
+            s if s.starts_with("x-") => {
+                MyResponse::not_implemented_plain("x-* operations not implemented")
+            }
+            &_ => MyResponse::bad_request_plain("Invalid op parameter!"),
+        }
     } else {
-        web::key_to_response_plain(db, i18n, query)
+        MyResponse::bad_request_plain("op parameter required!")
     }
 }
 

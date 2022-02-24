@@ -88,6 +88,8 @@ pub enum MyResponse {
     BadRequest(HagridTemplate),
     #[response(status = 400, content_type = "html")]
     BadRequestPlain(String),
+    #[response(status = 501, content_type = "html")]
+    NotImplementedPlain(String),
     #[response(status = 503, content_type = "html")]
     Maintenance(Template),
     #[response(status = 503, content_type = "json")]
@@ -178,6 +180,10 @@ impl MyResponse {
 
     pub fn not_found_plain(message: impl Into<String>) -> Self {
         MyResponse::NotFoundPlain(message.into())
+    }
+
+    pub fn not_implemented_plain(message: impl Into<String>) -> Self {
+        MyResponse::NotImplementedPlain(message.into())
     }
 
     pub fn not_found(
