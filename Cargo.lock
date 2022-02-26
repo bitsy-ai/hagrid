@@ -871,8 +871,9 @@ dependencies = [
 
 [[package]]
 name = "gettext-macros"
-version = "0.6.0"
-source = "git+https://github.com/Valodim/gettext-macros?rev=d15fa92ef6ac28269890557fe9c3767d01442633#d15fa92ef6ac28269890557fe9c3767d01442633"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "649db3b5cda06091ea6aacb9f66f7002dfe885505b324b8ed795261253ffc2b3"
 dependencies = [
  "gettext",
  "gettext-utils",
