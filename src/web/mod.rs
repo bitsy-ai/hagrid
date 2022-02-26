@@ -396,6 +396,12 @@ pub fn serve() -> Result<rocket::Rocket<rocket::Build>> {
 
 compile_i18n!();
 
+// The include_i18n macro must be called after compile_i18n, which must be called after i18n macros
+// *in compilation order*. We use a helper function here to make this order consistent.
+pub fn get_i18n() -> Vec<(&'static str, gettext::Catalog)> {
+    include_i18n!()
+}
+
 fn rocket_factory(
     mut rocket: rocket::Rocket<rocket::Build>,
 ) -> Result<rocket::Rocket<rocket::Build>> {
@@ -467,14 +473,14 @@ fn rocket_factory(
 
     rocket = rocket
         .attach(Template::custom(|engines: &mut Engines| {
-            let i18ns = include_i18n!();
+            let i18ns = get_i18n();
             let i18n_helper = I18NHelper::new(i18ns);
             engines
                 .handlebars
                 .register_helper("text", Box::new(i18n_helper));
         }))
         .attach(maintenance_mode)
-        .manage(include_i18n!())
+        .manage(get_i18n())
         .manage(hagrid_state)
         .manage(stateless_token_service)
         .manage(stateful_token_service)
@@ -594,7 +600,6 @@ pub mod tests {
     use mail::pop_mail;
 
     use super::*;
-    use crate::database::*;
 
     /// Fake base URI to use in tests.
     const BASE_URI: &str = "http://local.connection";

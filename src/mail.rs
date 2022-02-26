@@ -292,8 +292,9 @@ pub fn pop_mail(dir: &Path) -> Result<Option<String>> {
 
 #[cfg(test)]
 mod test {
+    use crate::web::get_i18n;
+
     use super::*;
-    use gettext_macros::include_i18n;
     use std::str::FromStr;
     use tempfile::{tempdir, TempDir};
 
@@ -302,7 +303,7 @@ mod test {
     const TO: &str = "recipient@example.org";
 
     fn configure_i18n(lang: &'static str) -> I18n {
-        let langs = include_i18n!();
+        let langs = get_i18n();
         let catalog = langs
             .clone()
             .into_iter()

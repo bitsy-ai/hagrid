@@ -3,9 +3,8 @@ use std::path::{Path, PathBuf};
 
 use handlebars::Handlebars;
 
-use gettext_macros::include_i18n;
-
 use crate::i18n::I18NHelper;
+use crate::web::get_i18n;
 use crate::Result;
 
 #[derive(Debug)]
@@ -55,7 +54,7 @@ fn load_localized_template_names(
 pub fn load_handlebars(template_dir: &Path) -> Result<Handlebars<'static>> {
     let mut handlebars = Handlebars::new();
 
-    let i18ns = include_i18n!();
+    let i18ns = get_i18n();
     let i18n_helper = I18NHelper::new(i18ns);
     handlebars.register_helper("text", Box::new(i18n_helper));
 
