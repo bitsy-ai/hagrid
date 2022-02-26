@@ -17,29 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "{1}에 {0} 명의로 올린 키 인증"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "{}에 올린 내 키 관리"
-
-msgid "No key found for fingerprint {}"
-msgstr "지문 {}에 해당하는 키를 찾지 못했습니다."
-
-msgid "No key found for key id {}"
-msgstr "키 ID {}에 해당하는 키를 찾지 못했습니다."
-
-msgid "No key found for email address {}"
-msgstr "전자 메일 주소 {}에 해당하는 키를 찾지 못했습니다."
-
-msgid "Search by Short Key ID is not supported."
-msgstr "'짧은 키 ID' 형식은 지원하지 않습니다."
-
-msgid "Invalid search query."
-msgstr "올바르지 않은 검색어입니다."
-
 msgid "Error"
 msgstr "오류"
 
@@ -360,6 +337,29 @@ msgid ""
 msgstr ""
 "다른 사람들이 내 전자 메일 주소({{userid}})로 위 키를 찾을 수 있게 하려면\n"
 "아래 링크를 따라가세요:"
+
+msgid "No key found for fingerprint {}"
+msgstr "지문 {}에 해당하는 키를 찾지 못했습니다."
+
+msgid "No key found for key id {}"
+msgstr "키 ID {}에 해당하는 키를 찾지 못했습니다."
+
+msgid "No key found for email address {}"
+msgstr "전자 메일 주소 {}에 해당하는 키를 찾지 못했습니다."
+
+msgid "Search by Short Key ID is not supported."
+msgstr "'짧은 키 ID' 형식은 지원하지 않습니다."
+
+msgid "Invalid search query."
+msgstr "올바르지 않은 검색어입니다."
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "{1}에 {0} 명의로 올린 키 인증"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "{}에 올린 내 키 관리"
 
 msgid "This link is invalid or expired"
 msgstr "링크가 올바르지 않거나 이미 만료됐습니다"

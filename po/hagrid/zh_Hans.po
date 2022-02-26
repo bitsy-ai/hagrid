@@ -16,29 +16,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "在 {0} 上验证你的密钥 {1}"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "在 {} 上管理你的密钥"
-
-msgid "No key found for fingerprint {}"
-msgstr "此地址下没有密钥：{}"
-
-msgid "No key found for key id {}"
-msgstr "此地址下没有密钥：{}"
-
-msgid "No key found for email address {}"
-msgstr "此地址下没有密钥：{}"
-
-msgid "Search by Short Key ID is not supported."
-msgstr ""
-
-msgid "Invalid search query."
-msgstr ""
-
 msgid "Error"
 msgstr "错误"
 
@@ -351,6 +328,29 @@ msgid ""
 msgstr ""
 "要让其他人能通过你的邮件地址找到此密钥\"{{userid}}\"，\n"
 "请点击下方的链接："
+
+msgid "No key found for fingerprint {}"
+msgstr "此地址下没有密钥：{}"
+
+msgid "No key found for key id {}"
+msgstr "此地址下没有密钥：{}"
+
+msgid "No key found for email address {}"
+msgstr "此地址下没有密钥：{}"
+
+msgid "Search by Short Key ID is not supported."
+msgstr ""
+
+msgid "Invalid search query."
+msgstr ""
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "在 {0} 上验证你的密钥 {1}"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "在 {} 上管理你的密钥"
 
 msgid "This link is invalid or expired"
 msgstr "此链接无效或者已经过期"

@@ -16,30 +16,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "Verifica {0} para tu clave en {1}"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "Administra tu clave en {}"
-
-msgid "No key found for fingerprint {}"
-msgstr "No se encontraron claves para la huella digital {}"
-
-msgid "No key found for key id {}"
-msgstr "No se encontraron claves para el ID de clave {}"
-
-msgid "No key found for email address {}"
-msgstr ""
-"No se encontraron claves para la dirección de correo electrónico {}"
-
-msgid "Search by Short Key ID is not supported."
-msgstr "Buscar por ID de Short Key no está soportado."
-
-msgid "Invalid search query."
-msgstr "Búsqueda inválida."
-
 msgid "Error"
 msgstr "Error"
 
@@ -369,6 +345,29 @@ msgstr ""
 "Para permitir que otros encuentren esta clave mediante tu dirección de "
 "correo \"{{userid}}\", \n"
 "por favor haz clic en el siguiente enlace:"
+
+msgid "No key found for fingerprint {}"
+msgstr "No se encontraron claves para la huella digital {}"
+
+msgid "No key found for key id {}"
+msgstr "No se encontraron claves para el ID de clave {}"
+
+msgid "No key found for email address {}"
+msgstr "No se encontraron claves para la dirección de correo electrónico {}"
+
+msgid "Search by Short Key ID is not supported."
+msgstr "Buscar por ID de Short Key no está soportado."
+
+msgid "Invalid search query."
+msgstr "Búsqueda inválida."
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "Verifica {0} para tu clave en {1}"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "Administra tu clave en {}"
 
 msgid "This link is invalid or expired"
 msgstr "Este enlace es inválido o caducado"

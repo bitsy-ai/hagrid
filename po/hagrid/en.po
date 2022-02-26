@@ -12,29 +12,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "Verify {0} for your key on {1}"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "Manage your key on {}"
-
-msgid "No key found for fingerprint {}"
-msgstr ""
-
-msgid "No key found for key id {}"
-msgstr ""
-
-msgid "No key found for email address {}"
-msgstr "Verifying your email address…"
-
-msgid "Search by Short Key ID is not supported."
-msgstr ""
-
-msgid "Invalid search query."
-msgstr ""
-
 msgid "Error"
 msgstr "Error"
 
@@ -374,6 +351,29 @@ msgid ""
 "To let others find this key from your email address \"{{userid}}\",\n"
 "please follow the link below:"
 msgstr "To let others find this key from your email address \"{{userid}}\","
+
+msgid "No key found for fingerprint {}"
+msgstr ""
+
+msgid "No key found for key id {}"
+msgstr ""
+
+msgid "No key found for email address {}"
+msgstr "Verifying your email address…"
+
+msgid "Search by Short Key ID is not supported."
+msgstr ""
+
+msgid "Invalid search query."
+msgstr ""
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "Verify {0} for your key on {1}"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "Manage your key on {}"
 
 msgid "This link is invalid or expired"
 msgstr ""

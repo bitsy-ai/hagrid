@@ -17,29 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "Confirmer {0} pour votre clé sur {1}"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "Gérer votre clé sur {}"
-
-msgid "No key found for fingerprint {}"
-msgstr "Aucune clé n’a été trouvée pour l’empreinte {}"
-
-msgid "No key found for key id {}"
-msgstr "Aucune clé n’a été trouvée pour l’ID de clé {}"
-
-msgid "No key found for email address {}"
-msgstr "Aucune clé n’a été trouvée pour l’adresse courriel {}"
-
-msgid "Search by Short Key ID is not supported."
-msgstr "La recherche par ID de clé courte n’est pas prise en charge."
-
-msgid "Invalid search query."
-msgstr "La requête d’interrogation est invalide."
-
 msgid "Error"
 msgstr "Erreur"
 
@@ -374,6 +351,29 @@ msgid ""
 msgstr ""
 "Afin de permettre à d’autres de trouver cette clé à partir de votre\n"
 "adresse courriel « {{userid}} », veuillez suivre le lien ci-dessous :"
+
+msgid "No key found for fingerprint {}"
+msgstr "Aucune clé n’a été trouvée pour l’empreinte {}"
+
+msgid "No key found for key id {}"
+msgstr "Aucune clé n’a été trouvée pour l’ID de clé {}"
+
+msgid "No key found for email address {}"
+msgstr "Aucune clé n’a été trouvée pour l’adresse courriel {}"
+
+msgid "Search by Short Key ID is not supported."
+msgstr "La recherche par ID de clé courte n’est pas prise en charge."
+
+msgid "Invalid search query."
+msgstr "La requête d’interrogation est invalide."
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "Confirmer {0} pour votre clé sur {1}"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "Gérer votre clé sur {}"
 
 msgid "This link is invalid or expired"
 msgstr "Ce lien est invalide ou expiré"

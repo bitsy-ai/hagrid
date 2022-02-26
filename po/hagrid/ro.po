@@ -17,29 +17,6 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?"
 "2:1));\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "Verificați {0} pentru cheia dvs. pe {1}"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "Gestionați cheia dvs. pe {}"
-
-msgid "No key found for fingerprint {}"
-msgstr "Nu s-a găsit nicio cheie pentru amprenta digitală {}"
-
-msgid "No key found for key id {}"
-msgstr "Nu s-a găsit nicio cheie pentru cheia id {}"
-
-msgid "No key found for email address {}"
-msgstr "Nu s-a găsit nicio cheie pentru adresa de e-mail {}"
-
-msgid "Search by Short Key ID is not supported."
-msgstr "Căutarea după ID-ul cheii scurte nu este acceptată."
-
-msgid "Invalid search query."
-msgstr "Interogare de căutare invalidă."
-
 msgid "Error"
 msgstr "Eroare"
 
@@ -369,6 +346,29 @@ msgstr ""
 "Pentru a permite altora să găsească această cheie de la adresa dvs. de e-"
 "mail \"{{userid}}\",\n"
 "vă rugăm să urmați linkul de mai jos:"
+
+msgid "No key found for fingerprint {}"
+msgstr "Nu s-a găsit nicio cheie pentru amprenta digitală {}"
+
+msgid "No key found for key id {}"
+msgstr "Nu s-a găsit nicio cheie pentru cheia id {}"
+
+msgid "No key found for email address {}"
+msgstr "Nu s-a găsit nicio cheie pentru adresa de e-mail {}"
+
+msgid "Search by Short Key ID is not supported."
+msgstr "Căutarea după ID-ul cheii scurte nu este acceptată."
+
+msgid "Invalid search query."
+msgstr "Interogare de căutare invalidă."
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "Verificați {0} pentru cheia dvs. pe {1}"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "Gestionați cheia dvs. pe {}"
 
 msgid "This link is invalid or expired"
 msgstr "Acest link nu este valabil sau a expirat"

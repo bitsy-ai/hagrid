@@ -17,29 +17,6 @@ msgstr ""
 "%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n"
 "%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "Zweryfikuj {0} dla twojego klucza na {1}"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "Zarządzaj swoim kluczem na {}"
-
-msgid "No key found for fingerprint {}"
-msgstr "Brak klucza dla adresu: {}"
-
-msgid "No key found for key id {}"
-msgstr "Brak klucza dla adresu: {}"
-
-msgid "No key found for email address {}"
-msgstr "Brak klucza dla adresu: {}"
-
-msgid "Search by Short Key ID is not supported."
-msgstr ""
-
-msgid "Invalid search query."
-msgstr ""
-
 msgid "Error"
 msgstr "Błąd"
 
@@ -364,6 +341,29 @@ msgid ""
 msgstr ""
 "Aby inni mogli wyszukać twój klucz przez adres e-mail \"{{userid}}\", proszę "
 "kliknąć w łącze poniżej:"
+
+msgid "No key found for fingerprint {}"
+msgstr "Brak klucza dla adresu: {}"
+
+msgid "No key found for key id {}"
+msgstr "Brak klucza dla adresu: {}"
+
+msgid "No key found for email address {}"
+msgstr "Brak klucza dla adresu: {}"
+
+msgid "Search by Short Key ID is not supported."
+msgstr ""
+
+msgid "Invalid search query."
+msgstr ""
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "Zweryfikuj {0} dla twojego klucza na {1}"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "Zarządzaj swoim kluczem na {}"
 
 msgid "This link is invalid or expired"
 msgstr "Łącze jest nieważne lub wygasło"

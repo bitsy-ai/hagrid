@@ -17,29 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "Bestätige {0} für deinen Schlüssel auf {1}"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "Schlüssel-Verwaltung auf {}"
-
-msgid "No key found for fingerprint {}"
-msgstr "Kein Schlüssel gefunden für Fingerprint {}"
-
-msgid "No key found for key id {}"
-msgstr "Kein Schlüssel gefunden für Schlüssel-Id {}"
-
-msgid "No key found for email address {}"
-msgstr "Kein Schlüssel gefunden für Email-Adresse {}"
-
-msgid "Search by Short Key ID is not supported."
-msgstr "Suche nach kurzer Schlüssel-ID wird nicht unterstützt."
-
-msgid "Invalid search query."
-msgstr "Ungültige Suchanfrage."
-
 msgid "Error"
 msgstr "Fehler"
 
@@ -369,6 +346,29 @@ msgstr ""
 "Damit der Schlüssel über die Email-Adresse \"{{userid}}\" gefunden werden "
 "kann,\n"
 "klicke den folgenden Link:"
+
+msgid "No key found for fingerprint {}"
+msgstr "Kein Schlüssel gefunden für Fingerprint {}"
+
+msgid "No key found for key id {}"
+msgstr "Kein Schlüssel gefunden für Schlüssel-Id {}"
+
+msgid "No key found for email address {}"
+msgstr "Kein Schlüssel gefunden für Email-Adresse {}"
+
+msgid "Search by Short Key ID is not supported."
+msgstr "Suche nach kurzer Schlüssel-ID wird nicht unterstützt."
+
+msgid "Invalid search query."
+msgstr "Ungültige Suchanfrage."
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "Bestätige {0} für deinen Schlüssel auf {1}"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "Schlüssel-Verwaltung auf {}"
 
 msgid "This link is invalid or expired"
 msgstr "Dieser Link ist ungültig, oder bereits abgelaufen."

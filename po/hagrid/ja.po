@@ -15,29 +15,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "  {1}のあなたの鍵のために{1}を検証する"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "{}の鍵を管理する"
-
-msgid "No key found for fingerprint {}"
-msgstr "このアドレスに対する鍵がありません: {}"
-
-msgid "No key found for key id {}"
-msgstr "このアドレスに対する鍵がありません: {}"
-
-msgid "No key found for email address {}"
-msgstr "このアドレスに対する鍵がありません: {}"
-
-msgid "Search by Short Key ID is not supported."
-msgstr ""
-
-msgid "Invalid search query."
-msgstr ""
-
 msgid "Error"
 msgstr "エラー"
 
@@ -364,6 +341,29 @@ msgstr ""
 "あなたのメールアドレス\"{{userid}}\"から他人がこの鍵をみつけられるために"
 "は、\n"
 "以下のリンクをたどってください:"
+
+msgid "No key found for fingerprint {}"
+msgstr "このアドレスに対する鍵がありません: {}"
+
+msgid "No key found for key id {}"
+msgstr "このアドレスに対する鍵がありません: {}"
+
+msgid "No key found for email address {}"
+msgstr "このアドレスに対する鍵がありません: {}"
+
+msgid "Search by Short Key ID is not supported."
+msgstr ""
+
+msgid "Invalid search query."
+msgstr ""
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "  {1}のあなたの鍵のために{1}を検証する"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "{}の鍵を管理する"
 
 msgid "This link is invalid or expired"
 msgstr "このリンクは無効であるか失効しています"

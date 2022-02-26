@@ -17,29 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
-msgid "Verify {0} for your key on {1}"
-msgstr "{1} üzerindeki anahtarınız için {0} doğrulaması"
-
-msgctxt "Subject for manage email, {} = keyserver domain"
-msgid "Manage your key on {}"
-msgstr "{} sunucusundaki anahtarınızı yönetin"
-
-msgid "No key found for fingerprint {}"
-msgstr "Parmak izi {} için anahtar bulunamadı"
-
-msgid "No key found for key id {}"
-msgstr "Anahtar kimliği {} için anahtar bulunamadı"
-
-msgid "No key found for email address {}"
-msgstr "E-posta adresi {} için anahtar bulunamadı"
-
-msgid "Search by Short Key ID is not supported."
-msgstr "Kısa Anahtar Kimliği ile arama desteklenmiyor."
-
-msgid "Invalid search query."
-msgstr "Geçersiz arama sorgusu."
-
 msgid "Error"
 msgstr "Hata"
 
@@ -367,6 +344,29 @@ msgid ""
 msgstr ""
 "Başkalarının bu anahtarı, \"{{userid}}\" e-posta adresinizi kullanarak "
 "bulmasını istiyorsanız lütfen aşağıdaki bağlantıya gidin:"
+
+msgid "No key found for fingerprint {}"
+msgstr "Parmak izi {} için anahtar bulunamadı"
+
+msgid "No key found for key id {}"
+msgstr "Anahtar kimliği {} için anahtar bulunamadı"
+
+msgid "No key found for email address {}"
+msgstr "E-posta adresi {} için anahtar bulunamadı"
+
+msgid "Search by Short Key ID is not supported."
+msgstr "Kısa Anahtar Kimliği ile arama desteklenmiyor."
+
+msgid "Invalid search query."
+msgstr "Geçersiz arama sorgusu."
+
+msgctxt "Subject for verification email, {0} = userid, {1} = keyserver domain"
+msgid "Verify {0} for your key on {1}"
+msgstr "{1} üzerindeki anahtarınız için {0} doğrulaması"
+
+msgctxt "Subject for manage email, {} = keyserver domain"
+msgid "Manage your key on {}"
+msgstr "{} sunucusundaki anahtarınızı yönetin"
 
 msgid "This link is invalid or expired"
 msgstr "Bu bağlantı geçersiz veya süresi geçmiş."
