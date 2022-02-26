@@ -1,25 +1,13 @@
-stages:
-    - build
-
-build:clippy:
-    stage: build
-    tags:
-        - docker
+build, test and lint:
     image: "rust:1-bullseye"
+    interruptible: true
     script:
         - apt update -qy
-        - apt install -qy libclang-dev build-essential pkg-config clang nettle-dev gettext zsh
+        - apt install -qy build-essential pkg-config clang libclang-dev nettle-dev gettext zsh
         - rustup component add clippy
-        - RUST_BACKTRACE=full cargo clippy
-
-build:binary:
-    stage: build
-    tags:
-        - docker
-    image: "rustlang/rust:nightly"
-    script:
-        - apt update -qy
-        - apt install -qy libclang-dev build-essential pkg-config clang nettle-dev gettext zsh
+        - rustup component add rustfmt
         - ./make-translated-templates
-        - RUST_BACKTRACE=full cargo build
-        - RUST_BACKTRACE=full cargo test --all
+        - cargo build
+        - cargo clippy --no-deps
+        - cargo fmt --all -- --check
+        - cargo test --all
