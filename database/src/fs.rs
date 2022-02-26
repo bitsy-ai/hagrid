@@ -1,19 +1,21 @@
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::fs::{OpenOptions, File, create_dir_all, read_link, remove_file, rename, set_permissions, Permissions};
+use std::fs::{
+    create_dir_all, read_link, remove_file, rename, set_permissions, File, OpenOptions, Permissions,
+};
 use std::io::Write;
-use std::path::{Path, PathBuf};
 use std::os::unix::fs::PermissionsExt;
+use std::path::{Path, PathBuf};
 
-use tempfile;
-use url::form_urlencoded;
 use pathdiff::diff_paths;
 use std::time::SystemTime;
+use tempfile;
+use url::form_urlencoded;
 
-use {Database, Query};
-use types::{Email, Fingerprint, KeyID};
 use sync::FlockMutexGuard;
+use types::{Email, Fingerprint, KeyID};
 use Result;
+use {Database, Query};
 
 use wkd;
 
@@ -50,7 +52,6 @@ fn ensure_parent(path: &Path) -> Result<&Path> {
     create_dir_all(parent)?;
     Ok(path)
 }
-
 
 impl Filesystem {
     pub fn new_from_base(base_dir: impl Into<PathBuf>) -> Result<Self> {
@@ -164,22 +165,23 @@ impl Filesystem {
 
     /// Returns the path to the given Email.
     fn link_by_email(&self, email: &Email) -> PathBuf {
-        let email = form_urlencoded::byte_serialize(email.as_str().as_bytes())
-                .collect::<String>();
+        let email = form_urlencoded::byte_serialize(email.as_str().as_bytes()).collect::<String>();
         self.links_dir_by_email.join(path_split(&email))
     }
 
     /// Returns the WKD path to the given Email.
     fn link_wkd_by_email(&self, email: &Email) -> PathBuf {
         let (encoded_local_part, domain) = wkd::encode_wkd(email.as_str()).unwrap();
-        let encoded_domain = form_urlencoded::byte_serialize(domain.as_bytes())
-                .collect::<PathBuf>();
+        let encoded_domain =
+            form_urlencoded::byte_serialize(domain.as_bytes()).collect::<PathBuf>();
 
         [
             &self.links_dir_wkd_by_email,
             &encoded_domain,
-            &path_split(&encoded_local_part)
-        ].iter().collect()
+            &path_split(&encoded_local_part),
+        ]
+        .iter()
+        .collect()
     }
 
     /// Returns the WKD path to the given url-encoded domain and wkd-encoded local part.
@@ -187,16 +189,19 @@ impl Filesystem {
         [
             &self.links_dir_wkd_by_email,
             Path::new(&domain),
-            &path_split(hash)
-        ].iter().collect()
+            &path_split(hash),
+        ]
+        .iter()
+        .collect()
     }
 
     #[allow(clippy::nonminimal_bool)]
     fn read_from_path(&self, path: &Path, allow_internal: bool) -> Option<String> {
         use std::fs;
 
-        if !path.starts_with(&self.keys_external_dir) &&
-            !(allow_internal && path.starts_with(&self.keys_internal_dir)) {
+        if !path.starts_with(&self.keys_external_dir)
+            && !(allow_internal && path.starts_with(&self.keys_internal_dir))
+        {
             panic!("Attempted to access file outside expected dirs!");
         }
 
@@ -211,8 +216,9 @@ impl Filesystem {
     fn read_from_path_bytes(&self, path: &Path, allow_internal: bool) -> Option<Vec<u8>> {
         use std::fs;
 
-        if !path.starts_with(&self.keys_external_dir) &&
-            !(allow_internal && path.starts_with(&self.keys_internal_dir)) {
+        if !path.starts_with(&self.keys_external_dir)
+            && !(allow_internal && path.starts_with(&self.keys_internal_dir))
+        {
             panic!("Attempted to access file outside expected dirs!");
         }
 
@@ -286,8 +292,9 @@ impl Filesystem {
 
         let expected = diff_paths(
             &self.fingerprint_to_path_published(fpr),
-            link.parent().unwrap()
-        ).unwrap();
+            link.parent().unwrap(),
+        )
+        .unwrap();
 
         symlink_unlink_with_check(&link, &expected)
     }
@@ -297,8 +304,9 @@ impl Filesystem {
 
         let expected = diff_paths(
             &self.fingerprint_to_path_published_wkd(fpr),
-            link.parent().unwrap()
-        ).unwrap();
+            link.parent().unwrap(),
+        )
+        .unwrap();
 
         symlink_unlink_with_check(&link, &expected)
     }
@@ -317,8 +325,8 @@ impl Filesystem {
         tpks: &mut HashMap<Fingerprint, Cert>,
         check: impl Fn(&Path, &Cert, &Fingerprint) -> Result<()>,
     ) -> Result<()> {
-        use walkdir::WalkDir;
         use std::fs;
+        use walkdir::WalkDir;
 
         for entry in WalkDir::new(checks_dir) {
             let entry = entry?;
@@ -331,23 +339,19 @@ impl Filesystem {
             // Compute the corresponding primary fingerprint just
             // by looking at the paths.
             let primary_fp = Filesystem::path_to_primary(path)
-                .ok_or_else(
-                            || format_err!("Malformed path: {:?}",
-                                            path.read_link().unwrap()))?;
+                .ok_or_else(|| format_err!("Malformed path: {:?}", path.read_link().unwrap()))?;
             // Load into cache.
-            if ! tpks.contains_key(&primary_fp) {
+            if !tpks.contains_key(&primary_fp) {
                 tpks.insert(
                     primary_fp.clone(),
-                    self.lookup(&Query::ByFingerprint(primary_fp.clone()))
-                        ?.ok_or_else(
-                            || format_err!("No Cert with fingerprint {:?}",
-                                            primary_fp))?);
+                    self.lookup(&Query::ByFingerprint(primary_fp.clone()))?
+                        .ok_or_else(|| format_err!("No Cert with fingerprint {:?}", primary_fp))?,
+                );
             }
 
-            let tpk = tpks.get(&primary_fp)
-                .ok_or_else(
-                    || format_err!("Broken symlink {:?}: No such Key {}",
-                                    path, primary_fp))?;
+            let tpk = tpks.get(&primary_fp).ok_or_else(|| {
+                format_err!("Broken symlink {:?}: No such Key {}", path, primary_fp)
+            })?;
 
             check(path, tpk, &primary_fp)?;
         }
@@ -433,7 +437,11 @@ impl Database for Filesystem {
         Ok(())
     }
 
-    fn move_tmp_to_published_wkd(&self, file: Option<Self::TempCert>, fpr: &Fingerprint) -> Result<()> {
+    fn move_tmp_to_published_wkd(
+        &self,
+        file: Option<Self::TempCert>,
+        fpr: &Fingerprint,
+    ) -> Result<()> {
         if self.dry_run {
             return Ok(());
         }
@@ -461,24 +469,30 @@ impl Database for Filesystem {
         Ok(())
     }
 
-    fn check_link_fpr(&self, fpr: &Fingerprint, fpr_target: &Fingerprint) -> Result<Option<Fingerprint>> {
+    fn check_link_fpr(
+        &self,
+        fpr: &Fingerprint,
+        fpr_target: &Fingerprint,
+    ) -> Result<Option<Fingerprint>> {
         let link_keyid = self.link_by_keyid(&fpr.into());
         let link_fpr = self.link_by_fingerprint(fpr);
 
         let path_published = self.fingerprint_to_path_published(fpr_target);
 
         if let Ok(link_fpr_target) = link_fpr.canonicalize() {
-             if !link_fpr_target.ends_with(&path_published) {
+            if !link_fpr_target.ends_with(&path_published) {
                 info!("Fingerprint points to different key for {} (expected {:?} to be suffix of {:?})",
                     fpr, &path_published, &link_fpr_target);
                 return Err(anyhow!(format!("Fingerprint collision for key {}", fpr)));
-             }
+            }
         }
 
         if let Ok(link_keyid_target) = link_keyid.canonicalize() {
             if !link_keyid_target.ends_with(&path_published) {
-                info!("KeyID points to different key for {} (expected {:?} to be suffix of {:?})",
-                    fpr, &path_published, &link_keyid_target);
+                info!(
+                    "KeyID points to different key for {} (expected {:?} to be suffix of {:?})",
+                    fpr, &path_published, &link_keyid_target
+                );
                 return Err(anyhow!(format!("KeyID collision for key {}", fpr)));
             }
         }
@@ -496,7 +510,7 @@ impl Database for Filesystem {
             ByFingerprint(ref fp) => self.link_by_fingerprint(fp),
             ByKeyID(ref keyid) => self.link_by_keyid(keyid),
             ByEmail(ref email) => self.link_by_email(email),
-            _ => return None
+            _ => return None,
         };
         path.read_link()
             .ok()
@@ -527,8 +541,11 @@ impl Database for Filesystem {
 
         let link_fpr = self.link_by_fingerprint(from);
         let link_keyid = self.link_by_keyid(&from.into());
-        let target = diff_paths(&self.fingerprint_to_path_published(primary_fpr),
-                                link_fpr.parent().unwrap()).unwrap();
+        let target = diff_paths(
+            &self.fingerprint_to_path_published(primary_fpr),
+            link_fpr.parent().unwrap(),
+        )
+        .unwrap();
 
         symlink(&target, ensure_parent(&link_fpr)?)?;
         symlink(&target, ensure_parent(&link_keyid)?)
@@ -537,10 +554,13 @@ impl Database for Filesystem {
     fn unlink_fpr(&self, from: &Fingerprint, primary_fpr: &Fingerprint) -> Result<()> {
         let link_fpr = self.link_by_fingerprint(from);
         let link_keyid = self.link_by_keyid(&from.into());
-        let expected = diff_paths(&self.fingerprint_to_path_published(primary_fpr),
-                                link_fpr.parent().unwrap()).unwrap();
+        let expected = diff_paths(
+            &self.fingerprint_to_path_published(primary_fpr),
+            link_fpr.parent().unwrap(),
+        )
+        .unwrap();
 
-        if let Ok(target) =  read_link(&link_fpr) {
+        if let Ok(target) = read_link(&link_fpr) {
             if target == expected {
                 remove_file(&link_fpr)?;
             }
@@ -604,7 +624,9 @@ impl Database for Filesystem {
         // A cache of all Certs, for quick lookups.
         let mut tpks = HashMap::new();
 
-        self.perform_checks(&self.keys_dir_published, &mut tpks,
+        self.perform_checks(
+            &self.keys_dir_published,
+            &mut tpks,
             |path, _, primary_fp| {
                 // The KeyID corresponding with this path.
                 let fp = Filesystem::path_to_fingerprint(path)
@@ -614,131 +636,141 @@ impl Database for Filesystem {
                     return Err(format_err!(
                         "{:?} points to the wrong Cert, expected {} \
                             but found {}",
-                        path, fp, primary_fp));
+                        path,
+                        fp,
+                        primary_fp
+                    ));
                 }
                 Ok(())
-            }
+            },
         )?;
 
-        self.perform_checks(&self.keys_dir_published, &mut tpks,
-            |_, tpk, primary_fp| {
-                // check that certificate exists in published wkd path
-                let path_wkd = self.fingerprint_to_path_published_wkd(primary_fp);
-                let should_wkd_exist = tpk.userids().next().is_some();
+        self.perform_checks(&self.keys_dir_published, &mut tpks, |_, tpk, primary_fp| {
+            // check that certificate exists in published wkd path
+            let path_wkd = self.fingerprint_to_path_published_wkd(primary_fp);
+            let should_wkd_exist = tpk.userids().next().is_some();
 
-                if should_wkd_exist && !path_wkd.exists() {
-                    return Err(format_err!("Missing wkd for fp {}", primary_fp));
-                };
-                if !should_wkd_exist && path_wkd.exists() {
-                    return Err(format_err!("Incorrectly present wkd for fp {}", primary_fp));
-                };
-                Ok(())
-            }
-        )?;
+            if should_wkd_exist && !path_wkd.exists() {
+                return Err(format_err!("Missing wkd for fp {}", primary_fp));
+            };
+            if !should_wkd_exist && path_wkd.exists() {
+                return Err(format_err!("Incorrectly present wkd for fp {}", primary_fp));
+            };
+            Ok(())
+        })?;
 
         // check that all subkeys are linked
-        self.perform_checks(&self.keys_dir_published, &mut tpks,
-            |_, tpk, primary_fp| {
-                let policy = &POLICY;
-                let fingerprints = tpk
-                    .keys()
-                    .with_policy(policy, None)
-                    .for_certification()
-                    .for_signing()
-                    .map(|amalgamation| amalgamation.key().fingerprint())
-                    .map(Fingerprint::try_from)
-                    .flatten();
+        self.perform_checks(&self.keys_dir_published, &mut tpks, |_, tpk, primary_fp| {
+            let policy = &POLICY;
+            let fingerprints = tpk
+                .keys()
+                .with_policy(policy, None)
+                .for_certification()
+                .for_signing()
+                .map(|amalgamation| amalgamation.key().fingerprint())
+                .map(Fingerprint::try_from)
+                .flatten();
 
-                for fpr in fingerprints {
-                    if let Some(missing_fpr) = self.check_link_fpr(&fpr, primary_fp)? {
-                        return Err(format_err!(
-                            "Missing link to key {} for sub {}", primary_fp, missing_fpr));
-                    }
+            for fpr in fingerprints {
+                if let Some(missing_fpr) = self.check_link_fpr(&fpr, primary_fp)? {
+                    return Err(format_err!(
+                        "Missing link to key {} for sub {}",
+                        primary_fp,
+                        missing_fpr
+                    ));
                 }
-                Ok(())
             }
-        )?;
+            Ok(())
+        })?;
 
         // check that all published uids are linked
-        self.perform_checks(&self.keys_dir_published, &mut tpks,
-            |_, tpk, primary_fp| {
-                let emails = tpk
-                    .userids()
-                    .map(|binding| binding.userid().clone())
-                    .map(|userid| Email::try_from(&userid).unwrap());
+        self.perform_checks(&self.keys_dir_published, &mut tpks, |_, tpk, primary_fp| {
+            let emails = tpk
+                .userids()
+                .map(|binding| binding.userid().clone())
+                .map(|userid| Email::try_from(&userid).unwrap());
 
-                for email in emails {
-                    let email_path = self.link_by_email(&email);
-                    if !email_path.exists() {
-                        return Err(format_err!(
-                            "Missing link to key {} for email {}", primary_fp, email));
-                    }
-                    let email_wkd_path = self.link_wkd_by_email(&email);
-                    if !email_wkd_path.exists() {
-                        return Err(format_err!(
-                            "Missing wkd link to key {} for email {}", primary_fp, email));
-                    }
-                }
-                Ok(())
-            }
-        )?;
-
-
-        self.perform_checks(&self.links_dir_by_fingerprint, &mut tpks,
-            |path, tpk, _| {
-                // The KeyID corresponding with this path.
-                let id = Filesystem::path_to_keyid(path)
-                    .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
-
-                let found = tpk.keys()
-                    .map(|amalgamation| KeyID::try_from(amalgamation.key().fingerprint()).unwrap())
-                    .any(|key_fp| key_fp == id);
-                if ! found {
+            for email in emails {
+                let email_path = self.link_by_email(&email);
+                if !email_path.exists() {
                     return Err(format_err!(
-                        "{:?} points to the wrong Cert, the Cert does not \
-                            contain the (sub)key {}", path, id));
+                        "Missing link to key {} for email {}",
+                        primary_fp,
+                        email
+                    ));
                 }
-                Ok(())
-            }
-        )?;
-
-        self.perform_checks(&self.links_dir_by_keyid, &mut tpks,
-            |path, tpk, _| {
-                // The KeyID corresponding with this path.
-                let id = Filesystem::path_to_keyid(path)
-                    .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
-
-                let found = tpk.keys()
-                    .map(|amalgamation| KeyID::try_from(amalgamation.key().fingerprint()).unwrap())
-                    .any(|key_fp| key_fp == id);
-                if ! found {
+                let email_wkd_path = self.link_wkd_by_email(&email);
+                if !email_wkd_path.exists() {
                     return Err(format_err!(
-                        "{:?} points to the wrong Cert, the Cert does not \
-                            contain the (sub)key {}", path, id));
+                        "Missing wkd link to key {} for email {}",
+                        primary_fp,
+                        email
+                    ));
                 }
-                Ok(())
             }
-        )?;
+            Ok(())
+        })?;
 
-        self.perform_checks(&self.links_dir_by_email, &mut tpks,
-            |path, tpk, _| {
-                // The Email corresponding with this path.
-                let email = Filesystem::path_to_email(path)
-                    .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
-                let mut found = false;
-                for uidb in tpk.userids() {
-                    if Email::try_from(uidb.userid()).unwrap() == email
-                    {
-                        found = true;
-                        break;
-                    }
+        self.perform_checks(&self.links_dir_by_fingerprint, &mut tpks, |path, tpk, _| {
+            // The KeyID corresponding with this path.
+            let id = Filesystem::path_to_keyid(path)
+                .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
+
+            let found = tpk
+                .keys()
+                .map(|amalgamation| KeyID::try_from(amalgamation.key().fingerprint()).unwrap())
+                .any(|key_fp| key_fp == id);
+            if !found {
+                return Err(format_err!(
+                    "{:?} points to the wrong Cert, the Cert does not \
+                            contain the (sub)key {}",
+                    path,
+                    id
+                ));
+            }
+            Ok(())
+        })?;
+
+        self.perform_checks(&self.links_dir_by_keyid, &mut tpks, |path, tpk, _| {
+            // The KeyID corresponding with this path.
+            let id = Filesystem::path_to_keyid(path)
+                .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
+
+            let found = tpk
+                .keys()
+                .map(|amalgamation| KeyID::try_from(amalgamation.key().fingerprint()).unwrap())
+                .any(|key_fp| key_fp == id);
+            if !found {
+                return Err(format_err!(
+                    "{:?} points to the wrong Cert, the Cert does not \
+                            contain the (sub)key {}",
+                    path,
+                    id
+                ));
+            }
+            Ok(())
+        })?;
+
+        self.perform_checks(&self.links_dir_by_email, &mut tpks, |path, tpk, _| {
+            // The Email corresponding with this path.
+            let email = Filesystem::path_to_email(path)
+                .ok_or_else(|| format_err!("Malformed path: {:?}", path))?;
+            let mut found = false;
+            for uidb in tpk.userids() {
+                if Email::try_from(uidb.userid()).unwrap() == email {
+                    found = true;
+                    break;
                 }
-                if ! found {
-                    return Err(format_err!(
-                        "{:?} points to the wrong Cert, the Cert does not \
-                            contain the email {}", path, email));
-                }
-                Ok(())
+            }
+            if !found {
+                return Err(format_err!(
+                    "{:?} points to the wrong Cert, the Cert does not \
+                            contain the email {}",
+                    path,
+                    email
+                ));
+            }
+            Ok(())
         })?;
 
         Ok(())
@@ -754,7 +786,13 @@ fn path_split(path: &str) -> PathBuf {
 }
 
 fn path_merge(path: &Path) -> String {
-    let comps = path.iter().rev().take(3).collect::<Vec<_>>().into_iter().rev();
+    let comps = path
+        .iter()
+        .rev()
+        .take(3)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .rev();
     let comps: Vec<_> = comps.map(|os| os.to_string_lossy()).collect();
     comps.join("")
 }
@@ -762,9 +800,9 @@ fn path_merge(path: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test;
     use openpgp::cert::CertBuilder;
     use tempfile::TempDir;
+    use test;
 
     #[test]
     fn init() {
@@ -783,18 +821,48 @@ mod tests {
     #[test]
     fn new() {
         let (_tmp_dir, db, _log_path) = open_db();
-        let k1 = CertBuilder::new().add_userid("a@invalid.example.org")
-            .generate().unwrap().0;
-        let k2 = CertBuilder::new().add_userid("b@invalid.example.org")
-            .generate().unwrap().0;
-        let k3 = CertBuilder::new().add_userid("c@invalid.example.org")
-            .generate().unwrap().0;
+        let k1 = CertBuilder::new()
+            .add_userid("a@invalid.example.org")
+            .generate()
+            .unwrap()
+            .0;
+        let k2 = CertBuilder::new()
+            .add_userid("b@invalid.example.org")
+            .generate()
+            .unwrap()
+            .0;
+        let k3 = CertBuilder::new()
+            .add_userid("c@invalid.example.org")
+            .generate()
+            .unwrap()
+            .0;
 
         assert!(db.merge(k1).unwrap().into_tpk_status().email_status.len() > 0);
-        assert!(db.merge(k2.clone()).unwrap().into_tpk_status().email_status.len() > 0);
+        assert!(
+            db.merge(k2.clone())
+                .unwrap()
+                .into_tpk_status()
+                .email_status
+                .len()
+                > 0
+        );
         assert!(!db.merge(k2).unwrap().into_tpk_status().email_status.len() > 0);
-        assert!(db.merge(k3.clone()).unwrap().into_tpk_status().email_status.len() > 0);
-        assert!(!db.merge(k3.clone()).unwrap().into_tpk_status().email_status.len() > 0);
+        assert!(
+            db.merge(k3.clone())
+                .unwrap()
+                .into_tpk_status()
+                .email_status
+                .len()
+                > 0
+        );
+        assert!(
+            !db.merge(k3.clone())
+                .unwrap()
+                .into_tpk_status()
+                .email_status
+                .len()
+                > 0
+        );
         assert!(!db.merge(k3).unwrap().into_tpk_status().email_status.len() > 0);
     }
 
@@ -915,11 +983,12 @@ mod tests {
         let tmpdir = TempDir::new().unwrap();
         let db = Filesystem::new_from_base(tmpdir.path()).unwrap();
 
-        let fp: Fingerprint =
-            "CBCD8F030588653EEDD7E2659B7DD433F254904A".parse().unwrap();
+        let fp: Fingerprint = "CBCD8F030588653EEDD7E2659B7DD433F254904A".parse().unwrap();
 
-        assert_eq!(Filesystem::path_to_fingerprint(&db.link_by_fingerprint(&fp)),
-                   Some(fp.clone()));
+        assert_eq!(
+            Filesystem::path_to_fingerprint(&db.link_by_fingerprint(&fp)),
+            Some(fp.clone())
+        );
         db.check_consistency().expect("inconsistent database");
     }
 

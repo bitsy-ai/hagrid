@@ -1,14 +1,14 @@
+use hyperx::header::{Charset, ContentDisposition, DispositionParam, DispositionType};
 use rocket::figment::Figment;
 use rocket::fs::NamedFile;
 use rocket::http::{Header, Status};
-use rocket::request;
 use rocket::outcome::Outcome;
-use rocket::response::{Responder, Response};
+use rocket::request;
 use rocket::response::status::Custom;
+use rocket::response::{Responder, Response};
 use rocket_dyn_templates::{Engines, Template};
 use rocket_i18n::I18n;
 use rocket_prometheus::PrometheusMetrics;
-use hyperx::header::{ContentDisposition, DispositionType, DispositionParam, Charset};
 
 use gettext_macros::{compile_i18n, include_i18n};
 
@@ -16,27 +16,27 @@ use serde::Serialize;
 
 use std::path::PathBuf;
 
-use crate::mail;
-use crate::tokens;
 use crate::counters;
-use crate::i18n_helpers::describe_query_error;
-use crate::template_helpers::TemplateOverrides;
 use crate::i18n::I18NHelper;
+use crate::i18n_helpers::describe_query_error;
+use crate::mail;
 use crate::rate_limiter::RateLimiter;
+use crate::template_helpers::TemplateOverrides;
+use crate::tokens;
 
-use crate::database::{Database, KeyDatabase, Query};
 use crate::database::types::Fingerprint;
+use crate::database::{Database, KeyDatabase, Query};
 use crate::Result;
 
 use std::convert::TryInto;
 
-mod hkp;
-mod manage;
-mod maintenance;
-mod vks;
-mod vks_web;
-mod vks_api;
 mod debug_web;
+mod hkp;
+mod maintenance;
+mod manage;
+mod vks;
+mod vks_api;
+mod vks_web;
 mod wkd;
 
 use crate::web::maintenance::MaintenanceMode;
@@ -44,10 +44,16 @@ use crate::web::maintenance::MaintenanceMode;
 pub struct HagridTemplate(&'static str, serde_json::Value, I18n, RequestOrigin);
 
 impl<'r> Responder<'r, 'static> for HagridTemplate {
-    fn respond_to(self, req: &'r rocket::Request) -> std::result::Result<Response<'static>, Status> {
+    fn respond_to(
+        self,
+        req: &'r rocket::Request,
+    ) -> std::result::Result<Response<'static>, Status> {
         let HagridTemplate(tmpl, ctx, i18n, origin) = self;
 
-        let template_overrides: &TemplateOverrides = req.rocket().state().expect("TemplateOverrides must be in managed state");
+        let template_overrides: &TemplateOverrides = req
+            .rocket()
+            .state()
+            .expect("TemplateOverrides must be in managed state");
         let template_override = template_overrides.get_template_override(i18n.lang, tmpl);
         let layout_context = templates::HagridLayout::new(ctx, i18n, origin);
 
@@ -55,7 +61,8 @@ impl<'r> Responder<'r, 'static> for HagridTemplate {
             Template::render(template_override, layout_context)
         } else {
             Template::render(tmpl, layout_context)
-        }.respond_to(req)
+        }
+        .respond_to(req)
     }
 }
 
@@ -114,12 +121,14 @@ impl MyResponse {
             rocket::http::hyper::header::CONTENT_DISPOSITION.as_str(),
             ContentDisposition {
                 disposition: DispositionType::Attachment,
-                parameters: vec![
-                    DispositionParam::Filename(
-                        Charset::Us_Ascii, None,
-                        (fp.to_string() + ".asc").into_bytes()),
-                ],
-            }.to_string());
+                parameters: vec![DispositionParam::Filename(
+                    Charset::Us_Ascii,
+                    None,
+                    (fp.to_string() + ".asc").into_bytes(),
+                )],
+            }
+            .to_string(),
+        );
         MyResponse::Key(armored_key, content_disposition)
     }
 
@@ -128,12 +137,14 @@ impl MyResponse {
             rocket::http::hyper::header::CONTENT_DISPOSITION.as_str(),
             ContentDisposition {
                 disposition: DispositionType::Attachment,
-                parameters: vec![
-                    DispositionParam::Filename(
-                        Charset::Us_Ascii, None,
-                        (wkd_hash.to_string() + ".pgp").into_bytes()),
-                ],
-            }.to_string());
+                parameters: vec![DispositionParam::Filename(
+                    Charset::Us_Ascii,
+                    None,
+                    (wkd_hash.to_string() + ".pgp").into_bytes(),
+                )],
+            }
+            .to_string(),
+        );
         MyResponse::WkdKey(binary_key, content_disposition)
     }
 
@@ -148,8 +159,15 @@ impl MyResponse {
         MyResponse::ServerError(Template::render("500", ctx))
     }
 
-    pub fn bad_request(template: &'static str, e: anyhow::Error, i18n: I18n, origin: RequestOrigin) -> Self {
-        let ctx = templates::Error { error: format!("{}", e) };
+    pub fn bad_request(
+        template: &'static str,
+        e: anyhow::Error,
+        i18n: I18n,
+        origin: RequestOrigin,
+    ) -> Self {
+        let ctx = templates::Error {
+            error: format!("{}", e),
+        };
         let context_json = serde_json::to_value(ctx).unwrap();
         MyResponse::BadRequest(HagridTemplate(template, context_json, i18n, origin))
     }
@@ -168,10 +186,16 @@ impl MyResponse {
         i18n: I18n,
         origin: RequestOrigin,
     ) -> Self {
-        let ctx = templates::Error { error: message.into()
-                         .unwrap_or_else(|| "Key not found".to_owned()) };
+        let ctx = templates::Error {
+            error: message.into().unwrap_or_else(|| "Key not found".to_owned()),
+        };
         let context_json = serde_json::to_value(ctx).unwrap();
-        MyResponse::NotFound(HagridTemplate(tmpl.unwrap_or("index"), context_json, i18n, origin))
+        MyResponse::NotFound(HagridTemplate(
+            tmpl.unwrap_or("index"),
+            context_json,
+            i18n,
+            origin,
+        ))
     }
 }
 
@@ -219,8 +243,16 @@ mod templates {
                 base_uri: origin.get_base_uri().to_string(),
                 page,
                 lang: i18n.lang.to_string(),
-                htmldir: if is_rtl { "rtl".to_owned() } else { "ltr".to_owned() },
-                htmlclass: if is_rtl { "rtl".to_owned() } else { "".to_owned() },
+                htmldir: if is_rtl {
+                    "rtl".to_owned()
+                } else {
+                    "ltr".to_owned()
+                },
+                htmlclass: if is_rtl {
+                    "rtl".to_owned()
+                } else {
+                    "".to_owned()
+                },
             }
         }
     }
@@ -245,7 +277,9 @@ pub enum RequestOrigin {
 impl<'r> request::FromRequest<'r> for RequestOrigin {
     type Error = ();
 
-    async fn from_request(request: &'r request::Request<'_>) -> request::Outcome<Self, Self::Error> {
+    async fn from_request(
+        request: &'r request::Request<'_>,
+    ) -> request::Outcome<Self, Self::Error> {
         let hagrid_state = request.rocket().state::<HagridState>().unwrap();
         let result = match request.headers().get("x-is-onion").next() {
             Some(_) => RequestOrigin::OnionService(hagrid_state.base_uri_onion.clone()),
@@ -342,14 +376,16 @@ fn errors(
     code: u16,
     template: String,
 ) -> std::result::Result<Custom<Template>, &'static str> {
-    if !template.chars().all(|x| x == '-' || char::is_ascii_alphabetic(&x)) {
+    if !template
+        .chars()
+        .all(|x| x == '-' || char::is_ascii_alphabetic(&x))
+    {
         return Err("bad request");
     }
-    let status_code = Status::from_code(code)
-        .ok_or("bad request")?;
+    let status_code = Status::from_code(code).ok_or("bad request")?;
     let response_body = Template::render(
         format!("errors/{}-{}", code, template),
-        templates::HagridLayout::new(templates::Bare{dummy: ()}, i18n, origin)
+        templates::HagridLayout::new(templates::Bare { dummy: () }, i18n, origin),
     );
     Ok(Custom(status_code, response_body))
 }
@@ -360,7 +396,9 @@ pub fn serve() -> Result<rocket::Rocket<rocket::Build>> {
 
 compile_i18n!();
 
-fn rocket_factory(mut rocket: rocket::Rocket<rocket::Build>) -> Result<rocket::Rocket<rocket::Build>> {
+fn rocket_factory(
+    mut rocket: rocket::Rocket<rocket::Build>,
+) -> Result<rocket::Rocket<rocket::Build>> {
     let routes = routes![
         // infra
         root,
@@ -428,21 +466,23 @@ fn rocket_factory(mut rocket: rocket::Rocket<rocket::Build>) -> Result<rocket::R
     let prometheus = configure_prometheus(figment);
 
     rocket = rocket
-       .attach(Template::custom(|engines: &mut Engines| {
-           let i18ns = include_i18n!();
-           let i18n_helper = I18NHelper::new(i18ns);
-           engines.handlebars.register_helper("text", Box::new(i18n_helper));
-       }))
-       .attach(maintenance_mode)
-       .manage(include_i18n!())
-       .manage(hagrid_state)
-       .manage(stateless_token_service)
-       .manage(stateful_token_service)
-       .manage(mail_service)
-       .manage(db_service)
-       .manage(rate_limiter)
-       .manage(localized_template_list)
-       .mount("/", routes);
+        .attach(Template::custom(|engines: &mut Engines| {
+            let i18ns = include_i18n!();
+            let i18n_helper = I18NHelper::new(i18ns);
+            engines
+                .handlebars
+                .register_helper("text", Box::new(i18n_helper));
+        }))
+        .attach(maintenance_mode)
+        .manage(include_i18n!())
+        .manage(hagrid_state)
+        .manage(stateless_token_service)
+        .manage(stateful_token_service)
+        .manage(mail_service)
+        .manage(db_service)
+        .manage(rate_limiter)
+        .manage(localized_template_list)
+        .mount("/", routes);
 
     if let Some(prometheus) = prometheus {
         rocket = rocket
@@ -476,7 +516,8 @@ fn configure_hagrid_state(config: &Figment) -> Result<HagridState> {
 
     // State
     let base_uri: String = config.extract_inner("base-URI")?;
-    let base_uri_onion = config.extract_inner::<String>("base-URI-Onion")
+    let base_uri_onion = config
+        .extract_inner::<String>("base-URI-Onion")
         .unwrap_or_else(|_| base_uri.clone());
     Ok(HagridState {
         assets_dir,
@@ -524,7 +565,8 @@ fn configure_localized_template_list(config: &Figment) -> Result<TemplateOverrid
 }
 
 fn configure_maintenance_mode(config: &Figment) -> Result<MaintenanceMode> {
-    let maintenance_file: PathBuf = config.extract_inner("maintenance_file")
+    let maintenance_file: PathBuf = config
+        .extract_inner("maintenance_file")
         .unwrap_or_else(|_| PathBuf::from("maintenance"));
     Ok(MaintenanceMode::new(maintenance_file))
 }
@@ -532,27 +574,27 @@ fn configure_maintenance_mode(config: &Figment) -> Result<MaintenanceMode> {
 #[cfg(test)]
 pub mod tests {
     use regex;
+    use rocket::http::ContentType;
+    use rocket::http::Header;
+    use rocket::http::Status;
     use rocket::local::blocking::{Client, LocalResponse};
     use std::fs;
     use std::fs::File;
     use std::io::Write;
     use std::path::Path;
     use tempfile::{tempdir, TempDir};
-    use rocket::http::Status;
-    use rocket::http::ContentType;
-    use rocket::http::Header;
 
-    use sequoia_openpgp::Cert;
     use sequoia_openpgp::cert::CertBuilder;
     use sequoia_openpgp::parse::Parse;
     use sequoia_openpgp::serialize::Serialize;
+    use sequoia_openpgp::Cert;
 
     use std::time::SystemTime;
 
     use mail::pop_mail;
 
-    use crate::database::*;
     use super::*;
+    use crate::database::*;
 
     /// Fake base URI to use in tests.
     const BASE_URI: &str = "http://local.connection";
@@ -583,27 +625,56 @@ pub mod tests {
         let config = rocket::Config::figment()
             .select("staging")
             .merge(("root", root.path()))
-            .merge(("template_dir",
-                   ::std::env::current_dir().unwrap().join("dist/templates")
-                   .to_str().unwrap()))
-            .merge(("email_template_dir",
-                   ::std::env::current_dir().unwrap().join("dist/email-templates")
-                   .to_str().unwrap()))
-            .merge(("assets_dir",
-                   ::std::env::current_dir().unwrap().join("dist/assets")
-                   .to_str().unwrap()))
-            .merge(("keys_internal_dir", base_dir.join("keys_internal").to_str().unwrap()))
-            .merge(("keys_external_dir", base_dir.join("keys_external").to_str().unwrap()))
+            .merge((
+                "template_dir",
+                ::std::env::current_dir()
+                    .unwrap()
+                    .join("dist/templates")
+                    .to_str()
+                    .unwrap(),
+            ))
+            .merge((
+                "email_template_dir",
+                ::std::env::current_dir()
+                    .unwrap()
+                    .join("dist/email-templates")
+                    .to_str()
+                    .unwrap(),
+            ))
+            .merge((
+                "assets_dir",
+                ::std::env::current_dir()
+                    .unwrap()
+                    .join("dist/assets")
+                    .to_str()
+                    .unwrap(),
+            ))
+            .merge((
+                "keys_internal_dir",
+                base_dir.join("keys_internal").to_str().unwrap(),
+            ))
+            .merge((
+                "keys_external_dir",
+                base_dir.join("keys_external").to_str().unwrap(),
+            ))
             .merge(("tmp_dir", base_dir.join("tmp").to_str().unwrap()))
             .merge(("token_dir", base_dir.join("tokens").to_str().unwrap()))
-            .merge(("maintenance_file", base_dir.join("maintenance").to_str().unwrap()))
+            .merge((
+                "maintenance_file",
+                base_dir.join("maintenance").to_str().unwrap(),
+            ))
             .merge(("base-URI", BASE_URI))
             .merge(("base-URI-Onion", BASE_URI_ONION))
             .merge(("from", "from@example.com"))
             .merge(("token_secret", "hagrid"))
             .merge(("token_validity", 3600u64))
-            .merge(("filemail_into", filemail.into_os_string().into_string()
-                   .expect("path is valid UTF8")));
+            .merge((
+                "filemail_into",
+                filemail
+                    .into_os_string()
+                    .into_string()
+                    .expect("path is valid UTF8"),
+            ));
         Ok((root, config))
     }
 
@@ -625,7 +696,8 @@ pub mod tests {
         let client = Client::untracked(rocket).expect("valid rocket instance");
 
         // Check that we see the landing page.
-        let response = client.get("/about")
+        let response = client
+            .get("/about")
             .header(Header::new("Accept-Language", "de"))
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
@@ -650,7 +722,10 @@ pub mod tests {
         let response = client.get("/about").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(response.into_string().unwrap().contains("distribution and discovery"));
+        assert!(response
+            .into_string()
+            .unwrap()
+            .contains("distribution and discovery"));
 
         // Check that we see the privacy policy.
         let response = client.get("/about/privacy").dispatch();
@@ -674,7 +749,10 @@ pub mod tests {
         let response = client.get("/manage").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(response.into_string().unwrap().contains("any verified email address"));
+        assert!(response
+            .into_string()
+            .unwrap()
+            .contains("any verified email address"));
 
         assert_consistency(client.rocket());
     }
@@ -699,21 +777,30 @@ pub mod tests {
         let response = client.put("/").dispatch();
         assert_eq!(response.status(), Status::ServiceUnavailable);
         assert_eq!(response.content_type(), Some(ContentType::Plain));
-        assert!(response.into_string().unwrap().contains("maintenance-message"));
+        assert!(response
+            .into_string()
+            .unwrap()
+            .contains("maintenance-message"));
 
         fs::remove_file(&maintenance_path).unwrap();
         // Check that we see the upload form.
         let response = client.get("/upload").dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
-        assert!(!response.into_string().unwrap().contains("maintenance-message"));
+        assert!(!response
+            .into_string()
+            .unwrap()
+            .contains("maintenance-message"));
     }
 
     fn check_maintenance(client: &Client, uri: &str, content_type: ContentType) {
         let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::ServiceUnavailable);
         assert_eq!(response.content_type(), Some(content_type));
-        assert!(response.into_string().unwrap().contains("maintenance-message"));
+        assert!(response
+            .into_string()
+            .unwrap()
+            .contains("maintenance-message"));
     }
 
     #[test]
@@ -755,7 +842,11 @@ pub mod tests {
         vks_manage(&client, "foo@invalid.example.com");
 
         // Confirm deletion.
-        check_mails_and_confirm_deletion(&client, filemail_into.as_path(), "foo@invalid.example.com");
+        check_mails_and_confirm_deletion(
+            &client,
+            filemail_into.as_path(),
+            "foo@invalid.example.com",
+        );
 
         // Now, we should no longer be able to look it up by email
         // address.
@@ -912,7 +1003,8 @@ pub mod tests {
             .append_pair("address", "foo@invalid.example.com")
             .finish();
 
-        let response = client.post("/upload/request-verify")
+        let response = client
+            .post("/upload/request-verify")
             .header(ContentType::Form)
             .header(Header::new("X-Is-Onion", "true"))
             .body(encoded.as_bytes())
@@ -928,7 +1020,6 @@ pub mod tests {
 
         assert_consistency(client.rocket());
     }
-
 
     #[test]
     fn upload_curl_shortcut() {
@@ -948,21 +1039,40 @@ pub mod tests {
     #[test]
     fn search_invalid() {
         let (_tmpdir, client) = client().unwrap();
-        check_response(&client, "/search?q=0x1234abcd",
-                       Status::BadRequest, "not supported");
-        check_response(&client, "/search?q=1234abcd",
-                       Status::BadRequest, "not supported");
-        check_response(&client, "/pks/lookup?op=get&search=0x1234abcd",
-                       Status::BadRequest, "not supported");
-        check_response(&client, "/pks/lookup?op=get&search=1234abcd",
-                       Status::BadRequest, "not supported");
-
+        check_response(
+            &client,
+            "/search?q=0x1234abcd",
+            Status::BadRequest,
+            "not supported",
+        );
+        check_response(
+            &client,
+            "/search?q=1234abcd",
+            Status::BadRequest,
+            "not supported",
+        );
+        check_response(
+            &client,
+            "/pks/lookup?op=get&search=0x1234abcd",
+            Status::BadRequest,
+            "not supported",
+        );
+        check_response(
+            &client,
+            "/pks/lookup?op=get&search=1234abcd",
+            Status::BadRequest,
+            "not supported",
+        );
     }
     #[test]
     fn wkd_policy() {
         let (_tmpdir, client) = client().unwrap();
-        check_response(&client, "/.well-known/openpgpkey/example.org/policy",
-                       Status::Ok, "");
+        check_response(
+            &client,
+            "/.well-known/openpgpkey/example.org/policy",
+            Status::Ok,
+            "",
+        );
     }
 
     /// Asserts that the given URI 404s.
@@ -973,78 +1083,81 @@ pub mod tests {
 
     /// Asserts that lookups by the given email 404.
     pub fn check_null_responses_by_email(client: &Client, addr: &str) {
+        check_null_response(client, &format!("/vks/v1/by-email/{}", addr));
+        check_null_response(client, &format!("/pks/lookup?op=get&search={}", addr));
         check_null_response(
-            client, &format!("/vks/v1/by-email/{}", addr));
-        check_null_response(
-            client, &format!("/pks/lookup?op=get&search={}", addr));
-        check_null_response(
-            client, &format!("/pks/lookup?op=get&options=mr&search={}",
-                              addr));
+            client,
+            &format!("/pks/lookup?op=get&options=mr&search={}", addr),
+        );
 
         let (wkd_hash, domain) = crate::database::wkd::encode_wkd(addr).unwrap();
         check_null_response(
             &client,
-            &format!("/.well-known/openpgpkey/{}/hu/{}", domain, wkd_hash));
+            &format!("/.well-known/openpgpkey/{}/hu/{}", domain, wkd_hash),
+        );
     }
 
     /// Asserts that lookups by the given email are successful.
-    pub fn check_responses_by_email(client: &Client, addr: &str, tpk: &Cert,
-                                    nr_uids: usize) {
-        check_mr_response(
-            client,
-            &format!("/vks/v1/by-email/{}", addr),
-            tpk, nr_uids);
+    pub fn check_responses_by_email(client: &Client, addr: &str, tpk: &Cert, nr_uids: usize) {
+        check_mr_response(client, &format!("/vks/v1/by-email/{}", addr), tpk, nr_uids);
         check_mr_response(
             client,
             &format!("/vks/v1/by-email/{}", addr.replace("@", "%40")),
-            tpk, nr_uids);
+            tpk,
+            nr_uids,
+        );
         check_mr_response(
             client,
             &format!("/pks/lookup?op=get&options=mr&search={}", addr),
-            tpk, nr_uids);
-        check_hr_response(
-            client,
-            &format!("/search?q={}", addr),
-            tpk, nr_uids);
-        check_hr_response_onion(
-            client,
-            &format!("/search?q={}", addr),
-            tpk, nr_uids);
+            tpk,
+            nr_uids,
+        );
+        check_hr_response(client, &format!("/search?q={}", addr), tpk, nr_uids);
+        check_hr_response_onion(client, &format!("/search?q={}", addr), tpk, nr_uids);
 
         let (wkd_hash, domain) = crate::database::wkd::encode_wkd(addr).unwrap();
         check_wkd_response(
             &client,
             &format!("/.well-known/openpgpkey/{}/hu/{}", domain, wkd_hash),
-            &tpk, nr_uids);
+            &tpk,
+            nr_uids,
+        );
     }
 
     /// Asserts that the given URI returns a Cert matching the given
     /// one, with the given number of userids.
-    pub fn check_mr_response(client: &Client, uri: &str, tpk: &Cert,
-                             nr_uids: usize) {
+    pub fn check_mr_response(client: &Client, uri: &str, tpk: &Cert, nr_uids: usize) {
         let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
-        assert_eq!(response.content_type(),
-                   Some(ContentType::new("application", "pgp-keys")));
+        assert_eq!(
+            response.content_type(),
+            Some(ContentType::new("application", "pgp-keys"))
+        );
         let body = response.into_string().unwrap();
         assert!(body.contains("END PGP PUBLIC KEY BLOCK"));
         let tpk_ = Cert::from_bytes(body.as_bytes()).unwrap();
         assert_eq!(tpk.fingerprint(), tpk_.fingerprint());
-        assert_eq!(tpk.keys().map(|skb| skb.key().fingerprint())
-                   .collect::<Vec<_>>(),
-                   tpk_.keys().map(|skb| skb.key().fingerprint())
-                   .collect::<Vec<_>>());
+        assert_eq!(
+            tpk.keys()
+                .map(|skb| skb.key().fingerprint())
+                .collect::<Vec<_>>(),
+            tpk_.keys()
+                .map(|skb| skb.key().fingerprint())
+                .collect::<Vec<_>>()
+        );
         assert_eq!(tpk_.userids().count(), nr_uids);
     }
 
-        // it's a rather "reverse implementation" style test.. can we do better?
+    // it's a rather "reverse implementation" style test.. can we do better?
     /// Asserts that the given URI returns a correct hkp "index"
     /// response for the given Cert.
     pub fn check_index_response(client: &Client, uri: &str, tpk: &Cert) {
         let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
-        assert_eq!(response.content_type(),
-                   Some(ContentType::new("text", "plain")));
+        assert_eq!(
+            response.content_type(),
+            Some(ContentType::new("text", "plain"))
+        );
         let body = response.into_string().unwrap();
 
         assert!(body.contains("info:1:1"));
@@ -1052,46 +1165,60 @@ pub mod tests {
         let algo: u8 = tpk.primary_key().pk_algo().into();
         assert!(body.contains(&format!("pub:{}:{}:", primary_fpr, algo)));
 
-        let creation_time = tpk.primary_key().creation_time().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs();
+        let creation_time = tpk
+            .primary_key()
+            .creation_time()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
         assert!(body.contains(&format!(":{}:", creation_time)));
     }
 
     /// Asserts that we can get the given Cert back using the various
     /// by-fingerprint or by-keyid lookup mechanisms.
-    pub fn check_mr_responses_by_fingerprint(client: &Client, tpk: &Cert,
-                                             nr_uids: usize) {
+    pub fn check_mr_responses_by_fingerprint(client: &Client, tpk: &Cert, nr_uids: usize) {
         let fp = tpk.fingerprint().to_hex();
         let keyid = sequoia_openpgp::KeyID::from(tpk.fingerprint()).to_hex();
 
+        check_mr_response(client, &format!("/vks/v1/by-keyid/{}", keyid), tpk, nr_uids);
         check_mr_response(
-            client, &format!("/vks/v1/by-keyid/{}", keyid), tpk, nr_uids);
-        check_mr_response(
-            client, &format!("/vks/v1/by-fingerprint/{}", fp), tpk, nr_uids);
+            client,
+            &format!("/vks/v1/by-fingerprint/{}", fp),
+            tpk,
+            nr_uids,
+        );
         check_mr_response(
             client,
             &format!("/pks/lookup?op=get&options=mr&search={}", fp),
-            tpk, nr_uids);
+            tpk,
+            nr_uids,
+        );
         check_mr_response(
             client,
             &format!("/pks/lookup?op=get&options=mr&search=0x{}", fp),
-            tpk, nr_uids);
+            tpk,
+            nr_uids,
+        );
         check_mr_response(
             client,
             &format!("/pks/lookup?op=get&options=mr&search={}", keyid),
-            tpk, nr_uids);
+            tpk,
+            nr_uids,
+        );
         check_mr_response(
             client,
             &format!("/pks/lookup?op=get&options=mr&search=0x{}", keyid),
-            tpk, nr_uids);
+            tpk,
+            nr_uids,
+        );
         check_mr_response(
             client,
             &format!("/pks/lookup?op=get&search=0x{}", keyid),
-            tpk, nr_uids);
+            tpk,
+            nr_uids,
+        );
 
-        check_index_response(
-            client,
-            &format!("/pks/lookup?op=index&search={}", fp),
-            tpk);
+        check_index_response(client, &format!("/pks/lookup?op=index&search={}", fp), tpk);
     }
 
     /// Asserts that the given URI contains the search string.
@@ -1105,8 +1232,7 @@ pub mod tests {
 
     /// Asserts that the given URI returns human readable response
     /// page that contains a URI pointing to the Cert.
-    pub fn check_hr_response(client: &Client, uri: &str, tpk: &Cert,
-                             nr_uids: usize) {
+    pub fn check_hr_response(client: &Client, uri: &str, tpk: &Cert, nr_uids: usize) {
         let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.content_type(), Some(ContentType::HTML));
@@ -1115,12 +1241,10 @@ pub mod tests {
         assert!(body.contains(&tpk.fingerprint().to_hex()));
 
         // Extract the links.
-        let link_re = regex::Regex::new(
-            &format!("{}(/vks/[^ \t\n\"<]*)", BASE_URI)).unwrap();
+        let link_re = regex::Regex::new(&format!("{}(/vks/[^ \t\n\"<]*)", BASE_URI)).unwrap();
         let mut n = 0;
         for link in link_re.captures_iter(&body) {
-            check_mr_response(client, link.get(1).unwrap().as_str(), tpk,
-                              nr_uids);
+            check_mr_response(client, link.get(1).unwrap().as_str(), tpk, nr_uids);
             n += 1;
         }
         assert!(n > 0);
@@ -1128,8 +1252,7 @@ pub mod tests {
 
     /// Asserts that the given URI returns human readable response
     /// page that contains an onion URI pointing to the Cert.
-    pub fn check_hr_response_onion(client: &Client, uri: &str, tpk: &Cert,
-                             _nr_uids: usize) {
+    pub fn check_hr_response_onion(client: &Client, uri: &str, tpk: &Cert, _nr_uids: usize) {
         let response = client
             .get(uri)
             .header(Header::new("X-Is-Onion", "true"))
@@ -1140,55 +1263,44 @@ pub mod tests {
         assert!(body.contains(&tpk.fingerprint().to_hex()));
 
         // Extract the links.
-        let link_re = regex::Regex::new(
-            &format!("{}(/vks/[^ \t\n\"<]*)", BASE_URI_ONION)).unwrap();
+        let link_re = regex::Regex::new(&format!("{}(/vks/[^ \t\n\"<]*)", BASE_URI_ONION)).unwrap();
         assert!(link_re.is_match(&body));
     }
 
-
     /// Asserts that we can get the given Cert back using the various
     /// by-fingerprint or by-keyid lookup mechanisms.
-    pub fn check_hr_responses_by_fingerprint(client: &Client, tpk: &Cert,
-                                             nr_uids: usize) {
+    pub fn check_hr_responses_by_fingerprint(client: &Client, tpk: &Cert, nr_uids: usize) {
         let fp = tpk.fingerprint().to_hex();
         let keyid = sequoia_openpgp::KeyID::from(tpk.fingerprint()).to_hex();
 
-        check_hr_response(
-            client,
-            &format!("/search?q={}", fp),
-            tpk, nr_uids);
-        check_hr_response(
-            client,
-            &format!("/search?q=0x{}", fp),
-            tpk, nr_uids);
-        check_hr_response(
-            client,
-            &format!("/search?q={}", keyid),
-            tpk, nr_uids);
-        check_hr_response(
-            client,
-            &format!("/search?q=0x{}", keyid),
-            tpk, nr_uids);
+        check_hr_response(client, &format!("/search?q={}", fp), tpk, nr_uids);
+        check_hr_response(client, &format!("/search?q=0x{}", fp), tpk, nr_uids);
+        check_hr_response(client, &format!("/search?q={}", keyid), tpk, nr_uids);
+        check_hr_response(client, &format!("/search?q=0x{}", keyid), tpk, nr_uids);
     }
 
     /// Asserts that the given URI returns correct WKD response with a Cert
     /// matching the given one, with the given number of userids.
-    pub fn check_wkd_response(client: &Client, uri: &str, tpk: &Cert,
-                             nr_uids: usize) {
+    pub fn check_wkd_response(client: &Client, uri: &str, tpk: &Cert, nr_uids: usize) {
         let response = client.get(uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
-        assert_eq!(response.content_type(),
-                   Some(ContentType::new("application", "octet-stream")));
+        assert_eq!(
+            response.content_type(),
+            Some(ContentType::new("application", "octet-stream"))
+        );
         let body = response.into_bytes().unwrap();
         let tpk_ = Cert::from_bytes(&body).unwrap();
         assert_eq!(tpk.fingerprint(), tpk_.fingerprint());
-        assert_eq!(tpk.keys().map(|skb| skb.key().fingerprint())
-                   .collect::<Vec<_>>(),
-                   tpk_.keys().map(|skb| skb.key().fingerprint())
-                   .collect::<Vec<_>>());
+        assert_eq!(
+            tpk.keys()
+                .map(|skb| skb.key().fingerprint())
+                .collect::<Vec<_>>(),
+            tpk_.keys()
+                .map(|skb| skb.key().fingerprint())
+                .collect::<Vec<_>>()
+        );
         assert_eq!(tpk_.userids().count(), nr_uids);
     }
-
 
     fn check_verify_link(client: &Client, token: &str, address: &str, lang: &'static str) {
         let encoded = ::url::form_urlencoded::Serializer::new(String::new())
@@ -1196,7 +1308,8 @@ pub mod tests {
             .append_pair("address", address)
             .finish();
 
-        let response = client.post("/upload/request-verify")
+        let response = client
+            .post("/upload/request-verify")
             .header(ContentType::Form)
             .header(Header::new("Accept-Language", lang))
             .body(encoded.as_bytes())
@@ -1207,7 +1320,8 @@ pub mod tests {
     fn check_verify_link_json(client: &Client, token: &str, address: &str) {
         let json = format!(r#"{{"token":"{}","addresses":["{}"]}}"#, token, address);
 
-        let response = client.post("/vks/v1/request-verify")
+        let response = client
+            .post("/vks/v1/request-verify")
             .header(ContentType::JSON)
             .body(json.as_bytes())
             .dispatch();
@@ -1224,7 +1338,10 @@ pub mod tests {
 
         let response_second = client.post(&confirm_uri).dispatch();
         assert_eq!(response_second.status(), Status::BadRequest);
-        assert!(response_second.into_string().unwrap().contains("already been verified"));
+        assert!(response_second
+            .into_string()
+            .unwrap()
+            .contains("already been verified"));
     }
 
     fn check_mails_and_confirm_deletion(client: &Client, filemail_path: &Path, address: &str) {
@@ -1237,8 +1354,12 @@ pub mod tests {
         let mail_content = pop_mail(filemail_path).unwrap().unwrap();
 
         let capture_re = regex::bytes::Regex::new(pattern).unwrap();
-        let capture_content = capture_re.captures(mail_content.as_ref()).unwrap()
-            .get(1).unwrap().as_bytes();
+        let capture_content = capture_re
+            .captures(mail_content.as_ref())
+            .unwrap()
+            .get(1)
+            .unwrap()
+            .as_bytes();
         String::from_utf8_lossy(capture_content).to_string()
     }
 
@@ -1258,22 +1379,29 @@ pub mod tests {
 
         let pattern = "name=\"token\" value=\"([^\"]*)\"";
         let capture_re = regex::bytes::Regex::new(pattern).unwrap();
-        let capture_content = capture_re .captures(response_body.as_bytes()).unwrap()
-            .get(1).unwrap().as_bytes();
+        let capture_content = capture_re
+            .captures(response_body.as_bytes())
+            .unwrap()
+            .get(1)
+            .unwrap()
+            .as_bytes();
         let token = String::from_utf8_lossy(capture_content).to_string();
 
         assert_eq!(status, Status::Ok);
         token
     }
 
-    fn vks_publish_submit_response<'a>(client: &'a Client, data: &[u8]) ->
-            LocalResponse<'a> {
+    fn vks_publish_submit_response<'a>(client: &'a Client, data: &[u8]) -> LocalResponse<'a> {
         let ct = ContentType::with_params(
-            "multipart", "form-data",
-            ("boundary", "---------------------------14733842173518794281682249499"));
+            "multipart",
+            "form-data",
+            (
+                "boundary",
+                "---------------------------14733842173518794281682249499",
+            ),
+        );
 
-        let header =
-            b"-----------------------------14733842173518794281682249499\r\n\
+        let header = b"-----------------------------14733842173518794281682249499\r\n\
               Content-Disposition: form-data; name=\"csrf\"\r\n\
               \r\n\
               \r\n\
@@ -1287,35 +1415,39 @@ pub mod tests {
         body.extend_from_slice(header);
         body.extend_from_slice(data);
         body.extend_from_slice(footer);
-        client.post("/upload/submit")
+        client
+            .post("/upload/submit")
             .header(ct)
             .body(&body[..])
             .dispatch()
     }
 
     fn vks_publish_shortcut_get_token(client: &Client, data: &[u8]) -> String {
-        let response = client.put("/")
-            .body(data)
-            .dispatch();
+        let response = client.put("/").body(data).dispatch();
         assert_eq!(response.status(), Status::Ok);
         let response_body = response.into_string().unwrap();
         assert!(response_body.contains("Key successfully uploaded"));
 
         let pattern = format!("{}/upload/([^ \t\n]*)", BASE_URI);
         let capture_re = regex::bytes::Regex::new(&pattern).unwrap();
-        let capture_content = capture_re .captures(response_body.as_bytes()).unwrap()
-            .get(1).unwrap().as_bytes();
+        let capture_content = capture_re
+            .captures(response_body.as_bytes())
+            .unwrap()
+            .get(1)
+            .unwrap()
+            .as_bytes();
         String::from_utf8_lossy(capture_content).to_string()
     }
 
     fn vks_publish_json_get_token(client: &Client, data: &[u8]) -> String {
-        let response = client.post("/vks/v1/upload")
+        let response = client
+            .post("/vks/v1/upload")
             .header(ContentType::JSON)
             .body(format!(r#"{{ "keytext": "{}" }}"#, base64::encode(data)))
             .dispatch();
         let status = response.status();
         let response_body = response.into_string().unwrap();
-        let result: vks_api::json::UploadResult  = serde_json::from_str(&response_body).unwrap();
+        let result: vks_api::json::UploadResult = serde_json::from_str(&response_body).unwrap();
 
         assert_eq!(status, Status::Ok);
         result.token
@@ -1325,7 +1457,8 @@ pub mod tests {
         let encoded = ::url::form_urlencoded::Serializer::new(String::new())
             .append_pair("search_term", search_term)
             .finish();
-        let response = client.post("/manage")
+        let response = client
+            .post("/manage")
             .header(ContentType::Form)
             .body(encoded.as_bytes())
             .dispatch();
@@ -1337,7 +1470,8 @@ pub mod tests {
             .append_pair("token", token)
             .append_pair("address", address)
             .finish();
-        let response = client.post("/manage/unpublish")
+        let response = client
+            .post("/manage/unpublish")
             .header(ContentType::Form)
             .body(encoded.as_bytes())
             .dispatch();

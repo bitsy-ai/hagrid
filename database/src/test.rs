@@ -14,29 +14,28 @@
 // confirm again
 // fetch by uid & fpr
 
+use anyhow::Result;
 use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
-use anyhow::Result;
 
+use openpgp::cert::{CertBuilder, UserIDRevocationBuilder};
+use openpgp::types::{KeyFlags, ReasonForRevocation, SignatureType};
+use openpgp::{
+    packet::{signature::*, UserID},
+    parse::Parse,
+    types::RevocationStatus,
+    Cert, Packet,
+};
+use std::fs;
+use std::path::Path;
+use types::{Email, Fingerprint, KeyID};
 use Database;
 use Query;
-use openpgp::cert::{CertBuilder, UserIDRevocationBuilder};
-use openpgp::{
-    packet::{
-        UserID,
-        signature::*,
-    },
-    parse::Parse, Packet, types::RevocationStatus, Cert,
-};
-use openpgp::types::{ReasonForRevocation, SignatureType, KeyFlags};
-use types::{Email, Fingerprint, KeyID};
-use std::path::Path;
-use std::fs;
 
 use openpgp_utils::POLICY;
 
-use TpkStatus;
 use EmailAddressStatus;
+use TpkStatus;
 
 fn check_mail_none(db: &impl Database, email: &Email) {
     assert!(db.by_email(email).is_none());
@@ -67,14 +66,17 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
     let tpk_status = db.merge(tpk.clone()).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
 
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::NotPublished),
-            (email2.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!(
+                (email1.clone(), EmailAddressStatus::NotPublished),
+                (email2.clone(), EmailAddressStatus::NotPublished),
+            ),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
     {
         // fetch by fpr
@@ -105,9 +107,7 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
         let uid = key.userids().next().unwrap().userid().clone();
 
         assert!((uid == uid1) ^ (uid == uid2));
-        let email =
-            Email::from_str(&String::from_utf8(uid.value().to_vec()).unwrap())
-                .unwrap();
+        let email = Email::from_str(&String::from_utf8(uid.value().to_vec()).unwrap()).unwrap();
         assert_eq!(db.by_email(&email).unwrap(), raw);
 
         if email1 == email {
@@ -120,7 +120,8 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
     }
 
     // this operation is idempotent - let's try again!
-    db.set_email_published(&fpr, &tpk_status.email_status[0].0).unwrap();
+    db.set_email_published(&fpr, &tpk_status.email_status[0].0)
+        .unwrap();
 
     {
         // fetch by fpr
@@ -134,9 +135,7 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
         let uid = key.userids().next().unwrap().userid().clone();
 
         assert!((uid == uid1) ^ (uid == uid2));
-        let email =
-            Email::from_str(&String::from_utf8(uid.value().to_vec()).unwrap())
-                .unwrap();
+        let email = Email::from_str(&String::from_utf8(uid.value().to_vec()).unwrap()).unwrap();
         assert_eq!(db.by_email(&email).unwrap(), raw);
 
         if email1 == email {
@@ -149,7 +148,8 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
     }
 
     // verify 2nd uid
-    db.set_email_published(&fpr, &tpk_status.email_status[1].0).unwrap();
+    db.set_email_published(&fpr, &tpk_status.email_status[1].0)
+        .unwrap();
 
     {
         // fetch by fpr
@@ -165,36 +165,39 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
 
         assert_eq!(db.by_email(&email1).unwrap(), raw);
         assert_eq!(db.by_email(&email2).unwrap(), raw);
-        assert!(
-            ((myuid1 == uid1) & (myuid2 == uid2))
-                ^ ((myuid1 == uid2) & (myuid2 == uid1))
-        );
+        assert!(((myuid1 == uid1) & (myuid2 == uid2)) ^ ((myuid1 == uid2) & (myuid2 == uid1)));
     }
 
     let tpk_status = db.merge(tpk.clone()).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::Published),
-            (email2.clone(), EmailAddressStatus::Published),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
-
-    // publish w/ one uid less
-    {
-        let short_tpk = cert_without_uid(tpk, &uid1);
-
-        let tpk_status = db.merge(short_tpk).unwrap().into_tpk_status();
-        assert_eq!(TpkStatus {
+    assert_eq!(
+        TpkStatus {
             is_revoked: false,
             email_status: vec!(
                 (email1.clone(), EmailAddressStatus::Published),
                 (email2.clone(), EmailAddressStatus::Published),
             ),
             unparsed_uids: 0,
-        }, tpk_status);
+        },
+        tpk_status
+    );
+
+    // publish w/ one uid less
+    {
+        let short_tpk = cert_without_uid(tpk, &uid1);
+
+        let tpk_status = db.merge(short_tpk).unwrap().into_tpk_status();
+        assert_eq!(
+            TpkStatus {
+                is_revoked: false,
+                email_status: vec!(
+                    (email1.clone(), EmailAddressStatus::Published),
+                    (email2.clone(), EmailAddressStatus::Published),
+                ),
+                unparsed_uids: 0,
+            },
+            tpk_status
+        );
 
         // fetch by fpr
         let raw = db.by_fpr(&fpr).unwrap();
@@ -209,10 +212,7 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
 
         assert_eq!(db.by_email(&email1).unwrap(), raw);
         assert_eq!(db.by_email(&email2).unwrap(), raw);
-        assert!(
-            ((myuid1 == uid1) & (myuid2 == uid2))
-                ^ ((myuid1 == uid2) & (myuid2 == uid1))
-        );
+        assert!(((myuid1 == uid1) & (myuid2 == uid2)) ^ ((myuid1 == uid2) & (myuid2 == uid1)));
     }
 
     // publish w/one uid more
@@ -286,16 +286,20 @@ pub fn test_regenerate(db: &mut impl Database, log_path: &Path) {
         .0;
     let fpr = Fingerprint::try_from(tpk.fingerprint()).unwrap();
     let email1 = Email::from_str(str_uid1).unwrap();
-    let fpr_sign: Fingerprint = tpk.keys()
+    let fpr_sign: Fingerprint = tpk
+        .keys()
         .with_policy(&POLICY, None)
         .for_signing()
         .map(|amalgamation| amalgamation.key().fingerprint().try_into().unwrap())
-        .next().unwrap();
-    let fpr_encrypt: Fingerprint = tpk.keys()
+        .next()
+        .unwrap();
+    let fpr_encrypt: Fingerprint = tpk
+        .keys()
         .with_policy(&POLICY, None)
         .key_flags(KeyFlags::empty().set_transport_encryption())
         .map(|amalgamation| amalgamation.key().fingerprint().try_into().unwrap())
-        .next().unwrap();
+        .next()
+        .unwrap();
 
     // upload key
     db.merge(tpk).unwrap().into_tpk_status();
@@ -349,23 +353,34 @@ pub fn test_reupload(db: &mut impl Database, log_path: &Path) {
     // reupload
     let tpk_status = db.merge(tpk).unwrap().into_tpk_status();
 
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::Published),
-            (email2.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!(
+                (email1.clone(), EmailAddressStatus::Published),
+                (email2.clone(), EmailAddressStatus::NotPublished),
+            ),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
     assert!(db.by_email(&email2).is_none() ^ db.by_email(&email1).is_none());
 }
 
 pub fn test_uid_replacement(db: &mut impl Database, log_path: &Path) {
     let str_uid1 = "Test A <test_a@example.com>";
-    let tpk1 = CertBuilder::new().add_userid(str_uid1).generate().unwrap().0;
+    let tpk1 = CertBuilder::new()
+        .add_userid(str_uid1)
+        .generate()
+        .unwrap()
+        .0;
     let fpr1 = Fingerprint::try_from(tpk1.fingerprint()).unwrap();
 
-    let tpk2 = CertBuilder::new().add_userid(str_uid1).generate().unwrap().0;
+    let tpk2 = CertBuilder::new()
+        .add_userid(str_uid1)
+        .generate()
+        .unwrap()
+        .0;
     let fpr2 = Fingerprint::try_from(tpk2.fingerprint()).unwrap();
 
     let pgp_fpr1 = tpk1.fingerprint();
@@ -382,24 +397,52 @@ pub fn test_uid_replacement(db: &mut impl Database, log_path: &Path) {
     // verify 1st uid
     db.set_email_published(&fpr1, &email1).unwrap();
     check_mail_some(db, &email1);
-    assert_eq!(Cert::from_bytes(db.by_email(&email1).unwrap().as_bytes()).unwrap()
-               .fingerprint(), pgp_fpr1);
+    assert_eq!(
+        Cert::from_bytes(db.by_email(&email1).unwrap().as_bytes())
+            .unwrap()
+            .fingerprint(),
+        pgp_fpr1
+    );
 
-    assert_eq!(Cert::from_bytes(db.by_fpr(&fpr1).unwrap().as_bytes()).unwrap()
-               .userids().len(), 1);
-    assert_eq!(Cert::from_bytes(db.by_fpr(&fpr2).unwrap().as_bytes()).unwrap()
-               .userids().len(), 0);
+    assert_eq!(
+        Cert::from_bytes(db.by_fpr(&fpr1).unwrap().as_bytes())
+            .unwrap()
+            .userids()
+            .len(),
+        1
+    );
+    assert_eq!(
+        Cert::from_bytes(db.by_fpr(&fpr2).unwrap().as_bytes())
+            .unwrap()
+            .userids()
+            .len(),
+        0
+    );
 
     // verify uid on other key
     db.set_email_published(&fpr2, &email1).unwrap();
     check_mail_some(db, &email1);
-    assert_eq!(Cert::from_bytes(db.by_email(&email1).unwrap().as_bytes()).unwrap()
-               .fingerprint(), pgp_fpr2);
+    assert_eq!(
+        Cert::from_bytes(db.by_email(&email1).unwrap().as_bytes())
+            .unwrap()
+            .fingerprint(),
+        pgp_fpr2
+    );
 
-    assert_eq!(Cert::from_bytes(db.by_fpr(&fpr1).unwrap().as_bytes()).unwrap()
-               .userids().len(), 0);
-    assert_eq!(Cert::from_bytes(db.by_fpr(&fpr2).unwrap().as_bytes()).unwrap()
-               .userids().len(), 1);
+    assert_eq!(
+        Cert::from_bytes(db.by_fpr(&fpr1).unwrap().as_bytes())
+            .unwrap()
+            .userids()
+            .len(),
+        0
+    );
+    assert_eq!(
+        Cert::from_bytes(db.by_fpr(&fpr2).unwrap().as_bytes())
+            .unwrap()
+            .userids()
+            .len(),
+        1
+    );
 }
 
 pub fn test_uid_deletion(db: &mut impl Database, log_path: &Path) {
@@ -421,14 +464,17 @@ pub fn test_uid_deletion(db: &mut impl Database, log_path: &Path) {
     // upload key and verify uids
     let tpk_status = db.merge(tpk).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::NotPublished),
-            (email2.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!(
+                (email1.clone(), EmailAddressStatus::NotPublished),
+                (email2.clone(), EmailAddressStatus::NotPublished),
+            ),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
     db.set_email_published(&fpr, &email1).unwrap();
     db.set_email_published(&fpr, &email2).unwrap();
@@ -455,9 +501,10 @@ pub fn test_uid_deletion(db: &mut impl Database, log_path: &Path) {
 
     // Check that the second is still there, and that the Cert is
     // otherwise intact.
-    let tpk =
-        db.lookup(&Query::ByFingerprint(tpk.fingerprint().try_into().unwrap()))
-        .unwrap().unwrap();
+    let tpk = db
+        .lookup(&Query::ByFingerprint(tpk.fingerprint().try_into().unwrap()))
+        .unwrap()
+        .unwrap();
     assert_eq!(tpk.userids().count(), 0);
     assert_eq!(tpk.keys().subkeys().count(), n_subkeys);
 }
@@ -475,19 +522,27 @@ pub fn test_subkey_lookup(db: &mut impl Database, _log_path: &Path) {
     let _ = db.merge(tpk.clone()).unwrap().into_tpk_status();
 
     let fpr_primray = Fingerprint::try_from(tpk.fingerprint()).unwrap();
-    let fpr_sign: Fingerprint = tpk.keys()
+    let fpr_sign: Fingerprint = tpk
+        .keys()
         .with_policy(&POLICY, None)
         .for_signing()
         .map(|amalgamation| amalgamation.key().fingerprint().try_into().unwrap())
-        .next().unwrap();
-    let fpr_encrypt: Fingerprint = tpk.keys()
+        .next()
+        .unwrap();
+    let fpr_encrypt: Fingerprint = tpk
+        .keys()
         .with_policy(&POLICY, None)
         .key_flags(KeyFlags::empty().set_transport_encryption())
         .map(|amalgamation| amalgamation.key().fingerprint().try_into().unwrap())
-        .next().unwrap();
+        .next()
+        .unwrap();
 
-    let raw1 = db.by_fpr(&fpr_primray).expect("primary fpr must be linked!");
-    let raw2 = db.by_fpr(&fpr_sign).expect("signing subkey fpr must be linked!");
+    let raw1 = db
+        .by_fpr(&fpr_primray)
+        .expect("primary fpr must be linked!");
+    let raw2 = db
+        .by_fpr(&fpr_sign)
+        .expect("signing subkey fpr must be linked!");
     // encryption subkey key id must not be linked!
     assert!(db.by_fpr(&fpr_encrypt).is_none());
 
@@ -506,19 +561,27 @@ pub fn test_kid_lookup(db: &mut impl Database, _log_path: &Path) {
     // upload key
     let _ = db.merge(tpk.clone()).unwrap().into_tpk_status();
     let kid_primray = KeyID::try_from(tpk.fingerprint()).unwrap();
-    let kid_sign: KeyID = tpk.keys()
+    let kid_sign: KeyID = tpk
+        .keys()
         .with_policy(&POLICY, None)
         .for_signing()
         .map(|amalgamation| amalgamation.key().fingerprint().try_into().unwrap())
-        .next().unwrap();
-    let kid_encrypt: KeyID = tpk.keys()
+        .next()
+        .unwrap();
+    let kid_encrypt: KeyID = tpk
+        .keys()
         .with_policy(&POLICY, None)
         .key_flags(KeyFlags::empty().set_transport_encryption())
         .map(|amalgamation| amalgamation.key().fingerprint().try_into().unwrap())
-        .next().unwrap();
+        .next()
+        .unwrap();
 
-    let raw1 = db.by_kid(&kid_primray).expect("primary key id must be linked!");
-    let raw2 = db.by_kid(&kid_sign).expect("signing subkey key id must be linked!");
+    let raw1 = db
+        .by_kid(&kid_primray)
+        .expect("primary key id must be linked!");
+    let raw2 = db
+        .by_kid(&kid_sign)
+        .expect("signing subkey key id must be linked!");
     // encryption subkey key id must not be linked!
     assert!(db.by_kid(&kid_encrypt).is_none());
 
@@ -554,14 +617,17 @@ pub fn test_upload_revoked_tpk(db: &mut impl Database, log_path: &Path) {
     // upload key
     let tpk_status = db.merge(tpk).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: true,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::NotPublished),
-            (email2.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: true,
+            email_status: vec!(
+                (email1.clone(), EmailAddressStatus::NotPublished),
+                (email2.clone(), EmailAddressStatus::NotPublished),
+            ),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
     check_mail_none(db, &email1);
     check_mail_none(db, &email2);
@@ -586,18 +652,23 @@ pub fn test_uid_revocation(db: &mut impl Database, log_path: &Path) {
     // upload key
     let tpk_status = db.merge(tpk.clone()).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::NotPublished),
-            (email2.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!(
+                (email1.clone(), EmailAddressStatus::NotPublished),
+                (email2.clone(), EmailAddressStatus::NotPublished),
+            ),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
     // verify uid
-    db.set_email_published(&fpr, &tpk_status.email_status[0].0).unwrap();
-    db.set_email_published(&fpr, &tpk_status.email_status[1].0).unwrap();
+    db.set_email_published(&fpr, &tpk_status.email_status[0].0)
+        .unwrap();
+    db.set_email_published(&fpr, &tpk_status.email_status[1].0)
+        .unwrap();
 
     // fetch both uids
     check_mail_some(db, &email1);
@@ -608,30 +679,45 @@ pub fn test_uid_revocation(db: &mut impl Database, log_path: &Path) {
     // revoke one uid
     let sig = {
         let policy = &POLICY;
-        let uid = tpk.userids()
+        let uid = tpk
+            .userids()
             .with_policy(policy, None)
-            .find(|b| *b.userid() == uid2).unwrap();
-        assert_eq!(RevocationStatus::NotAsFarAsWeKnow, uid.revocation_status(&POLICY, None));
+            .find(|b| *b.userid() == uid2)
+            .unwrap();
+        assert_eq!(
+            RevocationStatus::NotAsFarAsWeKnow,
+            uid.revocation_status(&POLICY, None)
+        );
 
-        let mut keypair = tpk.primary_key().bundle().key().clone()
-            .parts_into_secret().unwrap()
-            .into_keypair().unwrap();
+        let mut keypair = tpk
+            .primary_key()
+            .bundle()
+            .key()
+            .clone()
+            .parts_into_secret()
+            .unwrap()
+            .into_keypair()
+            .unwrap();
         UserIDRevocationBuilder::new()
-            .set_reason_for_revocation(ReasonForRevocation::UIDRetired, b"It was the maid :/").unwrap()
+            .set_reason_for_revocation(ReasonForRevocation::UIDRetired, b"It was the maid :/")
+            .unwrap()
             .build(&mut keypair, &tpk, uid.userid(), None)
             .unwrap()
     };
     assert_eq!(sig.typ(), SignatureType::CertificationRevocation);
     let tpk = tpk.insert_packets(sig).unwrap();
     let tpk_status = db.merge(tpk).unwrap().into_tpk_status();
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::Published),
-            (email2.clone(), EmailAddressStatus::Revoked),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!(
+                (email1.clone(), EmailAddressStatus::Published),
+                (email2.clone(), EmailAddressStatus::Revoked),
+            ),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
     // Fail to fetch by the revoked uid, ok by the non-revoked one.
     check_mail_some(db, &email1);
@@ -735,17 +821,32 @@ pub fn test_unlink_uid(db: &mut impl Database, log_path: &Path) {
     let fpr_evil = Fingerprint::try_from(tpk_evil.fingerprint()).unwrap();
     let sig = {
         let policy = &POLICY;
-        let uid = tpk_evil.userids()
+        let uid = tpk_evil
+            .userids()
             .with_policy(policy, None)
-            .find(|b| b.userid().value() == uid.as_bytes()).unwrap();
-        assert_eq!(RevocationStatus::NotAsFarAsWeKnow, uid.revocation_status(&POLICY, None));
+            .find(|b| b.userid().value() == uid.as_bytes())
+            .unwrap();
+        assert_eq!(
+            RevocationStatus::NotAsFarAsWeKnow,
+            uid.revocation_status(&POLICY, None)
+        );
 
-        let mut keypair = tpk_evil.primary_key().bundle().key().clone()
-            .parts_into_secret().unwrap()
-            .into_keypair().unwrap();
+        let mut keypair = tpk_evil
+            .primary_key()
+            .bundle()
+            .key()
+            .clone()
+            .parts_into_secret()
+            .unwrap()
+            .into_keypair()
+            .unwrap();
 
         UserIDRevocationBuilder::new()
-            .set_reason_for_revocation(ReasonForRevocation::UIDRetired, b"I just had to quit, I couldn't bear it any longer").unwrap()
+            .set_reason_for_revocation(
+                ReasonForRevocation::UIDRetired,
+                b"I just had to quit, I couldn't bear it any longer",
+            )
+            .unwrap()
             .build(&mut keypair, &tpk_evil, uid.userid(), None)
             .unwrap()
     };
@@ -753,24 +854,31 @@ pub fn test_unlink_uid(db: &mut impl Database, log_path: &Path) {
     let tpk_evil = tpk_evil.insert_packets(sig).unwrap();
     let tpk_status = db.merge(tpk_evil).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr_evil);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email.clone(), EmailAddressStatus::Revoked),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email.clone(), EmailAddressStatus::Revoked),),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
     // Check that when looking up by email, we still get the former
     // Cert.
     assert_eq!(
-        db.lookup(&Query::ByEmail(email)).unwrap().unwrap().fingerprint(),
-        tpk.fingerprint());
+        db.lookup(&Query::ByEmail(email))
+            .unwrap()
+            .unwrap()
+            .fingerprint(),
+        tpk.fingerprint()
+    );
 }
 
 pub fn get_userids(armored: &str) -> Vec<UserID> {
     let tpk = Cert::from_bytes(armored.as_bytes()).unwrap();
-    tpk.userids().map(|binding| binding.userid().clone()).collect()
+    tpk.userids()
+        .map(|binding| binding.userid().clone())
+        .collect()
 }
 
 // If multiple keys have the same email address, make sure things work
@@ -799,56 +907,77 @@ pub fn test_same_email_1(db: &mut impl Database, log_path: &Path) {
     // upload keys.
     let tpk_status1 = db.merge(tpk1).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr1);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status1);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email1.clone(), EmailAddressStatus::NotPublished),),
+            unparsed_uids: 0,
+        },
+        tpk_status1
+    );
     let tpk_status2 = db.merge(tpk2.clone()).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr2);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email2.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status2);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email2.clone(), EmailAddressStatus::NotPublished),),
+            unparsed_uids: 0,
+        },
+        tpk_status2
+    );
 
     // verify tpk1
-    db.set_email_published(&fpr1, &tpk_status1.email_status[0].0).unwrap();
+    db.set_email_published(&fpr1, &tpk_status1.email_status[0].0)
+        .unwrap();
 
     // fetch by both user ids.  Even though we didn't verify uid2, the
     // email is the same, and both should return tpk1.
-    assert_eq!(get_userids(&db.by_email(&email1).unwrap()[..]),
-               vec![ uid1.clone() ]);
-    assert_eq!(get_userids(&db.by_email(&email2).unwrap()[..]),
-               vec![ uid1 ]);
+    assert_eq!(
+        get_userids(&db.by_email(&email1).unwrap()[..]),
+        vec![uid1.clone()]
+    );
+    assert_eq!(get_userids(&db.by_email(&email2).unwrap()[..]), vec![uid1]);
 
     // verify tpk2
-    db.set_email_published(&fpr2, &tpk_status2.email_status[0].0).unwrap();
+    db.set_email_published(&fpr2, &tpk_status2.email_status[0].0)
+        .unwrap();
 
     // fetch by both user ids.  We should now get tpk2.
-    assert_eq!(get_userids(&db.by_email(&email1).unwrap()[..]),
-               vec![ uid2.clone() ]);
-    assert_eq!(get_userids(&db.by_email(&email2).unwrap()[..]),
-               vec![ uid2.clone() ]);
+    assert_eq!(
+        get_userids(&db.by_email(&email1).unwrap()[..]),
+        vec![uid2.clone()]
+    );
+    assert_eq!(
+        get_userids(&db.by_email(&email2).unwrap()[..]),
+        vec![uid2.clone()]
+    );
 
     // revoke tpk2's uid
     let sig = {
         let policy = &POLICY;
-        let uid = tpk2.userids()
+        let uid = tpk2
+            .userids()
             .with_policy(policy, None)
-            .find(|b| *b.userid() == uid2).unwrap();
-        assert_eq!(RevocationStatus::NotAsFarAsWeKnow, uid.revocation_status(&POLICY, None));
+            .find(|b| *b.userid() == uid2)
+            .unwrap();
+        assert_eq!(
+            RevocationStatus::NotAsFarAsWeKnow,
+            uid.revocation_status(&POLICY, None)
+        );
 
-        let mut keypair = tpk2.primary_key().bundle().key().clone()
-            .parts_into_secret().unwrap()
-            .into_keypair().unwrap();
+        let mut keypair = tpk2
+            .primary_key()
+            .bundle()
+            .key()
+            .clone()
+            .parts_into_secret()
+            .unwrap()
+            .into_keypair()
+            .unwrap();
 
         UserIDRevocationBuilder::new()
-            .set_reason_for_revocation(ReasonForRevocation::KeyRetired, b"It was the maid :/").unwrap()
+            .set_reason_for_revocation(ReasonForRevocation::KeyRetired, b"It was the maid :/")
+            .unwrap()
             .build(&mut keypair, &tpk2, uid.userid(), None)
             .unwrap()
     };
@@ -856,13 +985,14 @@ pub fn test_same_email_1(db: &mut impl Database, log_path: &Path) {
     let tpk2 = tpk2.insert_packets(sig).unwrap();
     let tpk_status2 = db.merge(tpk2).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr2);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email2.clone(), EmailAddressStatus::Revoked),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status2);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email2.clone(), EmailAddressStatus::Revoked),),
+            unparsed_uids: 0,
+        },
+        tpk_status2
+    );
 
     // fetch by both user ids.  We should get nothing.
     check_mail_none(db, &email1);
@@ -894,34 +1024,50 @@ pub fn test_same_email_2(db: &mut impl Database, log_path: &Path) {
     check_log_entry(log_path, &fpr);
 
     // verify uid1
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
-    db.set_email_published(&fpr, &tpk_status.email_status[0].0).unwrap();
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email.clone(), EmailAddressStatus::NotPublished),),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
+    db.set_email_published(&fpr, &tpk_status.email_status[0].0)
+        .unwrap();
 
     // fetch by both user ids.
-    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]),
-               vec![ uid1.clone(), uid2.clone() ]);
+    assert_eq!(
+        get_userids(&db.by_email(&email).unwrap()[..]),
+        vec![uid1.clone(), uid2.clone()]
+    );
 
     thread::sleep(time::Duration::from_secs(2));
 
     // revoke one uid
     let sig = {
         let policy = &POLICY;
-        let uid = tpk.userids()
+        let uid = tpk
+            .userids()
             .with_policy(policy, None)
-            .find(|b| *b.userid() == uid2).unwrap();
-        assert_eq!(RevocationStatus::NotAsFarAsWeKnow, uid.revocation_status(&POLICY, None));
+            .find(|b| *b.userid() == uid2)
+            .unwrap();
+        assert_eq!(
+            RevocationStatus::NotAsFarAsWeKnow,
+            uid.revocation_status(&POLICY, None)
+        );
 
-        let mut keypair = tpk.primary_key().bundle().key().clone()
-            .parts_into_secret().unwrap()
-            .into_keypair().unwrap();
+        let mut keypair = tpk
+            .primary_key()
+            .bundle()
+            .key()
+            .clone()
+            .parts_into_secret()
+            .unwrap()
+            .into_keypair()
+            .unwrap();
         UserIDRevocationBuilder::new()
-            .set_reason_for_revocation(ReasonForRevocation::UIDRetired, b"It was the maid :/").unwrap()
+            .set_reason_for_revocation(ReasonForRevocation::UIDRetired, b"It was the maid :/")
+            .unwrap()
             .build(&mut keypair, &tpk, uid.userid(), None)
             .unwrap()
     };
@@ -929,17 +1075,17 @@ pub fn test_same_email_2(db: &mut impl Database, log_path: &Path) {
     let tpk = tpk.insert_packets(sig).unwrap();
     let tpk_status = db.merge(tpk).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email.clone(), EmailAddressStatus::Published),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email.clone(), EmailAddressStatus::Published),),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
     // fetch by both user ids.  We should still get both user ids.
-    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]),
-               vec![ uid1 ]);
+    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]), vec![uid1]);
 }
 
 // If a key has multiple user ids with the same email address, make
@@ -967,34 +1113,50 @@ pub fn test_same_email_3(db: &mut impl Database, log_path: &Path) {
     check_log_entry(log_path, &fpr);
 
     // verify uid1
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
-    db.set_email_published(&fpr, &tpk_status.email_status[0].0).unwrap();
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email.clone(), EmailAddressStatus::NotPublished),),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
+    db.set_email_published(&fpr, &tpk_status.email_status[0].0)
+        .unwrap();
 
     // fetch by both user ids.
-    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]),
-               vec![ uid1.clone(), uid2.clone() ]);
+    assert_eq!(
+        get_userids(&db.by_email(&email).unwrap()[..]),
+        vec![uid1.clone(), uid2.clone()]
+    );
 
     thread::sleep(time::Duration::from_secs(2));
 
     // revoke one uid
     let sig = {
         let policy = &POLICY;
-        let uid = tpk.userids()
+        let uid = tpk
+            .userids()
             .with_policy(policy, None)
-            .find(|b| *b.userid() == uid1).unwrap();
-        assert_eq!(RevocationStatus::NotAsFarAsWeKnow, uid.revocation_status(&POLICY, None));
+            .find(|b| *b.userid() == uid1)
+            .unwrap();
+        assert_eq!(
+            RevocationStatus::NotAsFarAsWeKnow,
+            uid.revocation_status(&POLICY, None)
+        );
 
-        let mut keypair = tpk.primary_key().bundle().key().clone()
-            .parts_into_secret().unwrap()
-            .into_keypair().unwrap();
+        let mut keypair = tpk
+            .primary_key()
+            .bundle()
+            .key()
+            .clone()
+            .parts_into_secret()
+            .unwrap()
+            .into_keypair()
+            .unwrap();
         UserIDRevocationBuilder::new()
-            .set_reason_for_revocation(ReasonForRevocation::UIDRetired, b"It was the maid :/").unwrap()
+            .set_reason_for_revocation(ReasonForRevocation::UIDRetired, b"It was the maid :/")
+            .unwrap()
             .build(&mut keypair, &tpk, uid.userid(), None)
             .unwrap()
     };
@@ -1002,22 +1164,24 @@ pub fn test_same_email_3(db: &mut impl Database, log_path: &Path) {
     let tpk = tpk.insert_packets(sig).unwrap();
     let tpk_status = db.merge(tpk).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email.clone(), EmailAddressStatus::Published),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email.clone(), EmailAddressStatus::Published),),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
-    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]),
-               vec![ uid2.clone() ]);
+    assert_eq!(
+        get_userids(&db.by_email(&email).unwrap()[..]),
+        vec![uid2.clone()]
+    );
 
     // make sure this survives depulication and publication of that same email address
     db.set_email_unpublished(&fpr, &email).unwrap();
     db.set_email_published(&fpr, &email).unwrap();
-    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]),
-               vec![ uid2 ]);
+    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]), vec![uid2]);
 }
 
 // If a key has a verified email address, make sure newly uploaded user
@@ -1042,25 +1206,30 @@ pub fn test_same_email_4(db: &mut impl Database, log_path: &Path) {
     // upload key
     let tpk_status = db.merge(cert_uid_1).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    db.set_email_published(&fpr, &tpk_status.email_status[0].0).unwrap();
-    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]),
-               vec![ uid1.clone() ]);
+    db.set_email_published(&fpr, &tpk_status.email_status[0].0)
+        .unwrap();
+    assert_eq!(
+        get_userids(&db.by_email(&email).unwrap()[..]),
+        vec![uid1.clone()]
+    );
 
     let tpk_status = db.merge(cert_uid_2).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email.clone(), EmailAddressStatus::Published),
-        ),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!((email.clone(), EmailAddressStatus::Published),),
+            unparsed_uids: 0,
+        },
+        tpk_status
+    );
 
     // fetch by both user ids.  We should still get both user ids.
-    assert_eq!(get_userids(&db.by_email(&email).unwrap()[..]),
-               vec![ uid1, uid2 ]);
+    assert_eq!(
+        get_userids(&db.by_email(&email).unwrap()[..]),
+        vec![uid1, uid2]
+    );
 }
-
 
 pub fn test_bad_uids(db: &mut impl Database, log_path: &Path) {
     let str_uid1 = "foo@bar.example <foo@bar.example>";
@@ -1079,33 +1248,38 @@ pub fn test_bad_uids(db: &mut impl Database, log_path: &Path) {
 
     let tpk_status = db.merge(tpk).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1.clone(), EmailAddressStatus::NotPublished),
-            (email2.clone(), EmailAddressStatus::NotPublished),
-        ),
-        unparsed_uids: 1,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!(
+                (email1.clone(), EmailAddressStatus::NotPublished),
+                (email2.clone(), EmailAddressStatus::NotPublished),
+            ),
+            unparsed_uids: 1,
+        },
+        tpk_status
+    );
 
     db.set_email_published(&fpr, &email2).unwrap();
 
-    let tpk_status = db.get_tpk_status(&fpr, &[email1.clone(),
-                                                   email2.clone()]).unwrap();
-    assert_eq!(TpkStatus {
-        is_revoked: false,
-        email_status: vec!(
-            (email1, EmailAddressStatus::NotPublished),
-            (email2, EmailAddressStatus::Published),
-        ),
-        unparsed_uids: 1,
-    }, tpk_status);
+    let tpk_status = db
+        .get_tpk_status(&fpr, &[email1.clone(), email2.clone()])
+        .unwrap();
+    assert_eq!(
+        TpkStatus {
+            is_revoked: false,
+            email_status: vec!(
+                (email1, EmailAddressStatus::NotPublished),
+                (email2, EmailAddressStatus::Published),
+            ),
+            unparsed_uids: 1,
+        },
+        tpk_status
+    );
 }
 
 pub fn test_no_selfsig(db: &mut impl Database, log_path: &Path) {
-    let (mut tpk, revocation) = CertBuilder::new()
-        .generate()
-        .unwrap();
+    let (mut tpk, revocation) = CertBuilder::new().generate().unwrap();
     let fpr = Fingerprint::try_from(tpk.fingerprint()).unwrap();
 
     // don't allow upload of naked key
@@ -1115,20 +1289,20 @@ pub fn test_no_selfsig(db: &mut impl Database, log_path: &Path) {
     tpk = tpk.insert_packets(revocation).unwrap();
     let tpk_status = db.merge(tpk).unwrap().into_tpk_status();
     check_log_entry(log_path, &fpr);
-    assert_eq!(TpkStatus {
-        is_revoked: true,
-        email_status: vec!(),
-        unparsed_uids: 0,
-    }, tpk_status);
+    assert_eq!(
+        TpkStatus {
+            is_revoked: true,
+            email_status: vec!(),
+            unparsed_uids: 0
+        },
+        tpk_status
+    );
 }
 
 /// Makes sure that attested key signatures are correctly handled.
-pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path)
-                               -> Result<()> {
-    use std::time::{SystemTime, Duration};
-    use openpgp::{
-        types::*,
-    };
+pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Result<()> {
+    use openpgp::types::*;
+    use std::time::{Duration, SystemTime};
     let t0 = SystemTime::now() - Duration::new(5 * 60, 0);
     let t1 = SystemTime::now() - Duration::new(4 * 60, 0);
 
@@ -1136,8 +1310,11 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path)
         .set_creation_time(t0)
         .add_userid("alice@foo.com")
         .generate()?;
-    let mut alice_signer =
-        alice.primary_key().key().clone().parts_into_secret()?
+    let mut alice_signer = alice
+        .primary_key()
+        .key()
+        .clone()
+        .parts_into_secret()?
         .into_keypair()?;
 
     let (bob, _) = CertBuilder::new()
@@ -1145,24 +1322,28 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path)
         .add_userid("bob@bar.com")
         .generate()?;
     let bobs_fp = Fingerprint::try_from(bob.fingerprint())?;
-    let mut bob_signer =
-        bob.primary_key().key().clone().parts_into_secret()?
+    let mut bob_signer = bob
+        .primary_key()
+        .key()
+        .clone()
+        .parts_into_secret()?
         .into_keypair()?;
 
     // Have Alice certify the binding between "bob@bar.com" and
     // Bob's key.
-    let alice_certifies_bob
-        = bob.userids().nth(0).unwrap().userid().bind(
-            &mut alice_signer, &bob,
-            SignatureBuilder::new(SignatureType::GenericCertification)
-                .set_signature_creation_time(t1)?)?;
+    let alice_certifies_bob = bob.userids().nth(0).unwrap().userid().bind(
+        &mut alice_signer,
+        &bob,
+        SignatureBuilder::new(SignatureType::GenericCertification)
+            .set_signature_creation_time(t1)?,
+    )?;
 
     // Have Bob attest that certification.
-    let attestations =
-        bob.userids().next().unwrap().attest_certifications(
-            &POLICY,
-            &mut bob_signer,
-            vec![&alice_certifies_bob])?;
+    let attestations = bob.userids().next().unwrap().attest_certifications(
+        &POLICY,
+        &mut bob_signer,
+        vec![&alice_certifies_bob],
+    )?;
     assert_eq!(attestations.len(), 1);
     let attestation = attestations[0].clone();
 
@@ -1175,9 +1356,7 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path)
 
     // Then, add the certification, merge into the db, check that the
     // certification is stripped.
-    let bob = bob.insert_packets(vec![
-        alice_certifies_bob.clone(),
-    ])?;
+    let bob = bob.insert_packets(vec![alice_certifies_bob.clone()])?;
     db.merge(bob.clone())?;
     check_log_entry(log_path, &bobs_fp);
     let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
@@ -1186,18 +1365,30 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path)
 
     // Add the attestation, merge into the db, check that the
     // certification is now included.
-    let bob_attested = bob.clone().insert_packets(vec![
-        attestation,
-    ])?;
+    let bob_attested = bob.clone().insert_packets(vec![attestation])?;
     db.merge(bob_attested.clone())?;
     check_log_entry(log_path, &bobs_fp);
     let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
     assert_eq!(bob_.bad_signatures().count(), 0);
     assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 1);
-    assert_eq!(bob_.with_policy(&POLICY, None)?
-               .userids().nth(0).unwrap().attestation_key_signatures().count(), 1);
-    assert_eq!(bob_.with_policy(&POLICY, None)?
-               .userids().nth(0).unwrap().attested_certifications().count(), 1);
+    assert_eq!(
+        bob_.with_policy(&POLICY, None)?
+            .userids()
+            .nth(0)
+            .unwrap()
+            .attestation_key_signatures()
+            .count(),
+        1
+    );
+    assert_eq!(
+        bob_.with_policy(&POLICY, None)?
+            .userids()
+            .nth(0)
+            .unwrap()
+            .attested_certifications()
+            .count(),
+        1
+    );
 
     // Make a random merge with Bob's unattested cert, demonstrating
     // that the attestation still works.
@@ -1209,60 +1400,80 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path)
 
     // Finally, withdraw consent by overriding the attestation, merge
     // into the db, check that the certification is now gone.
-    let attestations =
-        bob_attested.userids().next().unwrap().attest_certifications(
-            &POLICY,
-            &mut bob_signer,
-            &[])?;
+    let attestations = bob_attested
+        .userids()
+        .next()
+        .unwrap()
+        .attest_certifications(&POLICY, &mut bob_signer, &[])?;
     assert_eq!(attestations.len(), 1);
     let clear_attestation = attestations[0].clone();
 
-    let bob = bob.insert_packets(vec![
-        clear_attestation,
-    ])?;
+    let bob = bob.insert_packets(vec![clear_attestation])?;
     assert_eq!(bob.userids().nth(0).unwrap().certifications().count(), 1);
-    assert_eq!(bob.with_policy(&POLICY, None)?
-               .userids().nth(0).unwrap().attestation_key_signatures().count(), 1);
-    assert_eq!(bob.with_policy(&POLICY, None)?
-               .userids().nth(0).unwrap().attested_certifications().count(), 0);
+    assert_eq!(
+        bob.with_policy(&POLICY, None)?
+            .userids()
+            .nth(0)
+            .unwrap()
+            .attestation_key_signatures()
+            .count(),
+        1
+    );
+    assert_eq!(
+        bob.with_policy(&POLICY, None)?
+            .userids()
+            .nth(0)
+            .unwrap()
+            .attested_certifications()
+            .count(),
+        0
+    );
 
     db.merge(bob)?;
     check_log_entry(log_path, &bobs_fp);
     let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
     assert_eq!(bob_.bad_signatures().count(), 0);
     assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 0);
-    assert_eq!(bob_.with_policy(&POLICY, None)?
-               .userids().nth(0).unwrap().attestation_key_signatures().count(), 1);
-    assert_eq!(bob_.with_policy(&POLICY, None)?
-               .userids().nth(0).unwrap().attested_certifications().count(), 0);
+    assert_eq!(
+        bob_.with_policy(&POLICY, None)?
+            .userids()
+            .nth(0)
+            .unwrap()
+            .attestation_key_signatures()
+            .count(),
+        1
+    );
+    assert_eq!(
+        bob_.with_policy(&POLICY, None)?
+            .userids()
+            .nth(0)
+            .unwrap()
+            .attested_certifications()
+            .count(),
+        0
+    );
 
     Ok(())
 }
 
 fn check_log_entry(log_path: &Path, fpr: &Fingerprint) {
     let log_data = fs::read_to_string(log_path).unwrap();
-    let last_entry = log_data
-        .lines()
-        .last().unwrap()
-        .split(' ')
-        .last().unwrap();
+    let last_entry = log_data.lines().last().unwrap().split(' ').last().unwrap();
     assert_eq!(last_entry, fpr.to_string());
-
 }
 
 fn cert_without_uid(cert: Cert, removed_uid: &UserID) -> Cert {
-    let packets =
-        cert.into_packet_pile().into_children().filter(|pkt| {
-            match pkt {
-                Packet::UserID(ref uid) => uid != removed_uid,
-                _ => true,
-            }
+    let packets = cert
+        .into_packet_pile()
+        .into_children()
+        .filter(|pkt| match pkt {
+            Packet::UserID(ref uid) => uid != removed_uid,
+            _ => true,
         });
     Cert::from_packets(packets).unwrap()
 }
 
-pub fn nonexportable_sigs(db: &mut impl Database, _log_path: &Path)
-                          -> Result<()> {
+pub fn nonexportable_sigs(db: &mut impl Database, _log_path: &Path) -> Result<()> {
     let str_uid1 = "Test A <test_a@example.org>";
     let str_uid2 = "Test B <test_b@example.org>";
 
@@ -1273,7 +1484,8 @@ pub fn nonexportable_sigs(db: &mut impl Database, _log_path: &Path)
         .add_userid_with(
             str_uid2,
             SignatureBuilder::new(SignatureType::PositiveCertification)
-                .set_exportable_certification(false)?)?
+                .set_exportable_certification(false)?,
+        )?
         .generate()
         .unwrap();
     let email1 = Email::from_str(str_uid1).unwrap();

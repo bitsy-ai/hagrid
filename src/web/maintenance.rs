@@ -1,6 +1,6 @@
-use rocket::{Request, Data};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Method;
+use rocket::{Data, Request};
 use rocket_dyn_templates::Template;
 use rocket_i18n::I18n;
 use serde_json::json;
@@ -29,7 +29,7 @@ impl Fairing for MaintenanceMode {
     fn info(&self) -> Info {
         Info {
             name: "Maintenance Mode",
-            kind: Kind::Request
+            kind: Kind::Request,
         }
     }
 
@@ -59,8 +59,7 @@ impl MaintenanceMode {
     }
 
     fn is_request_json(&self, path: &str) -> bool {
-        path.starts_with("/vks/v1/upload") ||
-            path.starts_with("/vks/v1/request-verify")
+        path.starts_with("/vks/v1/upload") || path.starts_with("/vks/v1/request-verify")
     }
 
     fn is_request_plain(&self, path: &str, method: Method) -> bool {
@@ -68,9 +67,7 @@ impl MaintenanceMode {
     }
 
     fn is_request_web(&self, path: &str) -> bool {
-        path.starts_with("/upload") ||
-            path.starts_with("/manage") ||
-            path.starts_with("/verify")
+        path.starts_with("/upload") || path.starts_with("/manage") || path.starts_with("/verify")
     }
 
     fn get_maintenance_message(&self) -> Option<String> {
@@ -93,15 +90,12 @@ struct JsonErrorMessage {
 
 #[get("/maintenance/json/<message>")]
 pub fn maintenance_error_json(message: String) -> MyResponse {
-    MyResponse::MaintenanceJson(json!(JsonErrorMessage{ message }))
+    MyResponse::MaintenanceJson(json!(JsonErrorMessage { message }))
 }
 
 #[get("/maintenance/web/<message>")]
-pub fn maintenance_error_web(
-    message: String,
-    i18n: I18n,
-) -> MyResponse {
-    let ctx = templates::MaintenanceMode{
+pub fn maintenance_error_web(message: String, i18n: I18n) -> MyResponse {
+    let ctx = templates::MaintenanceMode {
         message,
         version: env!("VERGEN_SEMVER").to_string(),
         commit: env!("VERGEN_SHA_SHORT").to_string(),

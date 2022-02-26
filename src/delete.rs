@@ -4,13 +4,13 @@ use std::convert::TryInto;
 use std::path::PathBuf;
 
 extern crate anyhow;
-use anyhow::Result as Result;
+use anyhow::Result;
 
 extern crate structopt;
 use structopt::StructOpt;
 
 extern crate hagrid_database as database;
-use crate::database::{Query, Database, KeyDatabase};
+use crate::database::{Database, KeyDatabase, Query};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -54,32 +54,30 @@ fn real_main() -> Result<()> {
     delete(&db, &opt.query.parse()?, opt.all_bindings, opt.all)
 }
 
-fn delete(db: &KeyDatabase, query: &Query, all_bindings: bool, mut all: bool)
-          -> Result<()> {
+fn delete(db: &KeyDatabase, query: &Query, all_bindings: bool, mut all: bool) -> Result<()> {
     match query {
         Query::ByFingerprint(_) | Query::ByKeyID(_) => {
-            eprintln!("Fingerprint or KeyID given, deleting key and all \
-                       bindings.");
+            eprintln!(
+                "Fingerprint or KeyID given, deleting key and all \
+                       bindings."
+            );
             all = true;
-        },
+        }
         _ => (),
     }
 
-    let tpk = db.lookup(query)?.ok_or_else(
-        || anyhow::format_err!("No TPK matching {:?}", query))?;
+    let tpk = db
+        .lookup(query)?
+        .ok_or_else(|| anyhow::format_err!("No TPK matching {:?}", query))?;
 
     let fp: database::types::Fingerprint = tpk.fingerprint().try_into()?;
     let mut results = Vec::new();
 
     // First, delete the bindings.
     if all_bindings || all {
-        results.push(
-            ("all bindings".into(),
-             db.set_email_unpublished_all(&fp)));
+        results.push(("all bindings".into(), db.set_email_unpublished_all(&fp)));
     } else if let Query::ByEmail(ref email) = query {
-            results.push(
-                (email.to_string(),
-                 db.set_email_unpublished(&fp, email)));
+        results.push((email.to_string(), db.set_email_unpublished(&fp, email)));
     } else {
         unreachable!()
     }
@@ -110,12 +108,15 @@ fn delete(db: &KeyDatabase, query: &Query, all_bindings: bool, mut all: bool)
 
     let mut err = Ok(());
     for (slug, result) in results {
-        eprintln!("{}: {}", slug,
-                  if let Err(ref e) = result {
-                      e.to_string()
-                  } else {
-                      "Deleted".into()
-                  });
+        eprintln!(
+            "{}: {}",
+            slug,
+            if let Err(ref e) = result {
+                e.to_string()
+            } else {
+                "Deleted".into()
+            }
+        );
         if err.is_ok() {
             if let Err(e) = result {
                 err = Err(e);

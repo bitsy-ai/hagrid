@@ -2,7 +2,7 @@
 
 #[macro_use]
 extern crate anyhow;
-use anyhow::Result as Result;
+use anyhow::Result;
 
 #[macro_use]
 extern crate serde_derive;
@@ -23,18 +23,18 @@ init_i18n!("hagrid", en, de, ja);
 #[cfg(not(debug_assertions))]
 init_i18n!("hagrid", en, de, fr, it, ja, nb, pl, tr, zh_Hans, ko, nl, ru, ar, sv, es, ro);
 
-mod mail;
 mod anonymize_utils;
-mod tokens;
-mod sealed_state;
-mod rate_limiter;
-mod dump;
 mod counters;
+mod dump;
+mod gettext_strings;
 mod i18n;
 mod i18n_helpers;
-mod gettext_strings;
-mod web;
+mod mail;
+mod rate_limiter;
+mod sealed_state;
 mod template_helpers;
+mod tokens;
+mod web;
 
 #[launch]
 fn rocket() -> _ {

@@ -1,20 +1,21 @@
-use rocket::request::Request; use rocket::response::{self, Response, Responder};
-use rocket::http::{ContentType,Status};
+use rocket::http::{ContentType, Status};
+use rocket::request::Request;
+use rocket::response::{self, Responder, Response};
 use rocket::serde::json::Json;
 use rocket_i18n::{I18n, Translations};
 use serde_json::json;
 use std::io::Cursor;
 
-use crate::database::{KeyDatabase, StatefulTokens, Query};
 use crate::database::types::{Email, Fingerprint, KeyID};
+use crate::database::{KeyDatabase, Query, StatefulTokens};
 use crate::mail;
-use crate::tokens;
 use crate::rate_limiter::RateLimiter;
+use crate::tokens;
 
 use crate::web;
-use crate::web::{RequestOrigin, MyResponse};
 use crate::web::vks;
 use crate::web::vks::response::*;
+use crate::web::{MyResponse, RequestOrigin};
 
 use rocket::serde::json::Error as JsonError;
 
@@ -34,18 +35,18 @@ pub mod json {
         pub keytext: String,
     }
 
-    #[derive(Serialize,Deserialize)]
+    #[derive(Serialize, Deserialize)]
     pub struct UploadResult {
         pub token: String,
         pub key_fpr: String,
-        pub status: HashMap<String,EmailStatus>,
+        pub status: HashMap<String, EmailStatus>,
     }
 }
 
 type JsonResult = Result<serde_json::Value, JsonErrorResponse>;
 
 #[derive(Debug)]
-pub struct JsonErrorResponse(Status,String);
+pub struct JsonErrorResponse(Status, String);
 
 impl<'r> Responder<'r, 'static> for JsonErrorResponse {
     fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
@@ -61,15 +62,26 @@ impl<'r> Responder<'r, 'static> for JsonErrorResponse {
 fn json_or_error<T>(data: Result<Json<T>, JsonError>) -> Result<Json<T>, JsonErrorResponse> {
     match data {
         Ok(data) => Ok(data),
-        Err(JsonError::Io(_)) => Err(JsonErrorResponse(Status::InternalServerError, "i/o error!".to_owned())),
+        Err(JsonError::Io(_)) => Err(JsonErrorResponse(
+            Status::InternalServerError,
+            "i/o error!".to_owned(),
+        )),
         Err(JsonError::Parse(_, e)) => Err(JsonErrorResponse(Status::BadRequest, e.to_string())),
     }
 }
 
 fn upload_ok_json(response: UploadResponse) -> Result<serde_json::Value, JsonErrorResponse> {
     match response {
-        UploadResponse::Ok { token, key_fpr, status, .. } =>
-            Ok(json!(json::UploadResult { token, key_fpr, status })),
+        UploadResponse::Ok {
+            token,
+            key_fpr,
+            status,
+            ..
+        } => Ok(json!(json::UploadResult {
+            token,
+            key_fpr,
+            status
+        })),
         UploadResponse::OkMulti { key_fprs } => Ok(json!(key_fprs)),
         UploadResponse::Error(error) => Err(JsonErrorResponse(Status::BadRequest, error)),
     }
@@ -91,28 +103,29 @@ pub fn upload_json(
 }
 
 #[post("/vks/v1/upload", rank = 2)]
-pub fn upload_fallback(
-    origin: RequestOrigin,
-) -> JsonErrorResponse {
-    let error_msg = format!("expected application/json data. see {}/about/api for api docs.", origin.get_base_uri());
+pub fn upload_fallback(origin: RequestOrigin) -> JsonErrorResponse {
+    let error_msg = format!(
+        "expected application/json data. see {}/about/api for api docs.",
+        origin.get_base_uri()
+    );
     JsonErrorResponse(Status::BadRequest, error_msg)
 }
 
-fn get_locale(
-    langs: &rocket::State<Translations>,
-    locales: Vec<String>,
-) -> I18n {
+fn get_locale(langs: &rocket::State<Translations>, locales: Vec<String>) -> I18n {
     locales
         .iter()
         .flat_map(|lang| lang.split(|c| c == '-' || c == ';' || c == '_').next())
         .flat_map(|lang| langs.iter().find(|(trans, _)| trans == &lang))
         .next()
         .or_else(|| langs.iter().find(|(trans, _)| trans == &"en"))
-        .map(|(lang, catalog)| I18n { catalog: catalog.clone(), lang })
+        .map(|(lang, catalog)| I18n {
+            catalog: catalog.clone(),
+            lang,
+        })
         .expect("Expected to have an english translation!")
 }
 
-#[post("/vks/v1/request-verify", format = "json", data="<data>")]
+#[post("/vks/v1/request-verify", format = "json", data = "<data>")]
 pub fn request_verify_json(
     db: &rocket::State<KeyDatabase>,
     langs: &rocket::State<Translations>,
@@ -124,19 +137,32 @@ pub fn request_verify_json(
     data: Result<Json<json::VerifyRequest>, JsonError>,
 ) -> JsonResult {
     let data = json_or_error(data)?;
-    let json::VerifyRequest { token, addresses, locale } = data.into_inner();
+    let json::VerifyRequest {
+        token,
+        addresses,
+        locale,
+    } = data.into_inner();
     let i18n = get_locale(langs, locale.unwrap_or_default());
     let result = vks::request_verify(
-        db, &origin, token_stateful, token_stateless, mail_service,
-        rate_limiter, &i18n, token, addresses);
+        db,
+        &origin,
+        token_stateful,
+        token_stateless,
+        mail_service,
+        rate_limiter,
+        &i18n,
+        token,
+        addresses,
+    );
     upload_ok_json(result)
 }
 
 #[post("/vks/v1/request-verify", rank = 2)]
-pub fn request_verify_fallback(
-    origin: RequestOrigin,
-) -> JsonErrorResponse {
-    let error_msg = format!("expected application/json data. see {}/about/api for api docs.", origin.get_base_uri());
+pub fn request_verify_fallback(origin: RequestOrigin) -> JsonErrorResponse {
+    let error_msg = format!(
+        "expected application/json data. see {}/about/api for api docs.",
+        origin.get_base_uri()
+    );
     JsonErrorResponse(Status::BadRequest, error_msg)
 }
 
@@ -155,11 +181,7 @@ pub fn vks_v1_by_fingerprint(
 }
 
 #[get("/vks/v1/by-email/<email>")]
-pub fn vks_v1_by_email(
-    db: &rocket::State<KeyDatabase>,
-    i18n: I18n,
-    email: String,
-) -> MyResponse {
+pub fn vks_v1_by_email(db: &rocket::State<KeyDatabase>, i18n: I18n, email: String) -> MyResponse {
     let email = email.replace("%40", "@");
     let query = match email.parse::<Email>() {
         Ok(email) => Query::ByEmail(email),
@@ -170,11 +192,7 @@ pub fn vks_v1_by_email(
 }
 
 #[get("/vks/v1/by-keyid/<kid>")]
-pub fn vks_v1_by_keyid(
-    db: &rocket::State<KeyDatabase>,
-    i18n: I18n,
-    kid: String,
-) -> MyResponse {
+pub fn vks_v1_by_keyid(db: &rocket::State<KeyDatabase>, i18n: I18n, kid: String) -> MyResponse {
     let query = match kid.parse::<KeyID>() {
         Ok(keyid) => Query::ByKeyID(keyid),
         Err(_) => return MyResponse::bad_request_plain("malformed key id"),

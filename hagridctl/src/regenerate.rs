@@ -3,12 +3,12 @@ use anyhow::Result;
 use std::path::Path;
 use std::time::Instant;
 
+use indicatif::{ProgressBar, ProgressStyle};
 use walkdir::WalkDir;
-use indicatif::{ProgressBar,ProgressStyle};
 
-use HagridConfig;
-use database::{Database,KeyDatabase,RegenerateResult};
 use database::types::Fingerprint;
+use database::{Database, KeyDatabase, RegenerateResult};
+use HagridConfig;
 
 struct RegenerateStats<'a> {
     progress: &'a ProgressBar,
@@ -22,7 +22,7 @@ struct RegenerateStats<'a> {
     kps_partial: u64,
 }
 
-impl <'a> RegenerateStats<'a> {
+impl<'a> RegenerateStats<'a> {
     fn new(progress: &'a ProgressBar) -> Self {
         Self {
             progress,
@@ -48,7 +48,7 @@ impl <'a> RegenerateStats<'a> {
             Err(e) => {
                 self.progress.println(format!("{}: {}", fpr, e.to_string()));
                 self.count_err += 1;
-            },
+            }
             Ok(RegenerateResult::Updated) => self.count_updated += 1,
             Ok(RegenerateResult::Unchanged) => self.count_unchanged += 1,
         }
@@ -79,21 +79,27 @@ pub fn do_regenerate(config: &HagridConfig) -> Result<()> {
         false,
     )?;
 
-    let published_dir = config.keys_external_dir.as_ref().unwrap().join("links").join("by-email");
+    let published_dir = config
+        .keys_external_dir
+        .as_ref()
+        .unwrap()
+        .join("links")
+        .join("by-email");
     let dirs: Vec<_> = WalkDir::new(published_dir)
         .min_depth(1)
         .max_depth(1)
-        .sort_by(|a,b| a.file_name().cmp(b.file_name()))
+        .sort_by(|a, b| a.file_name().cmp(b.file_name()))
         .into_iter()
         .flatten()
         .map(|entry| entry.into_path())
         .collect();
 
     let progress_bar = ProgressBar::new(dirs.len() as u64);
-    progress_bar
-        .set_style(ProgressStyle::default_bar()
+    progress_bar.set_style(
+        ProgressStyle::default_bar()
             .template("[{elapsed_precise}] {bar:40.cyan/blue} {msg}")
-            .progress_chars("##-"));
+            .progress_chars("##-"),
+    );
 
     let mut stats = RegenerateStats::new(&progress_bar);
 
@@ -106,14 +112,18 @@ pub fn do_regenerate(config: &HagridConfig) -> Result<()> {
     Ok(())
 }
 
-fn regenerate_dir_recursively(db: &KeyDatabase, stats: &mut RegenerateStats, dir: &Path) -> Result<()> {
+fn regenerate_dir_recursively(
+    db: &KeyDatabase,
+    stats: &mut RegenerateStats,
+    dir: &Path,
+) -> Result<()> {
     for path in WalkDir::new(dir)
         .follow_links(true)
         .into_iter()
         .flatten()
         .filter(|e| e.file_type().is_file())
-        .map(|entry| entry.into_path()) {
-
+        .map(|entry| entry.into_path())
+    {
         let fpr = KeyDatabase::path_to_primary(&path).unwrap();
         let result = db.regenerate_links(&fpr);
         stats.update(result, fpr);

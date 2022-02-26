@@ -55,17 +55,18 @@ lazy_static! {
 }
 
 pub fn anonymize_address(email: &Email) -> Option<String> {
-    email.as_str()
-      .rsplit('@')
-      .next()
-      .map(|domain| domain.to_lowercase())
-      .and_then(|domain| {
-        if POPULAR_DOMAINS.contains(&domain.as_str()) {
-            Some(domain)
-        } else {
-            domain.rsplit('.').next().map(|tld| tld.to_owned())
-        }
-      })
+    email
+        .as_str()
+        .rsplit('@')
+        .next()
+        .map(|domain| domain.to_lowercase())
+        .and_then(|domain| {
+            if POPULAR_DOMAINS.contains(&domain.as_str()) {
+                Some(domain)
+            } else {
+                domain.rsplit('.').next().map(|tld| tld.to_owned())
+            }
+        })
 }
 
 pub fn anonymize_address_fallback(email: &Email) -> String {

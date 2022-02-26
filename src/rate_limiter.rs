@@ -1,6 +1,6 @@
-use std::sync::Mutex;
 use std::collections::HashMap;
-use std::time::{Instant,Duration};
+use std::sync::Mutex;
+use std::time::{Duration, Instant};
 
 pub struct RateLimiter {
     locked_map: Mutex<HashMap<String, Instant>>,
@@ -23,11 +23,12 @@ impl RateLimiter {
         self.maybe_cleanup();
 
         let mut locked_map = self.locked_map.lock().unwrap();
-        let action_ok = locked_map.get(&identifier)
+        let action_ok = locked_map
+            .get(&identifier)
             .map(|instant| instant.elapsed())
             .map(|duration| duration >= self.timeout)
             .unwrap_or(true);
-        if action_ok  {
+        if action_ok {
             locked_map.insert(identifier, Instant::now());
         }
         action_ok
@@ -35,7 +36,8 @@ impl RateLimiter {
 
     pub fn action_check(&self, identifier: String) -> bool {
         let locked_map = self.locked_map.lock().unwrap();
-        locked_map.get(&identifier)
+        locked_map
+            .get(&identifier)
             .map(|instant| instant.elapsed())
             .map(|duration| duration >= self.timeout)
             .unwrap_or(true)

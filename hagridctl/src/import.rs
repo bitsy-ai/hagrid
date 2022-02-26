@@ -1,22 +1,22 @@
-use std::path::{Path,PathBuf};
+use std::cmp::min;
 use std::fs::File;
 use std::io::Read;
-use std::thread;
-use std::cmp::min;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::thread;
 
 use anyhow::Result;
 
 extern crate tempfile;
 
 extern crate sequoia_openpgp as openpgp;
-use openpgp::Packet;
 use openpgp::parse::{PacketParser, PacketParserResult, Parse};
+use openpgp::Packet;
 
 extern crate hagrid_database as database;
-use database::{Database, KeyDatabase, ImportResult};
+use database::{Database, ImportResult, KeyDatabase};
 
-use indicatif::{MultiProgress,ProgressBar,ProgressStyle};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 
 use HagridConfig;
 
@@ -38,8 +38,7 @@ pub fn do_import(config: &HagridConfig, dry_run: bool, input_files: Vec<PathBuf>
             let config = config.clone();
             let multi_progress = multi_progress.clone();
             thread::spawn(move || {
-                import_from_files(
-                    &config, dry_run, input_file_chunk, multi_progress).unwrap();
+                import_from_files(&config, dry_run, input_file_chunk, multi_progress).unwrap();
             })
         })
         .collect();
@@ -53,15 +52,12 @@ pub fn do_import(config: &HagridConfig, dry_run: bool, input_files: Vec<PathBuf>
     Ok(())
 }
 
-fn setup_chunks(
-    mut input_files: Vec<PathBuf>,
-    num_threads: usize,
-) -> Vec<Vec<PathBuf>> {
+fn setup_chunks(mut input_files: Vec<PathBuf>, num_threads: usize) -> Vec<Vec<PathBuf>> {
     let chunk_size = (input_files.len() + (num_threads - 1)) / num_threads;
     (0..num_threads)
         .map(|_| {
             let len = input_files.len();
-                input_files.drain(0..min(chunk_size,len)).collect()
+            input_files.drain(0..min(chunk_size, len)).collect()
         })
         .collect()
 }
@@ -76,7 +72,7 @@ struct ImportStats<'a> {
     count_unchanged: u64,
 }
 
-impl <'a> ImportStats<'a> {
+impl<'a> ImportStats<'a> {
     fn new(progress: &'a ProgressBar, filename: String) -> Self {
         ImportStats {
             progress,
@@ -106,9 +102,14 @@ impl <'a> ImportStats<'a> {
             return;
         }
         self.progress.set_message(&format!(
-                "{}, imported {:5} keys, {:5} New {:5} Updated {:5} Unchanged {:5} Errors",
-                &self.filename, self.count_total, self.count_new, self.count_updated, self.count_unchanged, self.count_err));
-
+            "{}, imported {:5} keys, {:5} New {:5} Updated {:5} Unchanged {:5} Errors",
+            &self.filename,
+            self.count_total,
+            self.count_new,
+            self.count_updated,
+            self.count_unchanged,
+            self.count_err
+        ));
     }
 }
 
@@ -137,10 +138,11 @@ fn import_from_file(db: &KeyDatabase, input: &Path, multi_progress: &MultiProgre
 
     let bytes_total = input_file.metadata()?.len();
     let progress_bar = multi_progress.add(ProgressBar::new(bytes_total));
-    progress_bar
-        .set_style(ProgressStyle::default_bar()
+    progress_bar.set_style(
+        ProgressStyle::default_bar()
             .template("[{elapsed_precise}] {bar:40.cyan/blue} {msg}")
-            .progress_chars("##-"));
+            .progress_chars("##-"),
+    );
     progress_bar.set_message("Starting…");
 
     let input_reader = &mut progress_bar.wrap_read(input_file);
@@ -156,8 +158,13 @@ fn import_from_file(db: &KeyDatabase, input: &Path, multi_progress: &MultiProgre
                 Packet::SecretKey(key) => key.fingerprint().to_hex(),
                 _ => "Unknown".to_owned(),
             };
-            let error = format!("{}:{:05}:{}: {}", filename, stats.count_total,
-                                key_fpr, e.to_string());
+            let error = format!(
+                "{}:{:05}:{}: {}",
+                filename,
+                stats.count_total,
+                key_fpr,
+                e.to_string()
+            );
             progress_bar.println(error);
         }
         stats.update(result);
@@ -169,7 +176,7 @@ fn import_from_file(db: &KeyDatabase, input: &Path, multi_progress: &MultiProgre
 
 fn read_file_to_tpks(
     reader: impl Read + Send + Sync,
-    callback: &mut impl FnMut(Vec<Packet>) -> ()
+    callback: &mut impl FnMut(Vec<Packet>) -> (),
 ) -> Result<()> {
     let mut ppr = PacketParser::from_reader(reader)?;
     let mut acc = Vec::new();
@@ -183,7 +190,7 @@ fn read_file_to_tpks(
         if !acc.is_empty() {
             if let Packet::PublicKey(_) | Packet::SecretKey(_) = packet {
                 callback(acc);
-                acc = vec!();
+                acc = vec![];
             }
         }
 
@@ -194,10 +201,7 @@ fn read_file_to_tpks(
 }
 
 fn import_key(db: &KeyDatabase, packets: Vec<Packet>) -> Result<ImportResult> {
-    openpgp::Cert::from_packets(packets.into_iter())
-        .and_then(|tpk| {
-            db.merge(tpk)
-        })
+    openpgp::Cert::from_packets(packets.into_iter()).and_then(|tpk| db.merge(tpk))
 }
 
 /*

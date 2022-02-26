@@ -1,12 +1,12 @@
 extern crate anyhow;
 extern crate clap;
-extern crate tempfile;
-extern crate sequoia_openpgp as openpgp;
 extern crate hagrid_database as database;
+extern crate sequoia_openpgp as openpgp;
+extern crate tempfile;
 #[macro_use]
 extern crate serde_derive;
-extern crate toml;
 extern crate indicatif;
+extern crate toml;
 extern crate walkdir;
 
 use std::fs;
@@ -15,7 +15,7 @@ use std::str::FromStr;
 
 use anyhow::Result;
 
-use clap::{Arg, App, SubCommand};
+use clap::{App, Arg, SubCommand};
 
 mod import;
 mod regenerate;
@@ -30,7 +30,7 @@ pub struct HagridConfigs {
 // this is not an exact match - Rocket config has more complicated semantics
 // than a plain toml file.
 // see also https://github.com/SergioBenitez/Rocket/issues/228
-#[derive(Deserialize,Clone)]
+#[derive(Deserialize, Clone)]
 pub struct HagridConfig {
     _template_dir: Option<PathBuf>,
     keys_internal_dir: Option<PathBuf>,
@@ -43,34 +43,42 @@ pub struct HagridConfig {
 
 fn main() -> Result<()> {
     let matches = App::new("Hagrid Control")
-                          .version("0.1")
-                          .about("Control hagrid database externally")
-                          .arg(Arg::with_name("config")
-                               .short("c")
-                               .long("config")
-                               .value_name("FILE")
-                               .help("Sets a custom config file")
-                               .takes_value(true))
-                          .arg(Arg::with_name("env")
-                               .short("e")
-                               .long("env")
-                               .value_name("ENVIRONMENT")
-                               .takes_value(true)
-                               .default_value("prod")
-                               .possible_values(&["dev","stage","prod"]))
-                          .subcommand(SubCommand::with_name("regenerate")
-                                      .about("Regenerate symlink directory"))
-                          .subcommand(SubCommand::with_name("import")
-                                      .about("Import keys into Hagrid")
-                                      .arg(Arg::with_name("dry run")
-                                          .short("n")
-                                          .long("dry-run")
-                                          .help("don't actually keep imported keys")
-                                      )
-                                      .arg(Arg::with_name("keyring files")
-                                           .required(true)
-                                           .multiple(true)))
-                          .get_matches();
+        .version("0.1")
+        .about("Control hagrid database externally")
+        .arg(
+            Arg::with_name("config")
+                .short("c")
+                .long("config")
+                .value_name("FILE")
+                .help("Sets a custom config file")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("env")
+                .short("e")
+                .long("env")
+                .value_name("ENVIRONMENT")
+                .takes_value(true)
+                .default_value("prod")
+                .possible_values(&["dev", "stage", "prod"]),
+        )
+        .subcommand(SubCommand::with_name("regenerate").about("Regenerate symlink directory"))
+        .subcommand(
+            SubCommand::with_name("import")
+                .about("Import keys into Hagrid")
+                .arg(
+                    Arg::with_name("dry run")
+                        .short("n")
+                        .long("dry-run")
+                        .help("don't actually keep imported keys"),
+                )
+                .arg(
+                    Arg::with_name("keyring files")
+                        .required(true)
+                        .multiple(true),
+                ),
+        )
+        .get_matches();
 
     let config_file = matches.value_of("config").unwrap_or("Rocket.toml");
     let config_data = fs::read_to_string(config_file).unwrap();

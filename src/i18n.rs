@@ -1,9 +1,8 @@
 use handlebars::{
-    Context, Handlebars, Helper, HelperDef, HelperResult, Output, RenderContext, RenderError
+    Context, Handlebars, Helper, HelperDef, HelperResult, Output, RenderContext, RenderError,
 };
 
 use std::io;
-
 
 pub struct I18NHelper {
     catalogs: Vec<(&'static str, gettext::Catalog)>,
@@ -14,11 +13,9 @@ impl I18NHelper {
         Self { catalogs }
     }
 
-    pub fn get_catalog(
-        &self,
-        lang: &str,
-    ) -> &gettext::Catalog {
-        let (_, ref catalog) = self.catalogs
+    pub fn get_catalog(&self, lang: &str) -> &gettext::Catalog {
+        let (_, ref catalog) = self
+            .catalogs
             .iter()
             .find(|(candidate, _)| *candidate == lang)
             .unwrap_or_else(|| self.catalogs.get(0).unwrap());
@@ -75,10 +72,8 @@ impl HelperDef for I18NHelper {
 
         let rerender = h
             .param(1)
-            .and_then(|p| p
-                      .relative_path()
-                      .map(|v| v == "rerender")
-                    ).unwrap_or(false);
+            .and_then(|p| p.relative_path().map(|v| v == "rerender"))
+            .unwrap_or(false);
 
         let lang = context
             .data()
@@ -89,14 +84,15 @@ impl HelperDef for I18NHelper {
 
         fn render_error_with<E>(e: E) -> RenderError
         where
-            E: std::error::Error + Send + Sync + 'static
+            E: std::error::Error + Send + Sync + 'static,
         {
             RenderError::from_error("Failed to render", e)
         }
         let response = self.lookup(lang, id);
         if rerender {
             let data = rcx.evaluate(context, "this").unwrap();
-            let response = reg.render_template(response, data.as_json())
+            let response = reg
+                .render_template(response, data.as_json())
                 .map_err(render_error_with)?;
             out.write(&response).map_err(render_error_with)?;
         } else {

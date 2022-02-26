@@ -1,6 +1,6 @@
-use std::io::{Read,Write};
-use std::path::PathBuf;
 use std::fs::{create_dir_all, remove_file, File};
+use std::io::{Read, Write};
+use std::path::PathBuf;
 
 use std::str;
 

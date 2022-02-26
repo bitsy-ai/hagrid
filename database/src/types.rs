@@ -3,10 +3,10 @@ use std::fmt;
 use std::result;
 use std::str::FromStr;
 
+use anyhow::Error;
 use openpgp::packet::UserID;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use anyhow::Error;
-use {Result};
+use Result;
 
 /// Holds a normalized email address.
 ///
@@ -86,8 +86,7 @@ impl TryFrom<sequoia_openpgp::Fingerprint> for Fingerprint {
     fn try_from(fpr: sequoia_openpgp::Fingerprint) -> Result<Self> {
         match fpr {
             sequoia_openpgp::Fingerprint::V4(a) => Ok(Fingerprint(a)),
-            sequoia_openpgp::Fingerprint::Invalid(_) =>
-                Err(anyhow!("invalid fingerprint")),
+            sequoia_openpgp::Fingerprint::Invalid(_) => Err(anyhow!("invalid fingerprint")),
             _ => Err(anyhow!("unknown fingerprint type")),
         }
     }
@@ -95,7 +94,7 @@ impl TryFrom<sequoia_openpgp::Fingerprint> for Fingerprint {
 
 impl fmt::Display for Fingerprint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use ::hex::ToHex;
+        use hex::ToHex;
         self.0.write_hex_upper(f)
     }
 }
@@ -116,8 +115,7 @@ impl<'de> Deserialize<'de> for Fingerprint {
     {
         use serde::de::Error;
         String::deserialize(deserializer).and_then(|string| {
-            Self::from_str(&string)
-                .map_err(|err| Error::custom(err.to_string()))
+            Self::from_str(&string).map_err(|err| Error::custom(err.to_string()))
         })
     }
 }
@@ -128,8 +126,9 @@ impl FromStr for Fingerprint {
     fn from_str(s: &str) -> Result<Fingerprint> {
         match sequoia_openpgp::Fingerprint::from_hex(s)? {
             sequoia_openpgp::Fingerprint::V4(a) => Ok(Fingerprint(a)),
-            sequoia_openpgp::Fingerprint::Invalid(_) =>
-                Err(anyhow!("'{}' is not a valid fingerprint", s)),
+            sequoia_openpgp::Fingerprint::Invalid(_) => {
+                Err(anyhow!("'{}' is not a valid fingerprint", s))
+            }
             _ => Err(anyhow!("unknown fingerprint type")),
         }
     }
@@ -144,9 +143,7 @@ impl TryFrom<sequoia_openpgp::Fingerprint> for KeyID {
     fn try_from(fpr: sequoia_openpgp::Fingerprint) -> Result<Self> {
         match fpr {
             sequoia_openpgp::Fingerprint::V4(a) => Ok(Fingerprint(a).into()),
-            sequoia_openpgp::Fingerprint::Invalid(_) => {
-                Err(anyhow!("invalid fingerprint"))
-            },
+            sequoia_openpgp::Fingerprint::Invalid(_) => Err(anyhow!("invalid fingerprint")),
             _ => Err(anyhow!("unknown fingerprint type")),
         }
     }
@@ -172,7 +169,7 @@ impl From<Fingerprint> for KeyID {
 
 impl fmt::Display for KeyID {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use ::hex::ToHex;
+        use hex::ToHex;
         self.0.write_hex_upper(f)
     }
 }
@@ -183,8 +180,9 @@ impl FromStr for KeyID {
     fn from_str(s: &str) -> Result<KeyID> {
         match sequoia_openpgp::KeyID::from_hex(s)? {
             sequoia_openpgp::KeyID::V4(a) => Ok(KeyID(a)),
-            sequoia_openpgp::KeyID::Invalid(_) =>
-                Err(anyhow!("'{}' is not a valid long key ID", s)),
+            sequoia_openpgp::KeyID::Invalid(_) => {
+                Err(anyhow!("'{}' is not a valid long key ID", s))
+            }
             _ => Err(anyhow!("unknown keyid type")),
         }
     }
@@ -203,10 +201,11 @@ mod tests {
         assert_eq!(c("Foo Bar <foo@example.org>").as_str(), "foo@example.org");
         // FIXME gotta fix this
         // assert_eq!(c("foo@example.org <foo@example.org>").as_str(), "foo@example.org");
-        assert_eq!(c("\"Foo Bar\" <foo@example.org>").as_str(),
-                   "foo@example.org");
-        assert_eq!(c("foo@👍.example.org").as_str(),
-                   "foo@xn--yp8h.example.org");
+        assert_eq!(
+            c("\"Foo Bar\" <foo@example.org>").as_str(),
+            "foo@example.org"
+        );
+        assert_eq!(c("foo@👍.example.org").as_str(), "foo@xn--yp8h.example.org");
         assert_eq!(c("Foo@example.org").as_str(), "foo@example.org");
         assert_eq!(c("foo@EXAMPLE.ORG").as_str(), "foo@example.org");
     }

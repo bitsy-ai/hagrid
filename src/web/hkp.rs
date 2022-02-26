@@ -1,29 +1,29 @@
 use std::fmt;
 
-use std::time::SystemTime;
 use std::collections::HashMap;
+use std::time::SystemTime;
 
-use rocket::Data;
 use rocket::form::{Form, ValueField};
-use rocket::outcome::Outcome;
 use rocket::http::{ContentType, Status};
-use rocket::request::{self, Request, FromRequest};
+use rocket::outcome::Outcome;
+use rocket::request::{self, FromRequest, Request};
+use rocket::Data;
 use rocket_i18n::I18n;
-use url::percent_encoding::{DEFAULT_ENCODE_SET, utf8_percent_encode};
+use url::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
 
-use crate::database::{Database, Query, KeyDatabase};
 use crate::database::types::{Email, Fingerprint, KeyID};
+use crate::database::{Database, KeyDatabase, Query};
 
-use crate::rate_limiter::RateLimiter;
 use crate::i18n_helpers::describe_query_error;
+use crate::rate_limiter::RateLimiter;
 
 use crate::tokens;
 
-use crate::web;
 use crate::mail;
-use crate::web::{RequestOrigin, MyResponse, vks_web};
-use crate::web::vks::response::UploadResponse;
+use crate::web;
 use crate::web::vks::response::EmailStatus;
+use crate::web::vks::response::UploadResponse;
+use crate::web::{vks_web, MyResponse, RequestOrigin};
 
 #[derive(Debug)]
 pub enum Hkp {
@@ -31,17 +31,17 @@ pub enum Hkp {
     KeyID { keyid: KeyID, index: bool },
     ShortKeyID { query: String, index: bool },
     Email { email: Email, index: bool },
-    Invalid { query: String, },
+    Invalid { query: String },
 }
 
 impl fmt::Display for Hkp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Hkp::Fingerprint{ ref fpr,.. } => write!(f, "{}", fpr),
-            Hkp::KeyID{ ref keyid,.. } => write!(f, "{}", keyid),
-            Hkp::Email{ ref email,.. } => write!(f, "{}", email),
-            Hkp::ShortKeyID{ ref query,.. } => write!(f, "{}", query),
-            Hkp::Invalid{ ref query } => write!(f, "{}", query),
+            Hkp::Fingerprint { ref fpr, .. } => write!(f, "{}", fpr),
+            Hkp::KeyID { ref keyid, .. } => write!(f, "{}", keyid),
+            Hkp::Email { ref email, .. } => write!(f, "{}", email),
+            Hkp::ShortKeyID { ref query, .. } => write!(f, "{}", query),
+            Hkp::Invalid { ref query } => write!(f, "{}", query),
         }
     }
 }
@@ -53,58 +53,48 @@ impl<'r> FromRequest<'r> for Hkp {
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Hkp, ()> {
         use std::str::FromStr;
 
-        let query = request.uri().query().map(|q| q.as_str()).unwrap_or_default();
+        let query = request
+            .uri()
+            .query()
+            .map(|q| q.as_str())
+            .unwrap_or_default();
         let fields = Form::values(query)
-            .map(|ValueField { name, value }| {
-                (name.to_string(), value.to_string())
-            })
+            .map(|ValueField { name, value }| (name.to_string(), value.to_string()))
             .collect::<HashMap<_, _>>();
 
         if fields.contains_key("search")
             && fields
-            .get("op")
-            .map(|x| x == "get" || x == "index")
-            .unwrap_or(false)
+                .get("op")
+                .map(|x| x == "get" || x == "index")
+                .unwrap_or(false)
         {
             let index = fields.get("op").map(|x| x == "index").unwrap_or(false);
             let search = fields.get("search").cloned().unwrap_or_default();
             let maybe_fpr = Fingerprint::from_str(&search);
             let maybe_keyid = KeyID::from_str(&search);
 
-            let looks_like_short_key_id = !search.contains('@') &&
-                (search.starts_with("0x") && search.len() < 16 || search.len() == 8);
+            let looks_like_short_key_id = !search.contains('@')
+                && (search.starts_with("0x") && search.len() < 16 || search.len() == 8);
             if looks_like_short_key_id {
                 Outcome::Success(Hkp::ShortKeyID {
                     query: search,
                     index,
                 })
             } else if let Ok(fpr) = maybe_fpr {
-                Outcome::Success(Hkp::Fingerprint {
-                    fpr,
-                    index,
-                })
+                Outcome::Success(Hkp::Fingerprint { fpr, index })
             } else if let Ok(keyid) = maybe_keyid {
-                Outcome::Success(Hkp::KeyID {
-                    keyid,
-                    index,
-                })
+                Outcome::Success(Hkp::KeyID { keyid, index })
             } else {
                 match Email::from_str(&search) {
-                    Ok(email) => {
-                        Outcome::Success(Hkp::Email {
-                            email,
-                            index,
-                        })
-                    }
-                    Err(_) => {
-                        Outcome::Success(Hkp::Invalid{
-                            query: search.to_string(),
-                        })
-                    }
+                    Ok(email) => Outcome::Success(Hkp::Email { email, index }),
+                    Err(_) => Outcome::Success(Hkp::Invalid {
+                        query: search.to_string(),
+                    }),
                 }
             }
-        } else if fields.get("op").map(|x| x == "vindex"
-                                       || x.starts_with("x-"))
+        } else if fields
+            .get("op")
+            .map(|x| x == "vindex" || x.starts_with("x-"))
             .unwrap_or(false)
         {
             Outcome::Failure((Status::NotImplemented, ()))
@@ -131,7 +121,11 @@ pub async fn pks_add_form_data(
     }
 }
 
-#[post("/pks/add", format = "application/x-www-form-urlencoded", data = "<data>")]
+#[post(
+    "/pks/add",
+    format = "application/x-www-form-urlencoded",
+    data = "<data>"
+)]
 pub async fn pks_add_form(
     origin: RequestOrigin,
     db: &rocket::State<KeyDatabase>,
@@ -142,8 +136,24 @@ pub async fn pks_add_form(
     data: Data<'_>,
 ) -> MyResponse {
     match vks_web::process_post_form(db, tokens_stateless, rate_limiter, &i18n, data).await {
-        Ok(UploadResponse::Ok { is_new_key, key_fpr, primary_uid, token, status, .. }) => {
-            let msg = pks_add_ok(&origin, mail_service, rate_limiter, token, status, is_new_key, key_fpr, primary_uid);
+        Ok(UploadResponse::Ok {
+            is_new_key,
+            key_fpr,
+            primary_uid,
+            token,
+            status,
+            ..
+        }) => {
+            let msg = pks_add_ok(
+                &origin,
+                mail_service,
+                rate_limiter,
+                token,
+                status,
+                is_new_key,
+                key_fpr,
+                primary_uid,
+            );
             MyResponse::plain(msg)
         }
         Ok(_) => {
@@ -165,16 +175,17 @@ fn pks_add_ok(
     primary_uid: Option<Email>,
 ) -> String {
     if primary_uid.is_none() {
-        return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri())
+        return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri());
     }
     let primary_uid = primary_uid.unwrap();
 
     if is_new_key {
         if send_welcome_mail(origin, mail_service, key_fpr, &primary_uid, token) {
             rate_limiter.action_perform(format!("hkp-sent-{}", &primary_uid));
-            return "Upload successful. This is a new key, a welcome email has been sent.".to_string();
+            return "Upload successful. This is a new key, a welcome email has been sent."
+                .to_string();
         }
-        return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri())
+        return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri());
     }
 
     let has_unverified = status.iter().any(|(_, v)| *v == EmailStatus::Unpublished);
@@ -182,7 +193,7 @@ fn pks_add_ok(
         return "Upload successful.".to_string();
     }
 
-    return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri())
+    return format!("Upload successful. Please note that identity information will only be published after verification. See {baseuri}/about/usage#gnupg-upload", baseuri = origin.get_base_uri());
 }
 
 fn send_welcome_mail(
@@ -192,25 +203,21 @@ fn send_welcome_mail(
     primary_uid: &Email,
     token: String,
 ) -> bool {
-    mail_service.send_welcome(origin.get_base_uri(), fpr, primary_uid, &token).is_ok()
+    mail_service
+        .send_welcome(origin.get_base_uri(), fpr, primary_uid, &token)
+        .is_ok()
 }
 
 #[get("/pks/lookup")]
-pub fn pks_lookup(
-    db: &rocket::State<KeyDatabase>,
-    i18n: I18n,
-    key: Hkp
-) -> MyResponse {
+pub fn pks_lookup(db: &rocket::State<KeyDatabase>, i18n: I18n, key: Hkp) -> MyResponse {
     let (query, index) = match key {
-        Hkp::Fingerprint { fpr, index } =>
-            (Query::ByFingerprint(fpr), index),
-        Hkp::KeyID { keyid, index } =>
-            (Query::ByKeyID(keyid), index),
-        Hkp::Email { email, index } => {
-            (Query::ByEmail(email), index)
-        }
+        Hkp::Fingerprint { fpr, index } => (Query::ByFingerprint(fpr), index),
+        Hkp::KeyID { keyid, index } => (Query::ByKeyID(keyid), index),
+        Hkp::Email { email, index } => (Query::ByEmail(email), index),
         Hkp::ShortKeyID { query: _, .. } => {
-            return MyResponse::bad_request_plain("Search by short key ids is not supported, sorry!");
+            return MyResponse::bad_request_plain(
+                "Search by short key ids is not supported, sorry!",
+            );
         }
         Hkp::Invalid { query: _ } => {
             return MyResponse::bad_request_plain("Invalid search query!");
@@ -232,47 +239,50 @@ pub fn pks_internal_index(
 ) -> MyResponse {
     match query_string.parse() {
         Ok(query) => key_to_hkp_index(db, i18n, query),
-        Err(_) => MyResponse::bad_request_plain("Invalid search query!")
+        Err(_) => MyResponse::bad_request_plain("Invalid search query!"),
     }
 }
 
-fn key_to_hkp_index(
-    db: &rocket::State<KeyDatabase>,
-    i18n: I18n,
-    query: Query,
-) -> MyResponse {
-    use sequoia_openpgp::types::RevocationStatus;
+fn key_to_hkp_index(db: &rocket::State<KeyDatabase>, i18n: I18n, query: Query) -> MyResponse {
     use sequoia_openpgp::policy::StandardPolicy;
+    use sequoia_openpgp::types::RevocationStatus;
 
     let tpk = match db.lookup(&query) {
         Ok(Some(tpk)) => tpk,
         Ok(None) => return MyResponse::not_found_plain(describe_query_error(&i18n, &query)),
-        Err(err) => { return MyResponse::ise(err); }
+        Err(err) => {
+            return MyResponse::ise(err);
+        }
     };
     let mut out = String::default();
     let p = tpk.primary_key();
 
     let policy = &StandardPolicy::new();
 
-    let ctime = format!("{}", p.creation_time().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs());
-    let is_rev =
-        if tpk.revocation_status(policy, None) != RevocationStatus::NotAsFarAsWeKnow {
-            "r"
-        } else {
-            ""
-        };
+    let ctime = format!(
+        "{}",
+        p.creation_time()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+    );
+    let is_rev = if tpk.revocation_status(policy, None) != RevocationStatus::NotAsFarAsWeKnow {
+        "r"
+    } else {
+        ""
+    };
     let algo: u8 = p.pk_algo().into();
 
     out.push_str("info:1:1\r\n");
     out.push_str(&format!(
-            "pub:{}:{}:{}:{}:{}:{}{}\r\n",
-            p.fingerprint().to_string().replace(" ", ""),
-            algo,
-            p.mpis().bits().unwrap_or(0),
-            ctime,
-            "",
-            "",
-            is_rev
+        "pub:{}:{}:{}:{}:{}:{}{}\r\n",
+        p.fingerprint().to_string().replace(" ", ""),
+        algo,
+        p.mpis().bits().unwrap_or(0),
+        ctime,
+        "",
+        "",
+        is_rev
     ));
 
     for uid in tpk.userids() {
@@ -285,18 +295,13 @@ fn key_to_hkp_index(
             .and_then(|time| time.duration_since(SystemTime::UNIX_EPOCH).ok())
             .map(|x| format!("{}", x.as_secs()))
             .unwrap_or_default();
-        let is_rev = if uid.revocation_status(policy, None)
-            != RevocationStatus::NotAsFarAsWeKnow
-            {
-                "r"
-            } else {
-                ""
-            };
+        let is_rev = if uid.revocation_status(policy, None) != RevocationStatus::NotAsFarAsWeKnow {
+            "r"
+        } else {
+            ""
+        };
 
-        out.push_str(&format!(
-                "uid:{}:{}:{}:{}{}\r\n",
-                u, ctime, "", "", is_rev
-        ));
+        out.push_str(&format!("uid:{}:{}:{}:{}{}\r\n", u, ctime, "", "", is_rev));
     }
 
     MyResponse::plain(out)
@@ -304,13 +309,13 @@ fn key_to_hkp_index(
 
 #[cfg(test)]
 mod tests {
-    use rocket::http::Status;
     use rocket::http::ContentType;
+    use rocket::http::Status;
 
     use sequoia_openpgp::serialize::Serialize;
 
-    use crate::web::tests::*;
     use crate::mail::pop_mail;
+    use crate::web::tests::*;
 
     #[test]
     fn hkp() {
@@ -326,9 +331,8 @@ mod tests {
         // Prepare to /pks/add
         let mut armored = Vec::new();
         {
-            use sequoia_openpgp::armor::{Writer, Kind};
-            let mut w = Writer::new(&mut armored, Kind::PublicKey)
-                .unwrap();
+            use sequoia_openpgp::armor::{Kind, Writer};
+            let mut w = Writer::new(&mut armored, Kind::PublicKey).unwrap();
             tpk.serialize(&mut w).unwrap();
             w.finalize().unwrap();
         }
@@ -338,7 +342,8 @@ mod tests {
         }
 
         // Add!
-        let response = client.post("/pks/add")
+        let response = client
+            .post("/pks/add")
             .body(post_data.as_bytes())
             .header(ContentType::Form)
             .dispatch();
@@ -351,7 +356,8 @@ mod tests {
         assert!(welcome_mail.is_some());
 
         // Add!
-        let response = client.post("/pks/add")
+        let response = client
+            .post("/pks/add")
             .body(post_data.as_bytes())
             .header(ContentType::Form)
             .dispatch();
@@ -374,7 +380,8 @@ mod tests {
         check_hr_responses_by_fingerprint(&client, &tpk, 0);
 
         // Upload the same key again, make sure the welcome mail is not sent again
-        let response = client.post("/pks/add")
+        let response = client
+            .post("/pks/add")
             .body(post_data.as_bytes())
             .header(ContentType::Form)
             .dispatch();
@@ -399,14 +406,14 @@ mod tests {
         let mut armored_first = Vec::new();
         let mut armored_both = Vec::new();
         {
-            use sequoia_openpgp::armor::{Writer, Kind};
+            use sequoia_openpgp::armor::{Kind, Writer};
             let mut w = Writer::new(&mut armored_both, Kind::PublicKey).unwrap();
             tpk_0.serialize(&mut w).unwrap();
             tpk_1.serialize(&mut w).unwrap();
             w.finalize().unwrap();
         }
         {
-            use sequoia_openpgp::armor::{Writer, Kind};
+            use sequoia_openpgp::armor::{Kind, Writer};
             let mut w = Writer::new(&mut armored_first, Kind::PublicKey).unwrap();
             tpk_0.serialize(&mut w).unwrap();
             w.finalize().unwrap();
@@ -421,7 +428,8 @@ mod tests {
         }
 
         // Add!
-        let response = client.post("/pks/add")
+        let response = client
+            .post("/pks/add")
             .body(post_data_both.as_bytes())
             .header(ContentType::Form)
             .dispatch();
@@ -432,7 +440,8 @@ mod tests {
         assert!(welcome_mail.is_none());
 
         // Add the first again
-        let response = client.post("/pks/add")
+        let response = client
+            .post("/pks/add")
             .body(post_data_first.as_bytes())
             .header(ContentType::Form)
             .dispatch();

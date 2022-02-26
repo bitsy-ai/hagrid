@@ -5,20 +5,19 @@ use crate::Result;
 
 use gettext_macros::i18n;
 
-use crate::web::{RequestOrigin, MyResponse};
-use crate::web::vks_web;
-use crate::database::{Database, KeyDatabase, types::Email, types::Fingerprint};
-use crate::mail;
 use crate::counters;
+use crate::database::{types::Email, types::Fingerprint, Database, KeyDatabase};
+use crate::mail;
 use crate::rate_limiter::RateLimiter;
 use crate::tokens::{self, StatelessSerializable};
+use crate::web::vks_web;
+use crate::web::{MyResponse, RequestOrigin};
 
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct StatelessVerifyToken {
-   fpr: Fingerprint,
+    fpr: Fingerprint,
 }
-impl StatelessSerializable for StatelessVerifyToken {
-}
+impl StatelessSerializable for StatelessVerifyToken {}
 
 mod templates {
     #[derive(Serialize)]
@@ -37,8 +36,8 @@ mod templates {
 
     #[derive(Serialize)]
     pub struct ManageKeyUidStatus {
-       pub address: String,
-       pub published: bool,
+        pub address: String,
+        pub published: bool,
     }
 }
 
@@ -62,11 +61,11 @@ pub fn vks_manage(origin: RequestOrigin, i18n: I18n) -> MyResponse {
 
 #[get("/manage/<token>")]
 pub fn vks_manage_key(
-   origin: RequestOrigin,
-   db: &rocket::State<KeyDatabase>,
-   i18n: I18n,
-   token: String,
-   token_service: &rocket::State<tokens::Service>,
+    origin: RequestOrigin,
+    db: &rocket::State<KeyDatabase>,
+    i18n: I18n,
+    token: String,
+    token_service: &rocket::State<tokens::Service>,
 ) -> MyResponse {
     use crate::database::types::Fingerprint;
     use std::convert::TryFrom;
@@ -74,19 +73,21 @@ pub fn vks_manage_key(
         match db.lookup(&database::Query::ByFingerprint(fpr)) {
             Ok(Some(tpk)) => {
                 let fp = Fingerprint::try_from(tpk.fingerprint()).unwrap();
-                let mut emails: Vec<Email> = tpk.userids()
+                let mut emails: Vec<Email> = tpk
+                    .userids()
                     .map(|u| u.userid().to_string().parse::<Email>())
                     .flatten()
                     .collect();
                 emails.sort_unstable();
                 emails.dedup();
-                let uid_status = emails.into_iter().map(|email|
-                    templates::ManageKeyUidStatus {
+                let uid_status = emails
+                    .into_iter()
+                    .map(|email| templates::ManageKeyUidStatus {
                         address: email.to_string(),
                         published: true,
-                    }
-                ).collect();
-               let key_link = uri!(vks_web::search(q = fp.to_string())).to_string();
+                    })
+                    .collect();
+                let key_link = uri!(vks_web::search(q = fp.to_string())).to_string();
                 let context = templates::ManageKey {
                     key_fpr: fp.to_string(),
                     key_link,
@@ -95,11 +96,12 @@ pub fn vks_manage_key(
                     base_uri: origin.get_base_uri().to_owned(),
                 };
                 MyResponse::ok("manage/manage_key", context, i18n, origin)
-            },
+            }
             Ok(None) => MyResponse::not_found(
                 Some("manage/manage"),
                 Some(i18n!(i18n.catalog, "This link is invalid or expired")),
-                i18n, origin,
+                i18n,
+                origin,
             ),
             Err(e) => MyResponse::ise(e),
         }
@@ -107,11 +109,13 @@ pub fn vks_manage_key(
         MyResponse::not_found(
             Some("manage/manage"),
             Some(i18n!(i18n.catalog, "This link is invalid or expired")),
-            i18n, origin)
+            i18n,
+            origin,
+        )
     }
 }
 
-#[post("/manage", data="<request>")]
+#[post("/manage", data = "<request>")]
 pub fn vks_manage_post(
     db: &rocket::State<KeyDatabase>,
     origin: RequestOrigin,
@@ -125,35 +129,48 @@ pub fn vks_manage_post(
 
     let email = match request.search_term.parse::<Email>() {
         Ok(email) => email,
-        Err(_) => return MyResponse::not_found(
-            Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "Malformed address: {}"; &request.search_term)),
-            i18n, origin)
+        Err(_) => {
+            return MyResponse::not_found(
+                Some("manage/manage"),
+                Some(i18n!(i18n.catalog, "Malformed address: {}"; &request.search_term)),
+                i18n,
+                origin,
+            )
+        }
     };
 
     let tpk = match db.lookup(&database::Query::ByEmail(email.clone())) {
         Ok(Some(tpk)) => tpk,
-        Ok(None) => return MyResponse::not_found(
-            Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "No key for address: {}"; &request.search_term)),
-            i18n, origin),
+        Ok(None) => {
+            return MyResponse::not_found(
+                Some("manage/manage"),
+                Some(i18n!(i18n.catalog, "No key for address: {}"; &request.search_term)),
+                i18n,
+                origin,
+            )
+        }
         Err(e) => return MyResponse::ise(e),
     };
 
-    let email_exists = tpk.userids()
+    let email_exists = tpk
+        .userids()
         .flat_map(|binding| binding.userid().to_string().parse::<Email>())
         .any(|candidate| candidate == email);
 
     if !email_exists {
-        return MyResponse::ise(
-           anyhow!("Internal error: address check failed!"));
+        return MyResponse::ise(anyhow!("Internal error: address check failed!"));
     }
 
     if !rate_limiter.action_perform(format!("manage-{}", &email)) {
         return MyResponse::not_found(
             Some("manage/manage"),
-            Some(i18n!(i18n.catalog, "A request has already been sent for this address recently.")),
-            i18n, origin);
+            Some(i18n!(
+                i18n.catalog,
+                "A request has already been sent for this address recently."
+            )),
+            i18n,
+            origin,
+        );
     }
 
     let fpr: Fingerprint = tpk.fingerprint().try_into().unwrap();
@@ -172,7 +189,7 @@ pub fn vks_manage_post(
     MyResponse::ok("manage/manage_link_sent", ctx, i18n, origin)
 }
 
-#[post("/manage/unpublish", data="<request>")]
+#[post("/manage/unpublish", data = "<request>")]
 pub fn vks_manage_unpublish(
     origin: RequestOrigin,
     db: &rocket::State<KeyDatabase>,
@@ -199,5 +216,11 @@ pub fn vks_manage_unpublish_or_fail(
     db.set_email_unpublished(&verify_token.fpr, &email)?;
     counters::inc_address_unpublished(&email);
 
-    Ok(vks_manage_key(origin, db, i18n, request.token.to_owned(), token_service))
+    Ok(vks_manage_key(
+        origin,
+        db,
+        i18n,
+        request.token.to_owned(),
+        token_service,
+    ))
 }

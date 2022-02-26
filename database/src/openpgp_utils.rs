@@ -2,11 +2,8 @@ use openpgp::Result;
 use std::convert::TryFrom;
 
 use openpgp::{
-    Cert,
-    types::RevocationStatus,
-    cert::prelude::*,
-    serialize::SerializeInto as _,
-    policy::StandardPolicy,
+    cert::prelude::*, policy::StandardPolicy, serialize::SerializeInto as _,
+    types::RevocationStatus, Cert,
 };
 
 use Email;
@@ -33,24 +30,42 @@ pub fn tpk_clean(tpk: &Cert) -> Result<Cert> {
     // The primary key and related signatures.
     let pk_bundle = tpk.primary_key().bundle();
     acc.push(pk_bundle.key().clone().into());
-    for s in pk_bundle.self_signatures() { acc.push(s.clone().into()) }
-    for s in pk_bundle.self_revocations()  { acc.push(s.clone().into()) }
-    for s in pk_bundle.other_revocations() { acc.push(s.clone().into()) }
+    for s in pk_bundle.self_signatures() {
+        acc.push(s.clone().into())
+    }
+    for s in pk_bundle.self_revocations() {
+        acc.push(s.clone().into())
+    }
+    for s in pk_bundle.other_revocations() {
+        acc.push(s.clone().into())
+    }
 
     // The subkeys and related signatures.
     for skb in tpk.keys().subkeys() {
         acc.push(skb.key().clone().into());
-        for s in skb.self_signatures()   { acc.push(s.clone().into()) }
-        for s in skb.self_revocations()  { acc.push(s.clone().into()) }
-        for s in skb.other_revocations() { acc.push(s.clone().into()) }
+        for s in skb.self_signatures() {
+            acc.push(s.clone().into())
+        }
+        for s in skb.self_revocations() {
+            acc.push(s.clone().into())
+        }
+        for s in skb.other_revocations() {
+            acc.push(s.clone().into())
+        }
     }
 
     // The UserIDs.
     for uidb in tpk.userids() {
         acc.push(uidb.userid().clone().into());
-        for s in uidb.self_signatures()   { acc.push(s.clone().into()) }
-        for s in uidb.self_revocations()  { acc.push(s.clone().into()) }
-        for s in uidb.other_revocations() { acc.push(s.clone().into()) }
+        for s in uidb.self_signatures() {
+            acc.push(s.clone().into())
+        }
+        for s in uidb.self_revocations() {
+            acc.push(s.clone().into())
+        }
+        for s in uidb.other_revocations() {
+            acc.push(s.clone().into())
+        }
 
         // Reasoning about the currently attested certifications
         // requires a policy.

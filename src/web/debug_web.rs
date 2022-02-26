@@ -3,17 +3,13 @@ use std::io;
 use rocket_i18n::I18n;
 
 use crate::dump::{self, Kind};
-use crate::web::MyResponse;
 use crate::i18n_helpers::describe_query_error;
+use crate::web::MyResponse;
 
 use crate::database::{Database, KeyDatabase, Query};
 
 #[get("/debug?<q>")]
-pub fn debug_info(
-    db: &rocket::State<KeyDatabase>,
-    i18n: I18n,
-    q: String,
-) -> MyResponse {
+pub fn debug_info(db: &rocket::State<KeyDatabase>, i18n: I18n, q: String) -> MyResponse {
     let query = match q.parse::<Query>() {
         Ok(query) => query,
         Err(_) => return MyResponse::bad_request_plain("bad request"),
@@ -38,11 +34,9 @@ pub fn debug_info(
         32 * 4 + 80,
     );
     match dump_result {
-        Ok(Kind::Cert) => {
-            match String::from_utf8(result) {
-                Ok(dump_text) => MyResponse::plain(dump_text),
-                Err(e) => MyResponse::ise(e.into()),
-            }
+        Ok(Kind::Cert) => match String::from_utf8(result) {
+            Ok(dump_text) => MyResponse::plain(dump_text),
+            Err(e) => MyResponse::ise(e.into()),
         },
         Ok(_) => MyResponse::ise(anyhow!("Internal parsing error!")),
         Err(e) => MyResponse::ise(e),

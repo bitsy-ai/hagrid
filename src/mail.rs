@@ -1,14 +1,14 @@
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 
+use crate::counters;
 use handlebars::Handlebars;
-use lettre::{Transport as LettreTransport, SendmailTransport, file::FileTransport};
-use lettre::builder::{EmailBuilder, PartBuilder, Mailbox, MimeMultipartType};
+use lettre::builder::{EmailBuilder, Mailbox, MimeMultipartType, PartBuilder};
+use lettre::{file::FileTransport, SendmailTransport, Transport as LettreTransport};
 use serde::Serialize;
 use uuid::Uuid;
-use crate::counters;
 
-use rocket_i18n::I18n;
 use gettext_macros::i18n;
+use rocket_i18n::I18n;
 
 use rfc2047::rfc2047_encode;
 
@@ -67,17 +67,26 @@ impl Service {
 
     /// Sends mail by storing it in the given directory.
     pub fn filemail(from: &str, base_uri: &str, template_dir: &Path, path: &Path) -> Result<Self> {
-        Self::new(from, base_uri, template_dir, Transport::Filemail(path.to_owned()))
+        Self::new(
+            from,
+            base_uri,
+            template_dir,
+            Transport::Filemail(path.to_owned()),
+        )
     }
 
-    fn new(from: &str, base_uri: &str, template_dir: &Path, transport: Transport)
-           -> Result<Self> {
+    fn new(from: &str, base_uri: &str, template_dir: &Path, transport: Transport) -> Result<Self> {
         let templates = template_helpers::load_handlebars(template_dir)?;
-        let domain =
-            url::Url::parse(base_uri)
-            ?.host_str().ok_or_else(|| anyhow!("No host in base-URI"))
-            ?.to_string();
-        Ok(Self { from: from.into(), domain, templates, transport })
+        let domain = url::Url::parse(base_uri)?
+            .host_str()
+            .ok_or_else(|| anyhow!("No host in base-URI"))?
+            .to_string();
+        Ok(Self {
+            from: from.into(),
+            domain,
+            templates,
+            transport,
+        })
     }
 
     pub fn send_verification(
@@ -86,7 +95,7 @@ impl Service {
         base_uri: &str,
         tpk_name: String,
         userid: &Email,
-        token: &str
+        token: &str,
     ) -> Result<()> {
         let ctx = context::Verification {
             lang: i18n.lang.to_string(),
@@ -151,7 +160,7 @@ impl Service {
         base_uri: &str,
         tpk_name: String,
         userid: &Email,
-        token: &str
+        token: &str,
     ) -> Result<()> {
         let ctx = context::Welcome {
             lang: "en".to_owned(),
@@ -176,12 +185,16 @@ impl Service {
         &self,
         template: &str,
         locale: &str,
-        ctx: impl Serialize
+        ctx: impl Serialize,
     ) -> Result<(String, String)> {
-        let html = self.templates.render(&format!("{}/{}.htm", locale, template), &ctx)
+        let html = self
+            .templates
+            .render(&format!("{}/{}.htm", locale, template), &ctx)
             .or_else(|_| self.templates.render(&format!("{}.htm", template), &ctx))
             .map_err(|_| anyhow!("Email template failed to render"))?;
-        let txt = self.templates.render(&format!("{}/{}.txt", locale, template), &ctx)
+        let txt = self
+            .templates
+            .render(&format!("{}/{}.txt", locale, template), &ctx)
             .or_else(|_| self.templates.render(&format!("{}.txt", template), &ctx))
             .map_err(|_| anyhow!("Email template failed to render"))?;
 
@@ -194,7 +207,7 @@ impl Service {
         subject: &str,
         template: &str,
         locale: &str,
-        ctx: impl Serialize
+        ctx: impl Serialize,
     ) -> Result<()> {
         let (html, txt) = self.render_template(template, locale, ctx)?;
 
@@ -235,17 +248,16 @@ impl Service {
             Transport::Sendmail => {
                 let mut transport = SendmailTransport::new();
                 transport.send(email)?;
-            },
+            }
             Transport::Filemail(ref path) => {
                 let mut transport = FileTransport::new(path);
                 transport.send(email)?;
-            },
+            }
         }
 
         Ok(())
     }
 }
-
 
 // for some reason, this is no longer public in lettre itself
 // FIXME replace with builtin struct on lettre update
@@ -281,9 +293,9 @@ pub fn pop_mail(dir: &Path) -> Result<Option<String>> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use tempfile::{tempdir, TempDir};
-    use gettext_macros::{include_i18n};
+    use gettext_macros::include_i18n;
     use std::str::FromStr;
+    use tempfile::{tempdir, TempDir};
 
     const BASEDIR: &str = "http://localhost/";
     const FROM: &str = "test@localhost";
@@ -291,12 +303,22 @@ mod test {
 
     fn configure_i18n(lang: &'static str) -> I18n {
         let langs = include_i18n!();
-        let catalog = langs.clone().into_iter().find(|(l, _)| *l == lang).unwrap().1;
+        let catalog = langs
+            .clone()
+            .into_iter()
+            .find(|(l, _)| *l == lang)
+            .unwrap()
+            .1;
         rocket_i18n::I18n { catalog, lang }
     }
 
     fn configure_mail() -> (Service, TempDir) {
-        let template_dir: PathBuf = ::std::env::current_dir().unwrap().join("dist/email-templates").to_str().unwrap().into();
+        let template_dir: PathBuf = ::std::env::current_dir()
+            .unwrap()
+            .join("dist/email-templates")
+            .to_str()
+            .unwrap()
+            .into();
         let tempdir = tempdir().unwrap();
         let service = Service::filemail(FROM, BASEDIR, &template_dir, tempdir.path()).unwrap();
         (service, tempdir)
@@ -328,7 +350,9 @@ mod test {
         assert!(headers.contains(&("Content-Type", "text/html; charset=utf-8")));
         assert!(headers.contains(&("From", "<test@localhost>")));
         assert!(headers.contains(&("To", "<recipient@example.org>")));
-        assert_header(&headers, "Content-Type", |v| v.starts_with("multipart/alternative"));
+        assert_header(&headers, "Content-Type", |v| {
+            v.starts_with("multipart/alternative")
+        });
         assert_header(&headers, "Date", |v| v.contains("+0000"));
         assert_header(&headers, "Message-ID", |v| v.contains("@localhost>"));
     }
@@ -345,7 +369,14 @@ mod test {
         let i18n = configure_i18n("en");
         let recipient = Email::from_str(TO).unwrap();
 
-        mail.send_verification(&i18n, "test", "fingerprintoo".to_owned(), &recipient, "token").unwrap();
+        mail.send_verification(
+            &i18n,
+            "test",
+            "fingerprintoo".to_owned(),
+            &recipient,
+            "token",
+        )
+        .unwrap();
         let mail_content = pop_mail(tempdir.path()).unwrap().unwrap();
 
         check_headers(&mail_content);
@@ -363,7 +394,14 @@ mod test {
         let i18n = configure_i18n("ja");
         let recipient = Email::from_str(TO).unwrap();
 
-        mail.send_verification(&i18n, "test", "fingerprintoo".to_owned(), &recipient, "token").unwrap();
+        mail.send_verification(
+            &i18n,
+            "test",
+            "fingerprintoo".to_owned(),
+            &recipient,
+            "token",
+        )
+        .unwrap();
         let mail_content = pop_mail(tempdir.path()).unwrap().unwrap();
 
         check_headers(&mail_content);
@@ -373,8 +411,9 @@ mod test {
         assert!(mail_content.contains("test/verify/token"));
         assert!(mail_content.contains("test/about"));
         assert!(mail_content.contains("あなたのメールアド"));
-        assert!(mail_content.contains("Subject:   =?utf-8?q?localhost=E3=81=AE=E3=81=82=E3=81=AA=E3=81=9F=E3=81=AE?="));
-
+        assert!(mail_content.contains(
+            "Subject:   =?utf-8?q?localhost=E3=81=AE=E3=81=82=E3=81=AA=E3=81=9F=E3=81=AE?="
+        ));
     }
 
     #[test]
@@ -383,7 +422,14 @@ mod test {
         let i18n = configure_i18n("en");
         let recipient = Email::from_str(TO).unwrap();
 
-        mail.send_manage_token(&i18n, "test", "fingerprintoo".to_owned(), &recipient, "token").unwrap();
+        mail.send_manage_token(
+            &i18n,
+            "test",
+            "fingerprintoo".to_owned(),
+            &recipient,
+            "token",
+        )
+        .unwrap();
         let mail_content = pop_mail(tempdir.path()).unwrap().unwrap();
 
         check_headers(&mail_content);
@@ -401,7 +447,14 @@ mod test {
         let i18n = configure_i18n("ja");
         let recipient = Email::from_str(TO).unwrap();
 
-        mail.send_manage_token(&i18n, "test", "fingerprintoo".to_owned(), &recipient, "token").unwrap();
+        mail.send_manage_token(
+            &i18n,
+            "test",
+            "fingerprintoo".to_owned(),
+            &recipient,
+            "token",
+        )
+        .unwrap();
         let mail_content = pop_mail(tempdir.path()).unwrap().unwrap();
 
         check_headers(&mail_content);
@@ -412,7 +465,9 @@ mod test {
         assert!(mail_content.contains("testtoken"));
         assert!(mail_content.contains("test/about"));
         assert!(mail_content.contains("この鍵の掲示されたア"));
-        assert!(mail_content.contains("Subject: =?utf-8?q?localhost=E3=81=AE=E9=8D=B5=E3=82=92=E7=AE=A1=E7=90=86?="));
+        assert!(mail_content.contains(
+            "Subject: =?utf-8?q?localhost=E3=81=AE=E9=8D=B5=E3=82=92=E7=AE=A1=E7=90=86?="
+        ));
     }
 
     #[test]
@@ -420,7 +475,8 @@ mod test {
         let (mail, tempdir) = configure_mail();
         let recipient = Email::from_str(TO).unwrap();
 
-        mail.send_welcome("test", "fingerprintoo".to_owned(), &recipient, "token").unwrap();
+        mail.send_welcome("test", "fingerprintoo".to_owned(), &recipient, "token")
+            .unwrap();
         let mail_content = pop_mail(tempdir.path()).unwrap().unwrap();
 
         check_headers(&mail_content);
@@ -432,4 +488,3 @@ mod test {
         assert!(mail_content.contains("first time"));
     }
 }
-

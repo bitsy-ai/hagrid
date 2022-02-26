@@ -1,8 +1,8 @@
-use ring::aead::{seal_in_place, open_in_place, Algorithm, AES_256_GCM};
+use ring::aead::{open_in_place, seal_in_place, Algorithm, AES_256_GCM};
 use ring::aead::{OpeningKey, SealingKey};
-use ring::rand::{SecureRandom, SystemRandom};
-use ring::hmac;
 use ring::digest;
+use ring::hmac;
+use ring::rand::{SecureRandom, SystemRandom};
 
 // Keep these in sync, and keep the key len synced with the `private` docs as
 // well as the `KEYS_INFO` const in secure::Key.
@@ -14,7 +14,7 @@ pub struct SealedState {
     opening_key: OpeningKey,
 }
 
-impl SealedState  {
+impl SealedState {
     pub fn new(secret: &str) -> Self {
         let salt = hmac::SigningKey::new(&digest::SHA256, b"hagrid");
         let mut key = vec![0; 32];
@@ -23,7 +23,10 @@ impl SealedState  {
         let sealing_key = SealingKey::new(ALGO, key.as_ref()).expect("sealing key creation");
         let opening_key = OpeningKey::new(ALGO, key.as_ref()).expect("sealing key creation");
 
-        SealedState  { sealing_key, opening_key }
+        SealedState {
+            sealing_key,
+            opening_key,
+        }
     }
 
     pub fn unseal(&self, mut data: Vec<u8>) -> Result<String, &'static str> {
@@ -43,7 +46,9 @@ impl SealedState  {
             data = vec![0; NONCE_LEN + input.len() + overhead];
 
             let (nonce, in_out) = data.split_at_mut(NONCE_LEN);
-            SystemRandom::new().fill(nonce).expect("couldn't random fill nonce");
+            SystemRandom::new()
+                .fill(nonce)
+                .expect("couldn't random fill nonce");
             in_out[..input.len()].copy_from_slice(input.as_bytes());
 
             seal_in_place(&self.sealing_key, nonce, &[], in_out, overhead).expect("in-place seal")

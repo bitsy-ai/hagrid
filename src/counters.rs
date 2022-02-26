@@ -8,14 +8,21 @@ use crate::database::types::Email;
 lazy_static! {
     static ref KEY_UPLOAD: LabelCounter =
         LabelCounter::new("hagrid_key_upload", "Uploaded keys", &["result"]);
-
-    static ref MAIL_SENT: LabelCounter =
-        LabelCounter::new("hagrid_mail_sent", "Sent verification mails", &["type", "domain"]);
-
-    static ref KEY_ADDRESS_PUBLISHED: LabelCounter =
-        LabelCounter::new("hagrid_key_address_published", "Verified email addresses", &["domain"]);
-    static ref KEY_ADDRESS_UNPUBLISHED: LabelCounter =
-        LabelCounter::new("hagrid_key_address_unpublished", "Unpublished email addresses", &["domain"]);
+    static ref MAIL_SENT: LabelCounter = LabelCounter::new(
+        "hagrid_mail_sent",
+        "Sent verification mails",
+        &["type", "domain"]
+    );
+    static ref KEY_ADDRESS_PUBLISHED: LabelCounter = LabelCounter::new(
+        "hagrid_key_address_published",
+        "Verified email addresses",
+        &["domain"]
+    );
+    static ref KEY_ADDRESS_UNPUBLISHED: LabelCounter = LabelCounter::new(
+        "hagrid_key_address_unpublished",
+        "Unpublished email addresses",
+        &["domain"]
+    );
 }
 
 pub fn register_counters(registry: &prometheus::Registry) {
@@ -58,7 +65,9 @@ impl LabelCounter {
     }
 
     fn register(&self, registry: &prometheus::Registry) {
-        registry.register(Box::new(self.prometheus_counter.clone())).unwrap();
+        registry
+            .register(Box::new(self.prometheus_counter.clone()))
+            .unwrap();
     }
 
     fn inc(&self, values: &[&str]) {

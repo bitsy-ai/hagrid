@@ -1,11 +1,11 @@
+use super::Result;
 use crate::openpgp::types::HashAlgorithm;
 use zbase32;
-use super::Result;
 
 // cannibalized from
 // https://gitlab.com/sequoia-pgp/sequoia/blob/master/net/src/wkd.rs
 
-pub fn encode_wkd(address: impl AsRef<str>) -> Result<(String,String)> {
+pub fn encode_wkd(address: impl AsRef<str>) -> Result<(String, String)> {
     let (local_part, domain) = split_address(address)?;
 
     let local_part_encoded = encode_local_part(local_part);
@@ -13,7 +13,7 @@ pub fn encode_wkd(address: impl AsRef<str>) -> Result<(String,String)> {
     Ok((local_part_encoded, domain))
 }
 
-fn split_address(email_address: impl AsRef<str>) -> Result<(String,String)> {
+fn split_address(email_address: impl AsRef<str>) -> Result<(String, String)> {
     let email_address = email_address.as_ref();
     let v: Vec<&str> = email_address.split('@').collect();
     if v.len() != 2 {

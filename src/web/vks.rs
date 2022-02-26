@@ -1,24 +1,26 @@
 use crate::Result;
 
-use crate::database::{Database, KeyDatabase, StatefulTokens, EmailAddressStatus, TpkStatus, ImportResult};
-use crate::database::types::{Fingerprint,Email};
-use crate::mail;
 use crate::counters;
-use crate::tokens::{self, StatelessSerializable};
+use crate::database::types::{Email, Fingerprint};
+use crate::database::{
+    Database, EmailAddressStatus, ImportResult, KeyDatabase, StatefulTokens, TpkStatus,
+};
+use crate::mail;
 use crate::rate_limiter::RateLimiter;
+use crate::tokens::{self, StatelessSerializable};
 use crate::web::RequestOrigin;
 
-use rocket_i18n::I18n;
 use gettext_macros::i18n;
+use rocket_i18n::I18n;
 
-use sequoia_openpgp::Cert;
-use sequoia_openpgp::parse::{Parse, PacketParserBuilder, Dearmor};
-use sequoia_openpgp::cert::CertParser;
 use sequoia_openpgp::armor::ReaderMode;
+use sequoia_openpgp::cert::CertParser;
+use sequoia_openpgp::parse::{Dearmor, PacketParserBuilder, Parse};
+use sequoia_openpgp::Cert;
 
-use std::io::Read;
-use std::convert::TryFrom;
 use std::collections::HashMap;
+use std::convert::TryFrom;
+use std::io::Read;
 
 use self::response::*;
 
@@ -38,7 +40,7 @@ pub mod request {
 pub mod response {
     use crate::database::types::Email;
 
-    #[derive(Debug,Serialize,Deserialize,PartialEq,Eq)]
+    #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
     pub enum EmailStatus {
         #[serde(rename = "unpublished")]
         Unpublished,
@@ -57,12 +59,14 @@ pub mod response {
             token: String,
             key_fpr: String,
             is_revoked: bool,
-            status: HashMap<String,EmailStatus>,
+            status: HashMap<String, EmailStatus>,
             count_unparsed: usize,
             is_new_key: bool,
             primary_uid: Option<Email>,
         },
-        OkMulti { key_fprs: Vec<String> },
+        OkMulti {
+            key_fprs: Vec<String>,
+        },
         Error(String),
     }
 
@@ -84,15 +88,14 @@ pub mod response {
     }
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct VerifyTpkState {
     fpr: Fingerprint,
     addresses: Vec<Email>,
     requested: Vec<Email>,
 }
 
-impl StatelessSerializable for VerifyTpkState {
-}
+impl StatelessSerializable for VerifyTpkState {}
 
 pub fn process_key(
     db: &KeyDatabase,
@@ -103,9 +106,7 @@ pub fn process_key(
 ) -> response::UploadResponse {
     // First, parse all Certs and error out if one fails.
     let parser = match PacketParserBuilder::from_reader(reader)
-        .and_then(|ppb| {
-            ppb.dearmor(Dearmor::Auto(ReaderMode::VeryTolerant)).build()
-        })
+        .and_then(|ppb| ppb.dearmor(Dearmor::Auto(ReaderMode::VeryTolerant)).build())
     {
         Ok(ppr) => CertParser::from(ppr),
         Err(_) => return UploadResponse::err(i18n!(i18n.catalog, "Parsing of key data failed.")),
@@ -122,7 +123,7 @@ pub fn process_key(
                     ));
                 }
                 t
-            },
+            }
             Err(_) => {
                 return UploadResponse::err(i18n!(i18n.catalog, "Parsing of key data failed."));
             }
@@ -131,7 +132,13 @@ pub fn process_key(
 
     match tpks.len() {
         0 => UploadResponse::err(i18n!(i18n.catalog, "No key uploaded.")),
-        1 => process_key_single(db, i18n, tokens_stateless, rate_limiter, tpks.into_iter().next().unwrap()),
+        1 => process_key_single(
+            db,
+            i18n,
+            tokens_stateless,
+            rate_limiter,
+            tpks.into_iter().next().unwrap(),
+        ),
         _ => process_key_multiple(db, tpks),
     }
 }
@@ -147,14 +154,10 @@ fn log_db_merge(import_result: Result<ImportResult>) -> Result<ImportResult> {
     import_result
 }
 
-fn process_key_multiple(
-    db: &KeyDatabase,
-    tpks: Vec<Cert>,
-) -> response::UploadResponse {
+fn process_key_multiple(db: &KeyDatabase, tpks: Vec<Cert>) -> response::UploadResponse {
     let key_fprs: Vec<_> = tpks
         .into_iter()
-        .flat_map(|tpk| Fingerprint::try_from(tpk.fingerprint())
-                .map(|fpr| (fpr, tpk)))
+        .flat_map(|tpk| Fingerprint::try_from(tpk.fingerprint()).map(|fpr| (fpr, tpk)))
         .flat_map(|(fpr, tpk)| log_db_merge(db.merge(tpk)).map(|_| fpr.to_string()))
         .collect();
 
@@ -174,17 +177,21 @@ fn process_key_single(
         Ok(ImportResult::New(tpk_status)) => (tpk_status, true),
         Ok(ImportResult::Updated(tpk_status)) => (tpk_status, false),
         Ok(ImportResult::Unchanged(tpk_status)) => (tpk_status, false),
-        Err(_) => return UploadResponse::err(i18n!(i18n.catalog, "Error processing uploaded key.")),
+        Err(_) => {
+            return UploadResponse::err(i18n!(i18n.catalog, "Error processing uploaded key."))
+        }
     };
 
     let verify_state = {
-        let emails = tpk_status.email_status.iter()
-            .map(|(email,_)| email.clone())
+        let emails = tpk_status
+            .email_status
+            .iter()
+            .map(|(email, _)| email.clone())
             .collect();
         VerifyTpkState {
             fpr: fp,
             addresses: emails,
-            requested: vec!(),
+            requested: vec![],
         }
     };
 
@@ -210,18 +217,19 @@ pub fn request_verify(
     };
 
     if tpk_status.is_revoked {
-        return show_upload_verify(
-                rate_limiter, token, tpk_status, verify_state, false);
+        return show_upload_verify(rate_limiter, token, tpk_status, verify_state, false);
     }
 
-    let emails_requested: Vec<_> = addresses.into_iter()
+    let emails_requested: Vec<_> = addresses
+        .into_iter()
         .map(|address| address.parse::<Email>())
         .flatten()
         .filter(|email| verify_state.addresses.contains(email))
-        .filter(|email| tpk_status.email_status.iter()
-            .any(|(uid_email, status)|
+        .filter(|email| {
+            tpk_status.email_status.iter().any(|(uid_email, status)| {
                 uid_email == email && *status == EmailAddressStatus::NotPublished
-            ))
+            })
+        })
         .collect();
 
     for email in emails_requested {
@@ -237,10 +245,7 @@ pub fn request_verify(
             )
             .is_err()
         {
-            return UploadResponse::err(&format!(
-                "error sending email to {}",
-                &email
-            ));
+            return UploadResponse::err(&format!("error sending email to {}", &email));
         }
     }
 
@@ -252,12 +257,15 @@ fn check_tpk_state(
     token_stateless: &tokens::Service,
     i18n: &I18n,
     token: &str,
-) -> Result<(VerifyTpkState,TpkStatus)> {
-    let verify_state = token_stateless.check::<VerifyTpkState>(token)
-        .map_err(|_| anyhow!(i18n!(
-                    i18n.catalog,
-                    "Upload session expired. Please try again."
-                )))?;
+) -> Result<(VerifyTpkState, TpkStatus)> {
+    let verify_state = token_stateless
+        .check::<VerifyTpkState>(token)
+        .map_err(|_| {
+            anyhow!(i18n!(
+                i18n.catalog,
+                "Upload session expired. Please try again."
+            ))
+        })?;
     let tpk_status = db.get_tpk_status(&verify_state.fpr, &verify_state.addresses)?;
     Ok((verify_state, tpk_status))
 }
@@ -291,13 +299,12 @@ pub fn verify_confirm(
 ) -> response::PublishResponse {
     let (fingerprint, email) = match check_publish_token(db, token_service, token) {
         Ok(x) => x,
-        Err(_) => return PublishResponse::err(
-            i18n!(i18n.catalog, "Invalid verification link.")),
+        Err(_) => return PublishResponse::err(i18n!(i18n.catalog, "Invalid verification link.")),
     };
 
     response::PublishResponse::Ok {
         fingerprint: fingerprint.to_string(),
-        email: email.to_string()
+        email: email.to_string(),
     }
 }
 
@@ -305,7 +312,7 @@ fn check_publish_token(
     db: &KeyDatabase,
     token_service: &StatefulTokens,
     token: String,
-) -> Result<(Fingerprint,Email)> {
+) -> Result<(Fingerprint, Email)> {
     let payload = token_service.pop_token("verify", &token)?;
     let (fingerprint, email) = serde_json::from_str(&payload)?;
 
@@ -335,28 +342,41 @@ fn show_upload_verify(
         };
     }
 
-    let status: HashMap<_,_> = tpk_status.email_status
+    let status: HashMap<_, _> = tpk_status
+        .email_status
         .iter()
-        .map(|(email,status)| {
-            let is_pending = (*status == EmailAddressStatus::NotPublished) &&
-                !rate_limiter.action_check(format!("verify-{}", &email));
+        .map(|(email, status)| {
+            let is_pending = (*status == EmailAddressStatus::NotPublished)
+                && !rate_limiter.action_check(format!("verify-{}", &email));
             if is_pending {
                 (email.to_string(), EmailStatus::Pending)
             } else {
-                (email.to_string(), match status {
-                    EmailAddressStatus::NotPublished => EmailStatus::Unpublished,
-                    EmailAddressStatus::Published => EmailStatus::Published,
-                    EmailAddressStatus::Revoked => EmailStatus::Revoked,
-                })
+                (
+                    email.to_string(),
+                    match status {
+                        EmailAddressStatus::NotPublished => EmailStatus::Unpublished,
+                        EmailAddressStatus::Published => EmailStatus::Published,
+                        EmailAddressStatus::Revoked => EmailStatus::Revoked,
+                    },
+                )
             }
         })
         .collect();
-    let primary_uid = tpk_status.email_status
+    let primary_uid = tpk_status
+        .email_status
         .get(0)
         .map(|(email, _)| email)
         .cloned();
 
     let count_unparsed = tpk_status.unparsed_uids;
 
-    response::UploadResponse::Ok { token, key_fpr, count_unparsed, is_revoked: false, status, is_new_key, primary_uid }
+    response::UploadResponse::Ok {
+        token,
+        key_fpr,
+        count_unparsed,
+        is_revoked: false,
+        status,
+        is_new_key,
+        primary_uid,
+    }
 }
