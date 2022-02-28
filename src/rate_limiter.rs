@@ -67,7 +67,7 @@ mod tests {
 
         assert!(rate_limiter.action_perform("action".to_owned()));
 
-        assert_eq!(false, rate_limiter.action_perform("action".to_owned()));
+        assert!(!rate_limiter.action_perform("action".to_owned()));
     }
 
     #[test]

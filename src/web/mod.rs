@@ -1103,7 +1103,7 @@ pub mod tests {
 
         let (wkd_hash, domain) = crate::database::wkd::encode_wkd(addr).unwrap();
         check_null_response(
-            &client,
+            client,
             &format!("/.well-known/openpgpkey/{}/hu/{}", domain, wkd_hash),
         );
     }
@@ -1137,9 +1137,9 @@ pub mod tests {
 
         let (wkd_hash, domain) = crate::database::wkd::encode_wkd(addr).unwrap();
         check_wkd_response(
-            &client,
+            client,
             &format!("/.well-known/openpgpkey/{}/hu/{}", domain, wkd_hash),
-            &tpk,
+            tpk,
             nr_uids,
         );
     }
