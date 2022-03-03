@@ -100,7 +100,7 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
         let raw = db.by_fpr(&fpr).unwrap();
         let key = Cert::from_bytes(raw.as_bytes()).unwrap();
 
-        assert!(key.userids().skip(1).next().is_none());
+        assert!(key.userids().nth(1).is_none());
         assert!(key.user_attributes().next().is_none());
         assert!(key.keys().subkeys().next().is_none());
 
@@ -128,7 +128,7 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
         let raw = db.by_fpr(&fpr).unwrap();
         let key = Cert::from_bytes(raw.as_bytes()).unwrap();
 
-        assert!(key.userids().skip(1).next().is_none());
+        assert!(key.userids().nth(1).is_none());
         assert!(key.user_attributes().next().is_none());
         assert!(key.keys().subkeys().next().is_none());
 
@@ -161,7 +161,7 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
         assert!(key.keys().subkeys().next().is_none());
 
         let myuid1 = key.userids().next().unwrap().userid().clone();
-        let myuid2 = key.userids().skip(1).next().unwrap().userid().clone();
+        let myuid2 = key.userids().nth(1).unwrap().userid().clone();
 
         assert_eq!(db.by_email(&email1).unwrap(), raw);
         assert_eq!(db.by_email(&email2).unwrap(), raw);
@@ -208,7 +208,7 @@ pub fn test_uid_verification(db: &mut impl Database, log_path: &Path) {
         assert!(key.keys().subkeys().next().is_none());
 
         let myuid1 = key.userids().next().unwrap().userid().clone();
-        let myuid2 = key.userids().skip(1).next().unwrap().userid().clone();
+        let myuid2 = key.userids().nth(1).unwrap().userid().clone();
 
         assert_eq!(db.by_email(&email1).unwrap(), raw);
         assert_eq!(db.by_email(&email2).unwrap(), raw);
@@ -1331,7 +1331,7 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
 
     // Have Alice certify the binding between "bob@bar.com" and
     // Bob's key.
-    let alice_certifies_bob = bob.userids().nth(0).unwrap().userid().bind(
+    let alice_certifies_bob = bob.userids().next().unwrap().userid().bind(
         &mut alice_signer,
         &bob,
         SignatureBuilder::new(SignatureType::GenericCertification)
@@ -1361,7 +1361,7 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
     check_log_entry(log_path, &bobs_fp);
     let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
     assert_eq!(bob_.bad_signatures().count(), 0);
-    assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 0);
+    assert_eq!(bob_.userids().next().unwrap().certifications().count(), 0);
 
     // Add the attestation, merge into the db, check that the
     // certification is now included.
@@ -1370,11 +1370,11 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
     check_log_entry(log_path, &bobs_fp);
     let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
     assert_eq!(bob_.bad_signatures().count(), 0);
-    assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 1);
+    assert_eq!(bob_.userids().next().unwrap().certifications().count(), 1);
     assert_eq!(
         bob_.with_policy(&POLICY, None)?
             .userids()
-            .nth(0)
+            .next()
             .unwrap()
             .attestation_key_signatures()
             .count(),
@@ -1383,7 +1383,7 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
     assert_eq!(
         bob_.with_policy(&POLICY, None)?
             .userids()
-            .nth(0)
+            .next()
             .unwrap()
             .attested_certifications()
             .count(),
@@ -1396,7 +1396,7 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
     check_log_entry(log_path, &bobs_fp);
     let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
     assert_eq!(bob_.bad_signatures().count(), 0);
-    assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 1);
+    assert_eq!(bob_.userids().next().unwrap().certifications().count(), 1);
 
     // Finally, withdraw consent by overriding the attestation, merge
     // into the db, check that the certification is now gone.
@@ -1409,11 +1409,11 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
     let clear_attestation = attestations[0].clone();
 
     let bob = bob.insert_packets(vec![clear_attestation])?;
-    assert_eq!(bob.userids().nth(0).unwrap().certifications().count(), 1);
+    assert_eq!(bob.userids().next().unwrap().certifications().count(), 1);
     assert_eq!(
         bob.with_policy(&POLICY, None)?
             .userids()
-            .nth(0)
+            .next()
             .unwrap()
             .attestation_key_signatures()
             .count(),
@@ -1422,7 +1422,7 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
     assert_eq!(
         bob.with_policy(&POLICY, None)?
             .userids()
-            .nth(0)
+            .next()
             .unwrap()
             .attested_certifications()
             .count(),
@@ -1433,11 +1433,11 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
     check_log_entry(log_path, &bobs_fp);
     let bob_ = Cert::from_bytes(&db.by_fpr(&bobs_fp).unwrap())?;
     assert_eq!(bob_.bad_signatures().count(), 0);
-    assert_eq!(bob_.userids().nth(0).unwrap().certifications().count(), 0);
+    assert_eq!(bob_.userids().next().unwrap().certifications().count(), 0);
     assert_eq!(
         bob_.with_policy(&POLICY, None)?
             .userids()
-            .nth(0)
+            .next()
             .unwrap()
             .attestation_key_signatures()
             .count(),
@@ -1446,7 +1446,7 @@ pub fn attested_key_signatures(db: &mut impl Database, log_path: &Path) -> Resul
     assert_eq!(
         bob_.with_policy(&POLICY, None)?
             .userids()
-            .nth(0)
+            .next()
             .unwrap()
             .attested_certifications()
             .count(),

@@ -46,7 +46,7 @@ impl<'a> RegenerateStats<'a> {
         }
         match result {
             Err(e) => {
-                self.progress.println(format!("{}: {}", fpr, e.to_string()));
+                self.progress.println(format!("{}: {}", fpr, e));
                 self.count_err += 1;
             }
             Ok(RegenerateResult::Updated) => self.count_updated += 1,

@@ -837,24 +837,25 @@ mod tests {
             .unwrap()
             .0;
 
-        assert!(db.merge(k1).unwrap().into_tpk_status().email_status.len() > 0);
-        assert!(
-            db.merge(k2.clone())
-                .unwrap()
-                .into_tpk_status()
-                .email_status
-                .len()
-                > 0
-        );
+        assert!(!db
+            .merge(k1)
+            .unwrap()
+            .into_tpk_status()
+            .email_status
+            .is_empty());
+        assert!(!db
+            .merge(k2.clone())
+            .unwrap()
+            .into_tpk_status()
+            .email_status
+            .is_empty());
         assert!(!db.merge(k2).unwrap().into_tpk_status().email_status.len() > 0);
-        assert!(
-            db.merge(k3.clone())
-                .unwrap()
-                .into_tpk_status()
-                .email_status
-                .len()
-                > 0
-        );
+        assert!(!db
+            .merge(k3.clone())
+            .unwrap()
+            .into_tpk_status()
+            .email_status
+            .is_empty());
         assert!(
             !db.merge(k3.clone())
                 .unwrap()

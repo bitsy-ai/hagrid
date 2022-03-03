@@ -151,20 +151,14 @@ fn import_from_file(db: &KeyDatabase, input: &Path, multi_progress: &MultiProgre
 
     read_file_to_tpks(input_reader, &mut |acc| {
         let primary_key = acc[0].clone();
-        let result = import_key(&db, acc);
+        let result = import_key(db, acc);
         if let Err(ref e) = result {
             let key_fpr = match primary_key {
                 Packet::PublicKey(key) => key.fingerprint().to_hex(),
                 Packet::SecretKey(key) => key.fingerprint().to_hex(),
                 _ => "Unknown".to_owned(),
             };
-            let error = format!(
-                "{}:{:05}:{}: {}",
-                filename,
-                stats.count_total,
-                key_fpr,
-                e.to_string()
-            );
+            let error = format!("{}:{:05}:{}: {}", filename, stats.count_total, key_fpr, e);
             progress_bar.println(error);
         }
         stats.update(result);
@@ -176,7 +170,7 @@ fn import_from_file(db: &KeyDatabase, input: &Path, multi_progress: &MultiProgre
 
 fn read_file_to_tpks(
     reader: impl Read + Send + Sync,
-    callback: &mut impl FnMut(Vec<Packet>) -> (),
+    callback: &mut impl FnMut(Vec<Packet>),
 ) -> Result<()> {
     let mut ppr = PacketParser::from_reader(reader)?;
     let mut acc = Vec::new();
