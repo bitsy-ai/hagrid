@@ -25,6 +25,7 @@ use HagridConfig;
 // returns after the first few threads.
 const NUM_THREADS_MAX: usize = 3;
 
+#[allow(clippy::needless_collect)]
 pub fn do_import(config: &HagridConfig, dry_run: bool, input_files: Vec<PathBuf>) -> Result<()> {
     let num_threads = min(NUM_THREADS_MAX, input_files.len());
     let input_file_chunks = setup_chunks(input_files, num_threads);
